@@ -1,0 +1,13 @@
+# M0 headless 确定性模拟核心。
+# 确定性纪律（AGENTS.md 硬约束 4 / 报告 5.2）：模拟态禁 HashMap 迭代序、浮点固定序归约、
+# 两阶段更新、超越函数禁入模拟态。
+[package]
+name = "sim"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+# M0-01（T002）前仅验证依赖解析与工具链，不使用 bevy API。
+# headless 最小面经 workspace 级 default-features = false 继承；所需 feature 后续任务卡逐项加回。
+bevy = { workspace = true }

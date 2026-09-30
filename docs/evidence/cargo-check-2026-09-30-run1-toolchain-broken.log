@@ -1,0 +1,8 @@
+warning: sim\Cargo.toml: `default-features` is ignored for bevy, since `default-features` was not specified for `workspace.dependencies.bevy`, this could become a hard error in the future
+warning: `sim` (manifest) generated 1 warning
+error: process didn't exit successfully: `rustc -vV` (exit code: 1)
+--- stderr
+error: missing manifest in toolchain '1.98.1-x86_64-pc-windows-msvc'
+help: this may happen if the toolchain installation was interrupted
+help: try reinstalling or updating the toolchain
+

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《万阵》游戏前期策划报告 V0.9.1</title>
+<meta name="description" content="《万阵》（Project Myriad）前期策划报告 V0.9.1：Windows 独占 · 低模 3D · 万人级自动对战 · Bevy 引擎 · 确定性回放与 Headless 平衡实验场。">
+<meta property="og:title" content="《万阵》游戏前期策划报告 V0.9.1">
+<meta property="og:description" content="万人级低模 3D 自动对战策略游戏前期策划：规模 × 涌现 × 确定性回放 × Headless 自动平衡。">
+<meta property="og:type" content="article">
+<style>
+  :root{
+    --paper:#f7f6f2;
+    --ink:#1c1b19;
+    --sub:#6d6a63;
+    --hair:#e2dfd8;
+    --wash:#efede7;
+    --accent:#a8401f;
+    --sans:"PingFang SC","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Consolas",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--paper)}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    font-size:15.5px;
+    line-height:1.78;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 32px 96px}
+  a{color:var(--accent);text-decoration:none}
+  sup a{font-family:var(--mono);font-size:10px;letter-spacing:.02em;padding:3px 5px;margin:-3px -5px}
+
+  /* ---------- masthead ---------- */
+  .masthead{padding:72px 0 40px;border-bottom:2px solid var(--ink)}
+  .kicker{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--sub);margin-bottom:26px;
+  }
+  .kicker b{color:var(--accent);font-weight:500}
+  h1{
+    font-size:54px;line-height:1.12;font-weight:600;
+    letter-spacing:-0.02em;margin-bottom:6px;
+  }
+  .h1-en{font-family:var(--mono);font-size:13px;letter-spacing:.22em;color:var(--sub);margin-bottom:34px}
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:10px 28px;
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--sub);
+    margin-bottom:38px;
+  }
+  .meta-row span b{color:var(--ink);font-weight:500}
+  .lede{
+    font-size:18.5px;line-height:1.65;max-width:36em;color:var(--ink);
+  }
+  .lede em{font-style:normal;border-bottom:1px solid var(--accent)}
+
+  /* ---------- toc ---------- */
+  .toc{padding:30px 0 8px;border-bottom:1px solid var(--hair);margin-bottom:8px}
+  .toc-t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--sub);margin-bottom:14px}
+  .toc ol{list-style:none}
+  .toc li{padding:7px 0;border-bottom:1px solid var(--hair)}
+  .toc li a{display:flex;align-items:baseline;gap:16px;color:inherit;text-decoration:none}
+  .toc li:last-child{border-bottom:none}
+  .toc .no{font-family:var(--mono);font-size:12px;color:var(--accent);min-width:26px}
+  .toc .t{font-size:15px;font-weight:510}
+  .toc .d{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--sub);letter-spacing:.04em}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0 8px}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:8px}
+  .sec-no{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.08em}
+  h2{font-size:26px;font-weight:600;letter-spacing:-0.01em;line-height:1.3}
+  .sec-rule{border:none;border-top:2px solid var(--ink);margin:14px 0 26px}
+  h3{font-size:17px;font-weight:600;margin:30px 0 10px;letter-spacing:.01em}
+  h3 .h3-no{font-family:var(--mono);font-size:12px;color:var(--sub);margin-right:10px;font-weight:400}
+  p{max-width:44em;margin:0 0 14px}
+  p.wide{max-width:none}
+  strong{font-weight:600}
+  .sub-t{color:var(--sub)}
+
+  .note{
+    border-left:1px solid var(--ink);
+    padding:2px 0 2px 16px;margin:20px 0;
+    font-size:13.5px;line-height:1.7;color:var(--sub);max-width:44em;
+  }
+  .note b{color:var(--ink);font-weight:600}
+
+  /* ---------- tables ---------- */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.6;margin:18px 0 8px}
+  .tbl th{
+    text-align:left;font-weight:600;font-size:12px;letter-spacing:.06em;
+    border-top:1.5px solid var(--ink);border-bottom:1px solid var(--hair);
+    padding:8px 10px 8px 0;
+  }
+  .tbl td{
+    vertical-align:top;padding:9px 10px 9px 0;
+    border-bottom:1px solid var(--hair);
+  }
+  .tbl tr:nth-child(even) td{background:var(--wash)}
+  .tbl .em{font-weight:600}
+  .tbl .mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
+  .tbl-cap{
+    font-family:var(--mono);font-size:11.5px;color:var(--sub);
+    letter-spacing:.04em;margin:2px 0 22px;
+  }
+  .tbl-cap i{font-style:normal;color:var(--accent)}
+
+  /* ---------- figures ---------- */
+  figure{margin:26px 0 8px;overflow-x:auto}
+  figure svg{display:block;max-width:100%;height:auto;min-width:560px}
+  figcaption{
+    font-family:var(--mono);font-size:11.5px;color:var(--sub);
+    letter-spacing:.04em;margin-top:8px;
+  }
+  figcaption i{font-style:normal;color:var(--accent)}
+
+  /* ---------- lists ---------- */
+  ul.plain{list-style:none;max-width:44em;margin:0 0 14px}
+  ul.plain li{padding:6px 0 6px 0;border-bottom:1px solid var(--hair)}
+  ul.plain li:last-child{border-bottom:none}
+  ul.plain .li-t{font-weight:600}
+  ul.plain .li-m{font-family:var(--mono);font-size:11px;color:var(--accent);margin-right:10px;letter-spacing:.06em}
+
+  /* ---------- pillars ---------- */
+  .pillar{margin:30px 0 6px;padding-top:20px;border-top:1px solid var(--hair)}
+  .pillar-tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    color:var(--accent);margin-bottom:6px;
+  }
+  .pillar h3{margin-top:0}
+
+  /* ---------- colophon ---------- */
+  .colophon{margin-top:72px;border-top:2px solid var(--ink);padding-top:26px}
+  .colo-t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--sub);margin-bottom:16px}
+  .src{list-style:none;font-family:var(--mono);font-size:11.5px;line-height:1.9;color:var(--sub)}
+  .src li{display:flex;gap:12px}
+  .src .sn{color:var(--accent);min-width:30px}
+  .src .back{margin-left:auto;color:var(--accent);font-size:11px;text-decoration:none;padding:2px 8px}
+  .colo-meta{
+    margin-top:28px;font-family:var(--mono);font-size:11px;color:var(--sub);
+    letter-spacing:.06em;line-height:2;
+  }
+  @media (max-width:640px){
+    h1{font-size:38px}
+    .wrap{padding:0 20px 64px}
+    .tbl .mono{white-space:normal}
+  }
+  @media print{
+    html{background:#fff}
+    body{font-size:12.5px}
+    .wrap{max-width:none;padding:0 8mm}
+    .masthead{padding-top:24px}
+    h2,h3{break-after:avoid}
+    figure,.note{break-inside:avoid}
+    .tbl thead{display:table-header-group}
+    .tbl tr{break-inside:avoid}
+    a{color:inherit}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= 封面 ================= -->
+  <header class="masthead">
+    <div class="kicker">GAME PRE-PRODUCTION DOC · <b>V0.9.1</b> · PRE-VALIDATION PHASE</div>
+    <h1>万阵</h1>
+    <div class="h1-en">PROJECT MYRIAD · MASS AUTO-BATTLER</div>
+    <div class="meta-row">
+      <span>版本 <b>V0.9.1</b></span>
+      <span>日期 <b>2026-09-30</b></span>
+      <span>引擎 <b>Bevy（Rust / ECS）</b></span>
+      <span>平台 <b>Windows 独占</b></span>
+      <span>状态 <b>立项预验证 · M0 先行，身份未定</b></span>
+    </div>
+    <p class="lede">一款战斗规模以「万」计的低模 3D 自动对战策略游戏——你负责排兵布阵，系统负责万军交锋，每一场战斗都能用一枚种子码完整重放与分享。<em>排兵如解题，观阵如观剧，分享如传令。</em></p>
+  </header>
+
+  <!-- ================= 目录 ================= -->
+  <nav class="toc">
+    <div class="toc-t">CONTENTS</div>
+    <ol>
+      <li><a href="#s1"><span class="no">01</span><span class="t">定位与一句话卖点</span><span class="d">POSITIONING</span></a></li>
+      <li><a href="#s2"><span class="no">02</span><span class="t">市场与竞品调研</span><span class="d">MARKET RESEARCH</span></a></li>
+      <li><a href="#s3"><span class="no">03</span><span class="t">核心循环与玩法架构</span><span class="d">CORE LOOP</span></a></li>
+      <li><a href="#s4"><span class="no">04</span><span class="t">差异化：四个 Bevy 放大器</span><span class="d">DIFFERENTIATION</span></a></li>
+      <li><a href="#s5"><span class="no">05</span><span class="t">技术方案：为什么是 Bevy</span><span class="d">TECHNOLOGY</span></a></li>
+      <li><a href="#s6"><span class="no">06</span><span class="t">MVP 拆解与里程碑</span><span class="d">ROADMAP</span></a></li>
+      <li><a href="#s7"><span class="no">07</span><span class="t">风险、终止判据与关键决策</span><span class="d">RISKS</span></a></li>
+      <li><a href="#s8"><span class="no">08</span><span class="t">评测者视角预演：优势、问题与生死题</span><span class="d">CRITIC'S PREVIEW</span></a></li>
+      <li><a href="#s9"><span class="no">09</span><span class="t">资源与产能：音频与美术管线</span><span class="d">RESOURCES</span></a></li>
+      <li><a href="#fn"><span class="no">A</span><span class="t">附录：资料来源与研究方法</span><span class="d">APPENDIX</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ================= 01 定位 ================= -->
+  <section id="s1">
+    <div class="sec-head"><span class="sec-no">01</span><h2>定位与一句话卖点</h2></div>
+    <hr class="sec-rule">
+    <p>《万阵》（工作名）是一款<strong>米拉奇式两军自动对战</strong>的策略游戏：战前在预算内构筑军团，战中双方大军自动交锋、玩家有限干预，战后以确定性种子码重放、分享每一场战斗。它把「兵种克制 + 经济时机」的经典决策空间，放大到万人级战场的规模与士气涌现，并用工程化的自动平衡流水线保证竞技公平。</p>
+
+    <h3><span class="h3-no">1.1</span>三层乐趣结构</h3>
+    <ul class="plain">
+      <li><span class="li-m">战前</span><span class="li-t">排兵如解题</span> —— 有限预算下组合兵种、科技与克制关系，构筑本身就是玩法。</li>
+      <li><span class="li-m">战中</span><span class="li-t">观阵如观剧</span> —— 万军交锋、阵线推挤、溃败与翻盘，战场是活的，每一场都有故事。</li>
+      <li><span class="li-m">战后</span><span class="li-t">分享如传令</span> —— 一枚种子码完整复现整场战斗，「来看看我这场翻盘」是社交货币。</li>
+    </ul>
+
+    <h3><span class="h3-no">1.2</span>目标玩家与场景</h3>
+    <table class="tbl">
+      <thead><tr><th style="width:22%">维度</th><th>定义</th></tr></thead>
+      <tbody>
+        <tr><td class="em">核心受众</td><td>18–34 岁，喜欢兵种克制、以小博大的休闲偏中核策略玩家；米拉奇、TABS、Super Auto Pets 等自动战斗品类存量用户。</td></tr>
+        <tr><td class="em">单局时长</td><td>3–8 分钟。战斗过程可倍速、可跳过、可只看集锦。</td></tr>
+        <tr><td class="em">使用场景</td><td>PC 上的深度构筑与天梯；观战乐趣通过自动集锦与种子码外溢到短视频平台。</td></tr>
+        <tr><td class="em">平台</td><td>Windows 独占，发行走 Steam 抢先体验（对标 Mechabellum 的品类路径<sup><a href="#fn8">[8]</a></sup>）。单平台决策把工程预算全部押在规模、表现与确定性上：它消去的是跨操作系统/ABI 与跨指令集架构两大变量；同架构不同微架构的差异仍在，需靠「禁用运行时特性检测 + 锁定编译目标特性集」消除（见 5.2）。项目整体为开源实验向：模拟核心与实验场宽松许可开源，本体源码可得（见 5.4）。</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 1-1</i> · 目标玩家与使用场景</div>
+
+    <div class="note"><b>阅读约定（候选方案标记）：</b>身份未定期间（见 7.2 Q5），本文所有商业化条款——Steam 抢先体验与买断、外包预算、EA 首月判据、发售与宣传口径、5.4 两层许可——一律为<b>候选方案</b>，以 Q5 拍板为准；里程碑与验收口径则立即生效（M0 预验证排期本身即评审对象）。</div>
+  </section>
+
+  <!-- ================= 02 调研 ================= -->
+  <section id="s2">
+    <div class="sec-head"><span class="sec-no">02</span><h2>市场与竞品调研</h2></div>
+    <hr class="sec-rule">
+
+    <h3><span class="h3-no">2.1</span>米拉奇战记：类型原点</h3>
+    <p>Miragine War 由 MoFunZone 开发，2011 年 1 月以网页游戏形态首发于 Kongregate<sup><a href="#fn1">[1]</a></sup>，其后推出国服/手游版本（本文统一以「2011 首发 · 2014 国服/手游」口径表述）；国服由上海幻隙网络运营，红蓝两国争夺领土，提供新兵、忍者、吸血鬼等 16 种特性各异的兵种<sup><a href="#fn2">[2]</a></sup>。核心循环极简：界面上方倒计时增长金钱，下方选择兵种，时间到金钱足够即自动出兵，两军自动交锋，打空对方血条获胜；胜负手在重甲/轻甲克制、攻击速度差异与出兵时机的滚雪球博弈<sup><a href="#fn3">[3]</a></sup>。</p>
+    <p>这款游戏的生命周期值得敬畏：运营十余年仍在更新<sup><a href="#fn5">[5]</a></sup>，App Store 评分 4.0（292 个评分，2026-09-29 抓取）<sup><a href="#fn4">[4]</a></sup>，玩家对其平衡性评价颇高<sup><a href="#fn6">[6]</a></sup>。它验证了三件事：<strong>兵种克制 + 经济时机 = 一个极小但极深的决策空间；自动战斗把「过程」交给系统、「决策」留给玩家，天然适配碎片场景；网页世代的低门槛是传播的起点。</strong></p>
+
+    <h3><span class="h3-no">2.2</span>类型族谱：每一次演化都验证了一种需求</h3>
+    <p>出兵对战类是一个持续演化了近二十年的家族。 lane 式出兵推塔（Age of War、Cartoon Wars、Stick War 一族）验证了「部署—推进—反攻」的骨架；米拉奇把它压缩成对称经济决斗；TABS（全面战争模拟器）把规模与物理喜剧推到台前，并证明「沙雕外壳下需要严谨的克制与地形系统」才能留住玩家<sup><a href="#fn7">[7]</a></sup>；Super Auto Pets 证明构筑 + 异步对战的留存力；Mechabellum 以大军团 + 后勤科技树拿下 Steam 84% 好评并推出免费版<sup><a href="#fn8">[8]</a></sup>。</p>
+
+    <table class="tbl">
+      <thead><tr>
+        <th style="width:17%">产品</th><th style="width:14%">年份 · 平台</th><th style="width:22%">核心循环</th><th style="width:23%">验证了什么</th><th>留下的空位</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="em">Age of War / Cartoon Wars 族</td><td class="mono">2007– · Flash→手游</td><td>lane 出兵推塔、经济成长</td><td>部署—推进的反攻张力</td><td>战斗表现薄弱、多为单机打 AI</td></tr>
+        <tr><td class="em">Miragine War</td><td class="mono">2011 · Web（2014 · 国服/手游）</td><td>倒计时经济 + 克制出兵 + 自动交锋</td><td>克制与时机的竞技深度；网页低门槛</td><td>单位规模小（数十）、无回放分享、表现力有限</td></tr>
+        <tr><td class="em">TABS</td><td class="mono">2019–21 · PC；2025 · 手游</td><td>战前摆阵 + 物理喜剧观战</td><td>规模奇观与沙盒乐趣；PC 做深六年后方推手游，验证「PC 做深、移动后行」的品类节奏<sup><a href="#fn7">[7]</a></sup></td><td>战斗一次性、无成长天梯、重沙盒轻竞技</td></tr>
+        <tr><td class="em">Super Auto Pets</td><td class="mono">2021 · PC/手游</td><td>商店构筑 + 异步 PvP</td><td>构筑即玩法、异步低摩擦</td><td>战斗不可看、无规模感与实时张力</td></tr>
+        <tr><td class="em">Mechabellum</td><td class="mono">2023 · PC</td><td>大军团自动交战 + 后勤科技</td><td>PC 玩家愿为「大军自动对战」付费<sup><a href="#fn8">[8]</a></sup></td><td>俯视角硬核、学习曲线陡、无 Web 版</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 2-1</i> · 竞品画像与空位分析（调研日期 2026-09-29）</div>
+
+    <h3><span class="h3-no">2.3</span>市场面：内容驱动的传播链</h3>
+    <p>自动对战品类的传播从不靠买量，靠的是内容自来水：TABS 在 B 站的实况与二创视频构成了持续多年的免费流量<sup><a href="#fn7">[7]</a></sup>；爆款复盘的公开公式——极简玩法 × 社交裂变<sup><a href="#fn11">[11]</a></sup>——在 Windows 单平台语境下的对应物是「<strong>集锦视频 + 种子码</strong>」。每场战斗自动产出 30 秒溃败反杀集锦与一枚可复现代码：观众从视频简介里复制一枚码，在自己的机器上完整重放同一战局、再用同一道题反打对方。《万阵》的传播物不是广告素材，是战争本身。（背景参考：轻决策自动对战的需求池本身仍在扩大——据伽马数据，国内小游戏市场自 2021 年 27.5 亿元增至 2025 年 535.35 亿元<sup><a href="#fn9">[9]</a></sup>、微信小游戏月活超 5 亿（2025-07 报道口径）<sup><a href="#fn10">[10]</a></sup>——本作以 Windows 深度版切同一需求池的高端区间。）</p>
+
+    <div class="note"><b>空位结论：</b>族谱上每个产品都验证了一种需求，但至今没有产品同时做到「<b>军团规模 × 士气涌现 × 确定性回放分享</b>」。这就是《万阵》的生态位：用米拉奇的决策骨架、TABS 的规模奇观、自走棋的构筑深度，装进一个每一场都能分享的确定性战场。</div>
+  </section>
+
+  <!-- ================= 03 核心循环 ================= -->
+  <section id="s3">
+    <div class="sec-head"><span class="sec-no">03</span><h2>核心循环与玩法架构</h2></div>
+    <hr class="sec-rule">
+
+    <figure>
+      <svg viewBox="0 0 780 176" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="核心循环图">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#1c1b19"/>
+          </marker>
+        </defs>
+        <g font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <!-- boxes -->
+          <g fill="none" stroke="#1c1b19" stroke-width="1">
+            <rect x="10"  y="36" width="130" height="62"/>
+            <rect x="165" y="36" width="130" height="62"/>
+            <rect x="320" y="36" width="130" height="62" stroke="#a8401f" stroke-width="1.5"/>
+            <rect x="475" y="36" width="130" height="62"/>
+            <rect x="630" y="36" width="130" height="62"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="75"  y="62" font-size="13" font-weight="600" fill="#1c1b19">募兵与编成</text>
+            <text x="75"  y="82" font-size="10.5" fill="#6d6a63" font-family="monospace">预算 · 科技树</text>
+            <text x="230" y="62" font-size="13" font-weight="600" fill="#1c1b19">部署出兵</text>
+            <text x="230" y="82" font-size="10.5" fill="#6d6a63" font-family="monospace">时机 · 阵型</text>
+            <text x="385" y="62" font-size="13" font-weight="600" fill="#a8401f">涌现战斗</text>
+            <text x="385" y="82" font-size="10.5" fill="#6d6a63" font-family="monospace">士气 · 规模</text>
+            <text x="540" y="62" font-size="13" font-weight="600" fill="#1c1b19">结算与解锁</text>
+            <text x="540" y="82" font-size="10.5" fill="#6d6a63" font-family="monospace">战果 · 进度</text>
+            <text x="695" y="62" font-size="13" font-weight="600" fill="#1c1b19">分享与挑战</text>
+            <text x="695" y="82" font-size="10.5" fill="#6d6a63" font-family="monospace">种子码 · 每日关</text>
+          </g>
+          <!-- forward arrows -->
+          <g stroke="#1c1b19" stroke-width="1" marker-end="url(#ar)">
+            <line x1="140" y1="67" x2="163" y2="67"/>
+            <line x1="295" y1="67" x2="318" y2="67"/>
+            <line x1="450" y1="67" x2="473" y2="67"/>
+            <line x1="605" y1="67" x2="628" y2="67"/>
+          </g>
+          <!-- return path -->
+          <path d="M 695 98 L 695 148 L 75 148 L 75 102" fill="none" stroke="#6d6a63" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+          <text x="385" y="142" text-anchor="middle" font-size="10.5" fill="#6d6a63" font-family="monospace">单局 3–8 分钟 · 循环驱动构筑深化</text>
+        </g>
+      </svg>
+      <figcaption><i>图 3-1</i> · 核心循环：决策（募兵/部署）与体验（涌现战斗）分离，分享环节回流为新对局动机</figcaption>
+    </figure>
+
+    <h3><span class="h3-no">3.1</span>战前：构筑即玩法</h3>
+    <p>每局开始给定预算与可用兵种池（12–16 个，沿米拉奇的数量级），部署采用<strong>混合模式</strong>：基础兵种沿米拉奇式的局内经济流持续投放（资源随时间累积、出兵即时生效），高阶兵种、科技与阵型则走战前一次性配置——既保留经济流的滚雪球张力，又让构筑深度有完整的战前表达空间；混合结构对回放码更友好（高价值决策全部落在显式命令流上）。兵种以「定位 × 克制 × 科技」三维定义：近战/远程/飞行/攻城等定位，重甲/轻甲/无甲克制环，以及 2–3 级科技升级。构筑界面对玩家公开<strong>克制提示</strong>（半透明关系网），但对方的编成只在部署后揭晓——信息不对称是博弈核心；信息对称原则按模式分列——常规对战保持上述不对称，每日同阵配对（及其排名形态）为同题对称信息（见 3.3），两类构筑决策分开平衡与验证。高级阶段引入「战前阵型编辑」：同一套编制摆出楔形、龟甲、纵队，直接影响接战顺序。美术方向定案为<strong>低模 3D</strong>：以极低面数的三维模型承载万人级战场——低面数单体的渲染与制作成本都很低，才允许万级数量存在；同时 3D 相机带来的俯瞰、推近、环绕运镜是 2D 阵图无法提供的观战表现力，直接服务「观阵如观剧」的核心乐趣。</p>
+
+    <h3><span class="h3-no">3.2</span>战中：涌现与干预</h3>
+    <p>战斗主体自动进行，乐趣来自两层。第一层是<strong>规模</strong>：万级单位的阵线推挤、包抄、局部以多打少，这是「看戏」的基本盘。第二层是<strong>士气涌现</strong>：单位带有简单的个体规则（侧翼受袭压制、目睹友军成建制覆灭恐惧、指挥单位存在时集结），宏观上涌现出击溃、溃逃、回马枪、断后死战等战场故事。玩家保留<strong>有限干预</strong>：每场 2–3 次的指令（强令冲锋、固守、变阵、召回），次数稀缺以保证决策重量。干预的数值设计全部经由 Headless 平衡实验场回归验证（见 4.4）。</p>
+
+    <h3><span class="h3-no">3.3</span>战后：结算、重放与分享</h3>
+    <p>胜负结算产出战果奖励（解锁兵种、科技点）与<strong>战斗种子码</strong>：种子 + 双方命令流 + 版本号打包成一枚短码，任何一台 Windows 机器输入即完整重放。回放码规格：码内含版本号，命令流经压缩打包，常规对局目标 ≤ 2 KB（列入 M2 验收）；跨版本不保证重放兼容，版本兼容矩阵随发布维护，EA 期至少保证相邻三个次版本可回放。衍生玩法：<strong>每日同阵配对挑战</strong>——每日一发固定种子、固定预算，你提交的方案自动对阵其他玩家的真实方案（而非固定靶），以相对战绩计分；配对需要轻量后端（方案上传 / 配对 / 成本校验），是低运营成本而非零成本，服务设计见 5.5。同题不解的纯解谜玩法仅作为教学关与练习场，不设公开排名。重放器支持任意时刻暂停、运镜与片段导出，服务分享链路。</p>
+  </section>
+
+  <!-- ================= 04 差异化 ================= -->
+  <section id="s4">
+    <div class="sec-head"><span class="sec-no">04</span><h2>差异化：四个 Bevy 放大器</h2></div>
+    <hr class="sec-rule">
+    <p>差异化设计的原则：每一个卖点都必须踩在 Bevy 的独特能力上——能力放大为玩法，玩法构成竞品难以跟进的护城河。需要诚实地说清：差异化不来自「别人做不了」——Unity DOTS 已能跑数万实体，规模本身挡不住愿意投入的竞品；它来自「我们更适合」——开源零授权、Headless 复用、确定性工具链、Rust 编译器约束 AI 产出，这一组能力让同样的设计在本引擎里迭代更快、验证更硬。四个放大器分层叠放，底层是地基，顶层是玩家直接消费的戏剧；而其中「规模」是其余三者的乘数：没有万人战场，士气涌现无处附着，回放分享没有奇观价值，平衡实验场没有足够的样本复杂度。</p>
+
+    <figure>
+      <svg viewBox="0 0 860 224" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="能力分层图">
+        <g font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <g fill="none" stroke="#1c1b19" stroke-width="1">
+            <rect x="70"  y="164" width="640" height="40"/>
+            <rect x="120" y="116" width="540" height="40"/>
+            <rect x="170" y="68"  width="440" height="40"/>
+            <rect x="220" y="20"  width="340" height="40" stroke="#a8401f" stroke-width="1.5"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="390" y="189" font-size="13" font-weight="600" fill="#1c1b19">确定性核心</text>
+            <text x="390" y="141" font-size="13" font-weight="600" fill="#1c1b19">Headless 引擎</text>
+            <text x="390" y="93"  font-size="13" font-weight="600" fill="#1c1b19">规模舞台</text>
+            <text x="390" y="45"  font-size="13" font-weight="600" fill="#a8401f">涌现戏剧</text>
+          </g>
+          <g font-family="monospace" font-size="10.5" fill="#6d6a63">
+            <text x="390" y="205" text-anchor="middle">固定时间步 · 种子随机 · 纯模拟</text>
+            <text x="390" y="157" text-anchor="middle">ScheduleRunnerPlugin · 批量对局 · 性能回归</text>
+            <text x="390" y="109" text-anchor="middle">分层渲染 · 1,000 → 100,000（极限）</text>
+            <text x="390" y="61"  text-anchor="middle">士气 · 溃逃 · 战场故事</text>
+          </g>
+          <g font-family="monospace" font-size="11" fill="#a8401f">
+            <text x="724" y="189">支撑：回放码/联机</text>
+            <text x="674" y="141">驱动：平衡/CI</text>
+            <text x="624" y="93">承载：奇观</text>
+            <text x="574" y="45">产出：传播</text>
+          </g>
+        </g>
+      </svg>
+      <figcaption><i>图 4-1</i> · 四放大器分层：下层是工程地基，上层是玩家可感知的乐趣；下层能力越稳，上层玩法越敢做——规模是全局乘数</figcaption>
+    </figure>
+
+    <div class="pillar">
+      <div class="pillar-tag">AMPLIFIER 01 · SCALE</div>
+      <h3><span class="h3-no">4.1</span>规模拉满：万人战场的奇观与策略</h3>
+      <p>米拉奇单方单位以十计，TABS 数百，本作目标同屏 <strong>1,000 起步、10,000 常态，极限模式量级由 M0 外推定（目标十万）</strong>。规模不是数字游戏：几百人没有「战线」概念，上千人才有阵线推挤、包抄纵深、局部突破的战术语义；到了万人级，一场战斗的宏观形态（钳形合围、多点突破、全线崩溃）才可计算、可呈现。这是「规模 = 爽感 × 差异化 × 引擎优势」的三重论证：爽感——万人同屏的奇观直接成立；差异化——规模挡不住 Unity DOTS 级竞品的跟进，但「低模 3D + 分层渲染 + 自动平衡流水线」的组合把跟进成本拉高到需要重新建整条工程链；引擎优势——ECS 数据布局让大兵团单位在本引擎里迭代与验证成本最低，「加一个单位」在系统侧仍是 O(n) 访问，但并行调度与缓存友好布局让我们在同硬件下有更多余量做士气、寻路与集群表现。技术上以分层渲染控制画面成本（近景骨骼小人、中景公告板、远景点阵流），Headless 性能回归测试保证规模不随迭代崩塌。</p>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-tag">AMPLIFIER 02 · EMERGENCE</div>
+      <h3><span class="h3-no">4.2</span>涌现式战场：有故事的溃败与翻盘</h3>
+      <p>单位只带最简单的个体规则——侧翼受袭进入压制、友军成建制覆灭产生恐惧、附近有指挥旗则重整——宏观战斗涌现出击溃、溃逃、断后、翻盘。涌现既服务观战价值（每场都有可剪辑的片段），也服务策略价值（士气操纵成为第三维战术：断后、佯败、斩首）。个体规则简单、宏观后果复杂，恰好是参数敏感型设计——这正是放大器 04 的用武之地。</p>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-tag">AMPLIFIER 03 · DETERMINISM</div>
+      <h3><span class="h3-no">4.3</span>确定性 + 回放分享：一枚码即一场战争</h3>
+      <p>模拟层严格采用固定时间步 + 种子随机 + 纯函数式状态转移（禁帧率依赖、禁渲染态耦合），战斗可被「种子 + 命令流」完整复现。Windows 独占在这里从减法变成加法：它直接消去跨操作系统/ABI 与跨指令集架构两大回放变量；同架构不同微架构（如 AVX 路径分派）的差异仍存在，需靠禁用运行时特性检测、锁定编译目标特性集消除——剩余的确定性工程量虽不再是一个数量级的差距，但仍是所有平台选择里最小的那档。玩家侧三件事：<strong>战后种子码分享</strong>（社交裂变）、<strong>每日同阵配对</strong>（轻量榜单服务，见 3.3 / 5.5）、<strong>重放器</strong>（观战与剪辑）。工程侧三件事：回放即对拍校验（desync 检测）、确定性回放直接作为实时联机的前置件（同一套模拟层，见 7.2 Q3）、AI 批量对局的统计基础。代价是模拟层纪律，见 05.2。</p>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-tag">AMPLIFIER 04 · HEADLESS BALANCE LAB</div>
+      <h3><span class="h3-no">4.4</span>Headless 自动平衡：把「手感」换成「数据 + 手感」</h3>
+      <p>Bevy 可不开渲染纯跑 ECS（官方文档与 headless 示例即为此模式<sup><a href="#fn13">[13]</a></sup>），同一套战斗系统可全速批量模拟。吞吐量以「单场模拟墙钟时长 × 并发线程数」统一口径（含 AI 决策、不含统计落库）：M0 给实测基线，本节的远期目标是「单场 ≤ 0.5s × 16 线程并发 → 每小时 ≥ 10 万场」量级，前提是 M0 验收的微秒成本与扩展曲线达标。该吞吐口径按<strong>降规模对局</strong>计（单位数与 tick 数均低于正式对局——万人全时长对局按止损阈值外推无法满足该量级，两套口径不得混用），并以<strong>定期全规模抽样对拍</strong>（≥ 100 场/周，口径与定义见表 6-0）校验降规模结论向正式战场的迁移有效性，防止士气涌现等规模敏感行为在降规模下失真；吞吐数字仅对当前 AI 池有效——镜像 AI（v0）之外扩档（贪心/组合搜索）后须重测。由此搭一条常驻流水线：</p>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="平衡实验场流水线">
+        <defs>
+          <marker id="ar2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#1c1b19"/>
+          </marker>
+        </defs>
+        <g font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <g fill="none" stroke="#1c1b19" stroke-width="1">
+            <rect x="10"  y="30" width="130" height="56"/>
+            <rect x="155" y="30" width="140" height="56" stroke="#a8401f" stroke-width="1.5"/>
+            <rect x="310" y="30" width="130" height="56"/>
+            <rect x="455" y="30" width="130" height="56"/>
+            <rect x="600" y="30" width="130" height="56"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="75"  y="53" font-size="12.5" font-weight="600" fill="#1c1b19">数值表</text>
+            <text x="75"  y="71" font-size="10" fill="#6d6a63" font-family="monospace">单位·克制·造价</text>
+            <text x="225" y="53" font-size="12.5" font-weight="600" fill="#a8401f">Headless 模拟</text>
+            <text x="225" y="71" font-size="10" fill="#6d6a63" font-family="monospace">不开渲染·全速</text>
+            <text x="375" y="53" font-size="12.5" font-weight="600" fill="#1c1b19">AI 对战池</text>
+            <text x="375" y="71" font-size="10" fill="#6d6a63" font-family="monospace">镜像AI·贪心·组合搜索</text>
+            <text x="520" y="53" font-size="12.5" font-weight="600" fill="#1c1b19">统计矩阵</text>
+            <text x="520" y="71" font-size="10" fill="#6d6a63" font-family="monospace">胜率·贡献·节奏</text>
+            <text x="665" y="53" font-size="12.5" font-weight="600" fill="#1c1b19">漂移报警</text>
+            <text x="665" y="71" font-size="10" fill="#6d6a63" font-family="monospace">CI 阻断·调整建议</text>
+          </g>
+          <g stroke="#1c1b19" stroke-width="1" marker-end="url(#ar2)">
+            <line x1="140" y1="58" x2="153" y2="58"/>
+            <line x1="295" y1="58" x2="308" y2="58"/>
+            <line x1="440" y1="58" x2="453" y2="58"/>
+            <line x1="585" y1="58" x2="598" y2="58"/>
+          </g>
+          <path d="M 665 86 L 665 122 L 75 122 L 75 90" fill="none" stroke="#6d6a63" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+          <text x="370" y="116" text-anchor="middle" font-size="10.5" fill="#6d6a63" font-family="monospace">闭环迭代 · 每次改表自动回归</text>
+        </g>
+      </svg>
+      <figcaption><i>图 4-2</i> · 平衡实验场：数值改动 → 批量模拟 → 统计 → 报警 → 建议的闭环，克制表偏移当日发现</figcaption>
+    </figure>
+
+    <p>这条流水线把米拉奇类游戏真正的命门——<strong>平衡性</strong>——从制作人多年的手感，换成可回归、可审计的数据资产；AI 生成的平衡报告还可以反哺社区传播（「这次削弱是 10,000 场 AI 对战决定的」本身就是话题）。竞品要跟进，不止要抄玩法，还要重建整条工程链。</p>
+
+    <table class="tbl">
+      <thead><tr><th style="width:20%">放大器</th><th>玩家可感知的价值</th><th style="width:34%">工程杠杆（Bevy 能力）</th></tr></thead>
+      <tbody>
+        <tr><td class="em">规模拉满</td><td>战线级奇观；大阵对大阵的策略纵深</td><td>ECS 并行 + 分层渲染 + Headless 性能回归</td></tr>
+        <tr><td class="em">涌现战场</td><td>溃败、翻盘、断后——每场都有故事与素材</td><td>个体简单规则 × 群体涌现；参数在实验场调校</td></tr>
+        <tr><td class="em">确定性回放</td><td>一枚码重建一场战争；每日同阵配对</td><td>固定时间步 + 种子随机 + 命令流重放</td></tr>
+        <tr><td class="em">自动平衡</td><td>长期公平的克制环境；公开平衡报告</td><td>Headless 批量模拟 + CI 漂移报警<sup><a href="#fn13">[13]</a></sup></td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 4-1</i> · 四放大器：卖点 ↔ 工程杠杆对照</div>
+  </section>
+
+  <!-- ================= 05 技术方案 ================= -->
+  <section id="s5">
+    <div class="sec-head"><span class="sec-no">05</span><h2>技术方案：为什么是 Bevy</h2></div>
+    <hr class="sec-rule">
+
+    <h3><span class="h3-no">5.1</span>选型论证</h3>
+    <p><strong>战场模拟是 ECS 的典型问题。</strong>大量同质实体跑简单规则、系统间自动并行调度，是 bevy_ecs 的设计目标（官方自称 massively parallel）<sup><a href="#fn12">[12]</a></sup>；OOP 引擎在这个规模上开始吃力，ECS 才刚进入甜点区。<strong>Headless 是决定性优势。</strong>官方 ScheduleRunnerPlugin 模式即用于无渲染服务器<sup><a href="#fn13">[13]</a></sup>，同一套游戏代码直接复用为平衡实验场与性能回归台——这是 Unity/Godot 需要额外工程才能做到的。<strong>回放即联机。</strong>确定性模拟意味着联机层几乎免费：回放 = 本地命令流重演，实时对战 = 命令流过网后重演，同一套模拟代码两个用途，且 Windows 同构机器天然绕开跨平台浮点风险。<strong>长时模拟 + 内存安全。</strong>批量万场对局不吃内存不崩溃，实验场可以放心无人值守。<strong>单平台并发榨取。</strong>Windows 独占后无需分神跨平台适配，调度与内存分配按 x64 单一目标优化，SIMD 以编译期锁定目标特性集的方式压满（与 5.2 禁运行时分派是同一纪律的两面）——单位规模的上限就是这么一寸寸榨出来的。<strong>AI 辅助开发友好。</strong>ECS 代码高度模式化、Rust 编译器验证严格，适合「人管方向与版本、AI 产出代码」的分工。</p>
+
+    <h3><span class="h3-no">5.2</span>确定性工程策略</h3>
+    <p>Bevy 开箱不保证跨平台确定性，需要自建纪律：模拟层运行在自建 FixedStep 调度上，与渲染完全解耦；随机数全部来自世界种子驱动的确定性 RNG；禁止浮点不确定操作进入模拟态（浮点运算收敛到受控子集，必要时定点化）；碰撞不用物理引擎，自研简化规则。Windows 独占消去跨 OS/ABI 与跨指令集架构变量；编译期锁定 target-feature 特性集、禁用运行时 CPU 特性分派，处理同架构微架构差异；rustc 工具链版本随发布钉死（同一份二进制内代码生成自洽，跨版本回放由码内版本号与兼容矩阵管理）；超越函数（sin/cos/exp 等 libm 实现）不进模拟态，必要时以查表/多项式自实现——这是「同一份 x64 二进制在任意 Windows 机器上自我一致」的完整纪律。配套回放对拍测试套件：同一命令流在多台机器重放，状态哈希不一致即 CI 报警。实时 lockstep 沿用同一套纪律：输入延迟 + 命令缓冲为基线方案，回放对拍数据同时就是 desync 诊断的回归集——确定性做得越硬，联机层越薄。</p>
+
+    <p><strong>并行 × 确定性的边界</strong>是本工程最核心的技术张力，必须显式管理：① 模拟态禁止依赖 HashMap 迭代序（Rust 默认 RandomState 每次运行都不同）——需要遍历的映射改用 BTreeMap / 索引数组或固定序遍历；② 浮点归约按固定索引序执行，并行求和的结果不直接进入模拟态；③ 跨单位间接影响（恐惧传播、指挥范围增益）用两阶段更新——先并行写标记、下一 tick 按固定序应用——保证结果与线程数无关；④ 移动、索敌等无共享写冲突的系统才开放并行。CI 确定性矩阵：同种子 × 线程数（1/3/6/12，16 线程档以扩展曲线外推）× 两台机器，状态哈希必须一致；M0 验收④为其中单机线程档，跨机档自 M1 起纳入持续 CI（跨机首测设备随基准机 B 获取定，表 6-0 / 7.2 Q5）。</p>
+
+    <h3><span class="h3-no">5.3</span>版本与依赖纪律</h3>
+    <p>Bevy 版本迭代快、破坏性改动多（0.15 引入 required components，0.16 曾出现 ECS 性能回退、已在 0.16.2 修复<sup><a href="#fn14">[14]</a></sup>）。本报告的版本基线为 <strong>Bevy 0.19</strong>（2026-09-29 立项预验证 grill 定案，与既有 Bevy 0.19 知识资产锚定版本一致；0.20 发布后的处置在立项身份决策时一并评估，见 7.2 Q5）。策略：整个里程碑周期锁定单一版本，仅在里程碑间隙评估升级；CI 常备编译回归与性能基准，防止「悄悄变慢」。<strong>这一纪律同时约束 AI 辅助开发</strong>：所有 AI 产出代码必须通过本版本编译与官方示例对照，编译器即闸门。</p>
+
+    <table class="tbl">
+      <thead><tr><th style="width:26%">技术风险</th><th style="width:28%">影响</th><th>缓解措施</th></tr></thead>
+      <tbody>
+        <tr><td class="em">Bevy API 快速演进</td><td>升级成本高；AI 生成旧版代码</td><td>锁版本；里程碑间隙升级；CI 编译回归 + 官方示例对照</td></tr>
+        <tr><td class="em">本机浮点确定性</td><td>种子码在个别机器上漂移，回放失信</td><td>纯模拟自研；受控浮点/定点；回放对拍测试套件（Windows 独占已消去 OS/架构变量）</td></tr>
+        <tr><td class="em">WASM / 小游戏性能与适配</td><td>已随单平台决策移出范围</td><td>仅保留 WASM 编译通过作为架构洁癖检查（模拟层不依赖平台 API），不投入适配工时<sup><a href="#fn15">[15]</a></sup></td></tr>
+        <tr><td class="em">第三方 crate 破坏确定性</td><td>回放码方案失败</td><td>战斗模拟不引入物理引擎；依赖白名单</td></tr>
+        <tr><td class="em">美术体量失控</td><td>个人开发者被表现力拖垮</td><td>低模 3D 已定案；单体面数预算锁死，产能走外包与素材库，表现力预算投向运镜、打击感与集群动画</td></tr>
+        <tr><td class="em">渲染器生态不成熟</td><td>表现力上限低于商业引擎</td><td>本品类不依赖 3A 渲染；把表现力预算花在运镜、粒度与阵型可读性上</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 5-1</i> · 技术风险与缓解</div>
+
+    <h3><span class="h3-no">5.4</span>开源与许可策略（开源实验向）</h3>
+    <p><strong>候选方案</strong>（随身份定案生效，见 7.2 Q5；两层许可的细则本身是 Q5 挂起项）：项目整体定位为开源实验向，分两层许可：<strong>战斗模拟核心与 Headless 平衡实验场</strong>以宽松许可（MIT / Apache-2.0）独立开源，吸引社区做兵种 Mod、AI 代理与平衡研究——实验场天然是强化学习与群体行为研究的沙盒，这是闭源品类给不了的生态位；<strong>游戏本体</strong>（美术资产、关卡、联机服务）以源码可得（code-available）许可发布，可查看、可 Mod、不可闭源商用。必须诚实承认：这个选择意味着工程链（确定性回放、lockstep、实验场）不再构成秘密，第七章的护城河定义据此重写——<strong>护城河 = 内容产能 + 社区生态 + 打磨质量 + 品牌，而非代码</strong>（见 R3 / Q4）。开源换回的是：买断制下「开箱即玩的完整体验 + 持续更新」依然成立，玩家为体验付费、不为独占性付费；社区产出反而降低内容成本：Mod 兵种经平衡实验场校验后可收录进正式版本，形成「社区实验 → 数据验证 → 官方收录」的内容流水线。</p>
+
+    <h3><span class="h3-no">5.5</span>服务端与后端设计（轻量增强层）</h3>
+    <p>原则：<strong>核心玩法离线完整</strong>——单机对战、回放、局域网对战不依赖任何在线服务；在线层只做增强，宕机仅降级不阻断。在线服务共四件：① <strong>每日同阵配对服务</strong>——方案上传、配对、计分，含方案格式校验与可疑度标记（对称枚举检测等；用户身份基座——Steam 买家凭据 vs 自建账号——为 Q5 挂起项）；② <strong>种子码分享页</strong>——静态化渲染，可 CDN 化；③ <strong>平衡报告发布</strong>——实验场统计结果定期发布；④ （M4 后）<strong>联网对战服务</strong>——匹配、房间、断线重连。技术形态刻意保持轻：无状态 API + 对象存储（方案与回放文件）+ 静态页面；关键是<strong>成绩校验直接复用开源模拟核心在服务端重放对拍</strong>——同一套模拟代码的第三个用途（客户端模拟、回放器、服务端校验器），这是 Headless 复用优势的延伸，也是把刷分成本压到最低的手段。</p>
+  </section>
+
+  <!-- ================= 06 MVP ================= -->
+  <section id="s6">
+    <div class="sec-head"><span class="sec-no">06</span><h2>MVP 拆解与里程碑</h2></div>
+    <hr class="sec-rule">
+    <p>总原则：<strong>Headless 实验场从第 1 天就开工</strong>——它既是平衡工具，也是模拟层的性能回归台，先于一切表现层工作。人力假设：<strong>个人开发者 1 人 + AI 辅助</strong>（一人分饰主程、主策、制作与项目经理，AI 抵扣大半编码工时；人力是本项目的第一约束，排期、范围与验收全部按此校准；等效产能约 1.5–2 人力），体验打磨（8.3 三道生死题）为纯人工时段、不与工程项并行摊派；渲染 spike 并入 M0 以免 M1 过载。周期按个人开发者全职投入估算，M0 结束后校准——进度落后时 M3/M4 顺延，不砍验收。<strong>2026-09-29 立项预验证 grill 定案</strong>（七项，详见 7.2 Q5）：M0 以<strong>新独立仓库</strong>为载体（私有起步、保持可公开态；任务台账纪律随行，「工作流纪律可带走性」列为 M0 附带观测项）；版本基线 <strong>Bevy 0.19</strong>（见 5.3）；M0 按<strong>全职三周</strong>执行，硬规则——首周实测投入 &lt; 30 小时即降档为 20h/周、周期拉长一倍，验收阈值不变只改日历；M0 收官序列固定为「数据自含成档 → 独立复算 → 本文档实测修订（V1.0）→ 立项身份决策评审」；身份评审的结论为<strong>临时结论</strong>——M1 生死题为首个出口复核点，不达标先按 R1 玩法级收窄重测一轮，仍不达标即重开身份决策（复议触发清单见 7.2 Q5）。</p>
+
+    <p>所有性能验收口径先行定义，避免「参考机」「中配机」这类不可验证表述：</p>
+    <table class="tbl">
+      <thead><tr><th style="width:18%">口径项</th><th>定义</th></tr></thead>
+      <tbody>
+        <tr><td class="em">基准机 A（下限）</td><td>6 核 12 线程桌面 CPU（Intel 12 代同级）/ 16 GB 内存 / GTX 1660 同级独显 / 1080p / 画质预设 M。已于 2026-09-29 固化为开发机本机实测：i5-12490F（6C12T）/ 32 GB / RTX 3050（GPU 略高于下限档）；内存 32 GB 高于下限定义——16 GB 下限档须在 M2 前补一次实测（借/租 16 GB + GTX 1660 级），未补前本表 A 档指标一律按实测机口径解读。</td></tr>
+        <tr><td class="em">基准机 B（目标）</td><td>8 核 16 线程桌面 CPU（Zen 4 同级）/ 32 GB 内存 / RTX 4060 同级独显 / 1440p / 画质预设 H。获取方式与费用归属（自购/租用/云端）为 Q5 挂起项，M2 前锁定。</td></tr>
+        <tr><td class="em">单位口径</td><td>「N 单位」一律指同屏渲染单位数；Headless 指标另标「模拟单位数」。</td></tr>
+        <tr><td class="em">帧率口径</td><td>验收值一律为 1% low（采样 ≥ 60 秒连续对局），非平均值。</td></tr>
+        <tr><td class="em">极限模式</td><td>「可运行」= 简化渲染层（点阵/公告板）+ 30fps 锁定 + 战报与回放完整；不以常态画质要求。</td></tr>
+        <tr><td class="em">模拟 tick 率</td><td>固定 30Hz（初值，M0 首周可调、调整则全文档联动）；与渲染完全解耦——60fps 下每 2 帧 1 tick，30fps 锁定档下每帧 1 tick。</td></tr>
+        <tr><td class="em">模拟成本口径</td><td>验收①的微秒成本为<strong>单线程基线</strong>；多线程收益由②加速比单独刻画，两者合并换算公式见 6.1。</td></tr>
+        <tr><td class="em">帧预算分解</td><td>常态档 @60fps：模拟 ≤ 8ms/帧（含触发 tick 的帧）；极限档 @30fps（33ms）= 模拟 ≤ 22ms + 渲染与其余 ≤ 11ms——33ms 不是模拟独占预算。</td></tr>
+        <tr><td class="em">降规模对局</td><td>每方 100 模拟单位（共 200）、单局 ≤ 60s（≤ 1,800 ticks @30Hz）。实验场吞吐与 R2 吞吐阈值均按此口径；与全规模对局两套口径不得混用。</td></tr>
+        <tr><td class="em">全规模抽样对拍</td><td>≥ 100 场/周（16 线程下按止损线约 530 场/小时的吞吐上限计，约 12 分钟墙钟），进入统计矩阵与降规模结论分层比对——克制环胜率、击溃/溃逃发生率等规模敏感结论以抽样层为准。</td></tr>
+        <tr><td class="em">余量政策</td><td>M0 阈值按裸模拟（无士气/寻路/干预）测得；承诺线 = 止损线 × 0.5，长期吞吐目标（10 万场/小时）按承诺线换算；M1/M2/M3 各含一次模拟成本与吞吐复测（M3 验收已列）。</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 6-0</i> · 测试基准机与口径定义 · <i>基准机 A 已固化（2026-09-29，开发机本机）；基准机 B 待 M2 前锁定</i></div>
+
+    <table class="tbl">
+      <thead><tr><th style="width:15%">里程碑</th><th style="width:11%">周期</th><th>内容</th><th style="width:28%">验收标准（量化）</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="em">M0 无头核心原型</td><td class="mono">第 1–3 周</td>
+          <td>Headless 模拟闭环：6 兵种、克制表 v0（单环 = 3.1 的重甲/轻甲/无甲三类环形克制）、单 lane 自动交战至分胜负；平衡实验场 v0（镜像 AI、批量对局、胜率表）；并行渲染 spike（胶囊体灰盒 1 万单位同屏验证）</td>
+          <td>① 每单位每 tick 微秒成本（模拟层、<strong>单线程基线</strong>），在 1k/5k/10k/50k（模拟单位数）四采样点测得（基准机 A）；② 并行扩展曲线：1/3/6/12 线程加速比（16 线程档外推，基准机 A），外推 10 万模拟单位模拟耗时 ≤ 22ms（极限档模拟预算，表 6-0 帧预算分解）方保留「极限十万」目标；③ 实验场实测吞吐（<strong>降规模口径</strong>，定义见表 6-0，基准机 A）：单场墙钟时长 × 并发线程数（含镜像 AI 决策、不含落库；AI 池扩档后须重测）；④ 同种子重放哈希一致（1/3/6/12 线程 × 3 组种子，基准机 A）；⑤ 渲染 spike：胶囊体灰盒 1 万同屏 @60fps、1% low ≥ 45（基准机 A；灰盒无动画/LOD/分层渲染，指标高于 M2/M3 属预期，不作外推依据）；⑥ 内存：50k 模拟单位 ≥ 10 分钟长跑稳态工作集 ≤ 2 GB 且无单调增长（基准机 A）</td>
+        </tr>
+        <tr>
+          <td class="em">M1 可玩灰盒</td><td class="mono">第 4–8 周</td>
+          <td>渲染接入、募兵与部署 UI、经济与 AI 对手、士气 v0、指令干预原型、低模 3D 风格基调定案与士兵批量渲染验证</td>
+          <td>同屏 2,000 渲染单位 @60fps、1% low ≥ 45（基准机 A，画质预设 M）；内部试玩「想再来一局」比例 ≥50%（n≥8）；打击感试玩评分 ≥3.5/5（量表见 08.3）；士气 v0 与干预接入后的模拟成本/吞吐复测（对 M0 基线，表 6-0 余量政策）</td>
+        </tr>
+        <tr>
+          <td class="em">M2 垂直切片</td><td class="mono">第 9–14 周</td>
+          <td>分层渲染冲 5,000–10,000 单位；12 兵种科技树完形；种子码回放 v0（含码长规格与版本兼容矩阵）；导播系统 v0（节奏曲线 + 高光运镜）；打击感持续打磨；地形/多 lane 变体 v0 与寻路成本实测（模拟成本复测点，验证单 lane 外推）</td>
+          <td>同屏 5,000 渲染单位 @60fps、1% low ≥ 45（基准机 B）；常规对局回放码 ≤ 2 KB；完整走通「打一局 → 分享一枚码 → 对方复现」；可读性盲测 ≥70%（n≥10，见 08.3）</td>
+        </tr>
+        <tr>
+          <td class="em">M3 表现与规模</td><td class="mono">第 15–20 周</td>
+          <td>分层渲染极限优化冲 10,000 常态档；16 兵种科技树完形；「极限模式」目标量级按 M0 外推结论定（十万不达标即下调并记录）；自动集锦导出；平衡报告公开化与实验场独立开源</td>
+          <td>10,000 渲染单位 @60fps、1% low ≥ 45（基准机 B）；极限模式按表 6-0 定义验收（简化层 + 30fps + 战报回放完整）；实验场吞吐复测（降规模口径，对 M0 基线防漂移）</td>
+        </tr>
+        <tr>
+          <td class="em">M4 分享与联机</td><td class="mono">第 21–26 周</td>
+          <td>种子码分享页；每日同阵配对挑战（轻量后端：方案上传 / 配对 / 成本校验，见 5.5）；局域网 lockstep 对战 v0；同机双客户端对拍；Steam 页面与 Demo 准备</td>
+          <td>完整走通「打一局 → 导出集锦 + 种子码 → 对方复现」；同机双客户端对拍零 desync；局域网 2v2 可玩且断线可重连（回放快照追帧）；每日同阵配对链路全通</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 6-1</i> · 里程碑与验收标准 · <i>性能指标均为初值，M0 profiling 后修订</i></div>
+
+    <h3><span class="h3-no">6.1</span>M0 的特殊性</h3>
+    <p>M0 没有任何画面，却是全项目最重要的一段：它用三周时间回答三个立项前提——「模拟层能并行跑多大规模」「渲染层（胶囊体灰盒）能同屏多少单位」「实验场吞吐量的真实量级」。若 M0 指标不达标，项目的规模承诺需整体下调——这是最早的、成本最低的止损点。M0 数据是立项身份决策（7.2 Q5）的<strong>技术可行性输入</strong>，经独立复算后与非技术输入（首周实测工时、现金与预算、外部评审意见、0.20 窗口冲突）同场评审；商业承诺在此之前均为候选方案。<strong>硬止损阈值：每单位每 tick 成本 &gt; 2µs（单线程基线），或 12 线程实测加速比 &lt; 4×（16 线程外推值 &lt; 4× 同判），则「万人常态」目标整体下调一档并在下一版重写 4.1。</strong>换算公式：<strong>所需加速比 = 单位数 × 单线程每单位每 tick 成本 ÷ 每帧模拟预算</strong>（预算见表 6-0）——常态 1 万 @ 2µs 需 ≥ 2.5×（8ms 预算），极限十万 @ 2µs 需 ≥ 9.1×（22ms 预算）、@ 1µs 需 ≥ 4.6×；<strong>止损通过（4×）≠ 极限十万保留</strong>，两者之间是一条由公式算出的加速比缺口。渲染腿后果：⑤ 灰盒 1 万同屏 1% low &lt; 45（基准机 A）→ 分层渲染（公告板/点阵）提前进入 M1 关键路径，且常态规模承诺减半。</p>
+
+    <div class="note"><b>M2/M4 关键路径与裁剪顺序：</b>两段为产出密度峰值（M2 六周并置分层渲染、12 兵种科技树、回放码、导播 v0、打击感；M4 六周并置分享页、配对后端全链路、局域网 lockstep、双端对拍、Steam 页面）。不可裁：M2 = 分层渲染 + 回放码；M4 = lockstep 对拍 + 配对链路。可裁/可延：M2 兵种 12→10、导播 v0 延 M3 前半、地形/多 lane 变体 v0 可延 M3；M4 分享页降为静态最小版、Steam 页面后置至身份定案。外协窗口：M1 试产样件通过剪影辨识测试当日即下 M2 批量订单（外包交付 2–3 周，晚于此刻即压缩 M2 尾部）。</div>
+  </section>
+
+  <!-- ================= 07 风险 ================= -->
+  <section id="s7">
+    <div class="sec-head"><span class="sec-no">07</span><h2>风险、终止判据与关键决策</h2></div>
+    <hr class="sec-rule">
+
+    <h3><span class="h3-no">7.1</span>玩法与市场风险</h3>
+    <ul class="plain">
+      <li><span class="li-m">R1</span><span class="li-t">纯观战天花板</span> —— 米拉奇式循环的已知短板是看戏疲劳。对策：M1 即测试指令干预与构筑深度两条腿；<strong>终止判据：内部试玩 3 局以上意愿 &lt;50%，则先按本条做玩法级收窄——同题解谜练习模式（每日同阵的教学形态，不设排名，见 3.3）——并重测一轮；仍不达标则重开 Q5 身份决策（项目级收缩或终止，两级衔接见 7.2 Q5）</strong>。</li>
+      <li><span class="li-m">R2</span><span class="li-t">平衡工作量无底洞</span> —— 12+ 兵种 × 克制环 × 科技的组合爆炸。对策：平衡实验场从第 1 天运转，改动即回归。<strong>终止判据：M0 硬止损阈值触发且两轮优化仍不达标，则规模目标下调一档并重写 4.1；实验场吞吐低于 1 万场/小时（降规模口径，表 6-0——全规模对局按止损线约 530 场/小时，仅作质量校验、不计吞吐），则公开平衡报告降频为每周一刊。</strong></li>
+      <li><span class="li-m">R3</span><span class="li-t">赛道跟进</span> —— 玩法骨架易被模仿、工程链在开源后也无法构成秘密。对策：按 5.4/Q4 的定案，护城河重定义为内容产能（平衡流水线养出的兵种/情景迭代速度）+ 社区生态（开源实验场沉淀的 Mod、AI 代理与研究者）+ 打磨质量（三道生死题）+ 品牌（「每一场都能分享」的心智）；工程链开源提高的是跟进者的「抄得起但要重建整条链」的成本，而我们的先发迭代速度才是时间壁垒。<strong>判据：EA 首月若出现同机制竞品且其内容迭代速度反超，则加速 Mod 收录与每日内容节奏（应对而非终止）。</strong></li>
+      <li><span class="li-m">R4</span><span class="li-t">低模口碑</span> —— 低模 3D 可能被误读为「偷工」。对策：把面数省下的预算投给运镜、打击感与集群动画（涌动、波浪式溃逃），让「低模大规模」成为风格签名而非妥协。<strong>判据：M2 盲测叠加外部试玩口径下，风格负面提及率 &gt; 30%，则重审风格基调。</strong>产能与管线保障见 9.2。</li>
+      <li><span class="li-m">R5</span><span class="li-t">实时 lockstep 的体验约束</span> —— 帧同步要求输入在固定延迟窗口内到达，网络抖动会造成等待；万人同屏的命令流带宽也高于常规对局。对策：命令流压缩（混合部署把高价值决策显式化正是为此）、输入延迟自适应、断线重连用回放快照追帧——回放系统复用为网络容错件。<strong>终止判据：M4 局域网自动双端 lockstep 对拍 ≥ 2,000 局（可用无头批量执行）中 desync 局数占比 &gt; 0.1%（即 ≥ 3 局），或真人延迟体验不可接受，则互联网对战里程碑无限期推迟，产品定位收缩为异步竞技（每日同阵配对 + 种子对战）。</strong></li>
+      <li><span class="li-m">R6</span><span class="li-t">双仓边界与终止归宿</span> —— M0 新独立仓库与既有工作流仓的资产/纪律回流边界未定。对策：两层知识资产纪律照常回流（引擎无关教训入方法论层、Bevy 特定入引擎层，跨仓引用不复制正文）；任务台账随 M0 仓独立成册。<strong>判据：身份=终止时，模拟核心与实验场仍按开源实验向沉淀发布，M0 仓转归档、不并入工作流仓历史；归宿随身份决策一并落定。</strong></li>
+      <li><span class="li-m">R7</span><span class="li-t">身份悬挂期的沉没成本</span> —— 身份未定期间任何前置采购（外包、Steam 账号、后端）都是无回收保障支出。对策：悬挂期支出上限 = M0 三周工时 + 文档工时，此外一元不开销；首周降档规则补下一档——20h/周仍不可达则 M0 无限期挂起、回归工作流主线，0.20 窗口或资源好转时重启。<strong>判据：悬挂期实际开销超出上限即记台账，并在身份复议时如实计入。</strong></li>
+    </ul>
+
+    <h3><span class="h3-no">7.2</span>关键决策记录（已定案）</h3>
+    <ul class="plain">
+      <li><span class="li-m">Q1</span><span class="li-t">2D 阵图风 or 低模 3D？</span> —— <b>已定案：低模 3D。</b>理由见 3.1；M1 验收增加「低模士兵批量渲染验证」专项。</li>
+      <li><span class="li-m">Q2</span><span class="li-t">部署模式：局内经济流（米拉奇式）or 战前一次性摆阵（TABS 式）or 混合？</span> —— <b>已定案：混合。</b>基础兵种经济流 + 高阶兵种/科技/阵型战前配置，理由见 3.1；M1 内用 A/B 关卡验证比例。</li>
+      <li><span class="li-m">Q3</span><span class="li-t">实时对战要不要做、何时做？</span> —— <b>已定案：实时 lockstep</b>，确定性模拟即联机前置件、无需重建网络层，Windows 同构机器让帧同步绕开跨平台浮点风险；推进阶梯「单机 → 回放对拍 → 同机双客户端 → 局域网 → 互联网」，局域网落在 M4（表 6-1），互联网对战为 M4 后的独立里程碑（需先行验证匹配与重连，见 5.5）。</li>
+      <li><span class="li-m">Q4</span><span class="li-t">护城河与开源：怎么平衡？</span> —— <b>已定案：重定义护城河。</b>工程链开源后不可能构成秘密，护城河正式定义为由平衡流水线供养的内容产能 + 开源实验场沉淀的社区生态 + 三道生死题的打磨质量 + 「每一场都能分享」的品牌心智；开源本身转为获客与内容杠杆（Mod 收录流水线），商业化靠 Steam 买断 + 免费更新（对标 Mechabellum<sup><a href="#fn8">[8]</a></sup>）。详见 5.4。</li>
+      <li><span class="li-m">Q5</span><span class="li-t">立项身份：商业产品 or 试金石收缩？——何时决？</span> —— <b>已定案（2026-09-29 立项预验证 grill）：先 M0 预验证，后定身份。</b>M0 验收数据（<b>技术可行性输入</b>）产出并经独立复算后，连同非技术输入（首周实测工时、现金与预算、外部评审意见、0.20 窗口冲突）同场评审，再在「商业产品（本报告 26 周全案）/ 新试金石（按既有工作流选品标准收缩范围与规模）/ 终止」三选项间拍板；在此之前，本报告的全部商业承诺（Steam EA、外包预算、26 周排期）为候选方案而非既成决策（阅读约定见 01 章尾注）。<b>M0 时的身份结论为临时结论、可复议</b>：复议触发 = M1 生死题不达标（先按 R1 玩法级收窄重测一轮、仍败则重开本条——R1 收窄是玩法级、本条收缩是项目级，两级分开衔接）、M2 可读性盲测不达标、R5 联机判据触发、0.20 窗口开启。配套定案：M0 载体 = 新独立仓库（私有起步、保持可公开态，任务台账纪律随行，边界与归宿见 R6）；版本基线 Bevy 0.19（5.3）；基准机 A = 开发机本机（表 6-0）；M0 全职三周 + 首周投入校准降档规则（06；20h/周仍不可达则 M0 无限期挂起、回归工作流主线，见 R7）；收官序列「数据自含成档 → 独立复算 → V1.0 实测修订 → 身份决策评审」。挂起待决项（身份定案时一并回答）：商业目标与成功标准、EA 前预算（V0.7 移出的成本预算表届时恢复）、开源边界细则、Steam 主体与法务、外部评审与试玩人选、Bevy 0.20 处置（5.3）、基准机 B 获取方式与费用（表 6-0）、UGC/Mod 内容审核与授权条款（5.4 收录流水线与 5.5 方案上传的版权归属与审核口径）、每日同阵的用户身份基座（Steam 凭据 vs 自建账号，5.5）。</li>
+    </ul>
+  </section>
+
+  <!-- ================= 08 评测者视角 ================= -->
+  <section id="s8">
+    <div class="sec-head"><span class="sec-no">08</span><h2>评测者视角预演：优势、问题与生死题</h2></div>
+    <hr class="sec-rule">
+    <p>本章是立项期的敌意预演：假装评测已经出分，倒推哪里会被写进优点栏、哪里会被扣分。分类归属快的品类里，翻案很贵——预防比补救便宜。</p>
+
+    <h3><span class="h3-no">8.1</span>会被写进优点栏的（扬长）</h3>
+    <ul class="plain">
+      <li><span class="li-m">A1</span><span class="li-t">30 秒讲明白、80 小时摸不透</span> —— 「排兵，看万军互殴，一枚码发给朋友」。评测者最吃这种结构，是本品类祖传优势，守住。</li>
+      <li><span class="li-m">A2</span><span class="li-t">每一局都有故事</span> —— 溃逃、断后、翻盘的涌现戏剧是实况主的天然素材；把「可剪辑性」当设计目标，导播系统自动追高光本身就能成为评测亮点。</li>
+      <li><span class="li-m">A3</span><span class="li-t">尊重玩家时间</span> —— 单局 3–8 分钟、可倍速可跳过可只看集锦；评测扣分最狠的「流程注水」，本品类天生免疫。</li>
+      <li><span class="li-m">A4</span><span class="li-t">聪明设计会被专门写一段</span> —— 确定性回放、每日同阵配对天梯、平衡报告公开——评测者需要「值得一提的设计点」来组织文章，这些就是。</li>
+      <li><span class="li-m">A5</span><span class="li-t">规模奇观立住第一印象</span> —— 万人低模同屏，预告片第一秒就成立；截图传播力强。</li>
+    </ul>
+
+    <h3><span class="h3-no">8.2</span>会被扣分的地方（避短）</h3>
+    <ul class="plain">
+      <li><span class="li-m">C1</span><span class="li-t">「我赢了，但没有我」——能动性缺失，品类头号死因</span> —— 自动战斗做得越好玩家越像旁观者；米拉奇的乐趣高度压缩在出兵那 5% 的时间里。对策：把决策密度当核心指标——经济时机的博弈、每场 2–3 次干预的重量感、构筑的克制推演；宁可干预少而重，不要多而轻。</li>
+      <li><span class="li-m">C2</span><span class="li-t">万人混战不可读</span> —— 混沌不是乐趣，可读才是。对策：兵种剪影强区分、战线热力图与士气聚合信息层、关键事件自动慢镜头、战报时间线；评测者不会因你看懂而夸，一定因看不懂而骂。</li>
+      <li><span class="li-m">C3</span><span class="li-t">匀速混战 = 催眠</span> —— 全程均匀交换没有戏剧曲线。对策：设计「对峙—接触—高潮—溃败」的节奏（接战前的推进压迫感、崩溃的雪崩式连锁），导播系统 v0 落位 M2（表 6-1）。</li>
+      <li><span class="li-m">C4</span><span class="li-t">低模 + 自动战斗像「表格打架」</span> —— 打击感风险。对策：受击顿挫、击退、音效、尘土粒子作为 M1–M2 常驻打磨项，不是里程碑末尾补课；音频规格与验收见 9.1。</li>
+      <li><span class="li-m">C5</span><span class="li-t">「这不就是 XX 吗」</span> —— 第一印象归属风险。对策：预告片开头 5 秒立独有签名（万人 / 涌现溃逃 / 种子码三选一）。</li>
+      <li><span class="li-m">C6</span><span class="li-t">统计公平 ≠ 感知公平</span> —— 玩家被克制碾过时只觉得不公平。对策：出兵界面半显性反制提示、劣势方经济微加速的反超机制、战报解释死因（「你输在 12 秒那波忍者换家」）；接受「克制输」是设计的一部分。</li>
+      <li><span class="li-m">C7</span><span class="li-t">第 50 局和第 5 局有什么区别</span> —— 对称地图 + 固定兵种池的消耗速度远超开发速度。对策：地形/天候变体、非对称情景（守城、断后、遭遇战）、每日同阵、社区 Mod 兵种——本品类的内容靠变化结构而非堆量。</li>
+      <li><span class="li-m">C8</span><span class="li-t">多人冷启动死亡螺旋</span> —— 评测对「匹配不到人」零容忍。对策：发售期竞技主推异步（每日同阵配对 + 种子对战），实时对战定位为好友/局域网功能，天梯等在线人数过线再开（M4 后视数据）。</li>
+      <li><span class="li-m">C9</span><span class="li-t">性能承诺反噬</span> —— 「10 万单位」写进宣传就有人拿集显测。对策：规模分档并在画质预设明标「史诗档需独显」；评测机优先保证 1 万档完美。</li>
+      <li><span class="li-m">C10</span><span class="li-t">开源 + 确定性 = 作弊器温床</span> —— 模拟代码公开、帧同步双端全信息，求解器外挂技术上无门槛；而且异步同题模式首当其冲（任何人可用开源模拟器离线穷举）。对策：按模式分治——实时对战当「看得见全场的棋」设计，全信息对称消去信息差作弊，残余面为 AI 代打/求解器辅助（与棋类同级），以回放抽查与行为特征检测缓解、不承诺归零；每日同阵改为方案配对（你的方案对阵其他玩家的真实方案，同题不解无最优解可穷举，但仍可用开源模拟器离线筛选强势方案）；榜单只收相对战绩，服务端做方案格式校验与可疑度标记（如对称枚举检测），作弊面收窄到与棋类同级的可接受残余。</li>
+    </ul>
+
+    <h3><span class="h3-no">8.3</span>三道生死题与验收闭环</h3>
+    <p>评测分数基本由三道题决定，它们都不靠堆内容解决、靠打磨解决——且恰好都是 AI 辅助的弱项、人工迭代的强项，资源上必须提前留出「人肉打磨预算」。验收量表与口径：<strong>打击感试玩评分</strong>用 5 分量表（1 = 表格打架，3 = 反馈可感知，5 = 顶级动作游戏水准），评分人 = 开发者本人 + 外邀玩家（本人先评并写明关注点，避免外邀评分被引导），n ≥ 8；<strong>可读性盲测</strong>题面为「观看 3 分钟陌生战局后复述：谁在赢、为什么、转折点在哪」，由未接触本项目的测试者作答（n ≥ 10），两名独立判卷人按要点计分，要点命中率 ≥ 70% 通过；<strong>「想再来一局」</strong>以试玩后即时问卷统计（n ≥ 8）：</p>
+    <table class="tbl">
+      <thead><tr><th style="width:18%">生死题</th><th style="width:46%">考官视角的问题</th><th>验收闭环</th></tr></thead>
+      <tbody>
+        <tr><td class="em">能动性</td><td>战斗自动进行，玩家凭什么觉得是自己赢的？</td><td>M1「想再来一局」≥50% + 打击感试玩评分 ≥3.5/5；干预次数与重量感持续 A/B</td></tr>
+        <tr><td class="em">可读性</td><td>万人战场，玩家和观众能不能看懂？</td><td>M2 可读性盲测 ≥70%（未接触者看 3 分钟战局复述战况）；信息层与导播系统迭代</td></tr>
+        <tr><td class="em">手感</td><td>低模大规模，是「爽」还是「卡成 PPT 的蚂蚁」？</td><td>M1–M2 常驻打磨项；每轮性能回归 + 试玩评分双闸门</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 8-1</i> · 三道生死题与里程碑验收闭环</div>
+
+    <div class="note"><b>结论：</b>本章前两节的对策已回写进 06 的里程碑验收（M1 加打击感评分、M2 加可读性盲测）；C1/C2/C3 的解法指向同一件事——<b>让「看」本身成为玩法</b>，这是本章与 04 差异化章的接口：规模负责奇观，涌现负责故事，导播与信息层负责让奇观和故事被读懂。</div>
+  </section>
+
+  <!-- ================= 09 资源与产能 ================= -->
+  <section id="s9">
+    <div class="sec-head"><span class="sec-no">09</span><h2>资源与产能：音频与美术管线</h2></div>
+    <hr class="sec-rule">
+    <p>本章回应评审缺口：打击感的音频短板与 16 兵种美术产能由谁兑现。外包与素材价格为 2026-09 市价粗估（人民币），以实际报价为准。</p>
+
+    <h3><span class="h3-no">9.1</span>音频设计</h3>
+    <p>C4 已认定打击感一半来自音效，音频不是「后期配音」而是战斗反馈的主干。三层结构：</p>
+    <ul class="plain">
+      <li><span class="li-m">L1</span><span class="li-t">打击反馈层</span> —— 命中、格挡、击杀、倒地四件套；万人战场不逐单位发声：同类音效限并发（每类 3–5 路）、按冲突密度采样触发，听感上是「整体在响」而非「每个都在响」。</li>
+      <li><span class="li-m">L2</span><span class="li-t">战场氛围层</span> —— 战吼、金属交鸣、溃逃骚动的动态底床；混音响度跟随模拟层只读聚合参数（冲突密度、士气崩点）变化，不出声也出戏。</li>
+      <li><span class="li-m">L3</span><span class="li-t">指挥与结算层</span> —— 指令确认、经济 tick、高光慢镜、胜负 stinger；每日同阵配对的「开箱—对阵—揭晓」单独配一组反馈音。</li>
+    </ul>
+    <p>技术选型：kira（开源 crate）起步，复杂动态混音再评估 FMOD 中间件授权；<strong>音频系统不进模拟态</strong>，不承担确定性义务，可自由迭代。里程碑挂钩：M1 落 L1 基础四件套（打击感评分的音效子项同步开测），M2 落 L2 动态混音 v0 与集锦配乐，M3 极限模式用简化混音档。<strong>验收：关闭音效 A/B 对比下打击感评分差应 ≥ 1 分（5 分制）——音效价值必须可测量。</strong></p>
+
+    <h3><span class="h3-no">9.2</span>美术产能与资产管线</h3>
+    <p>低模 3D 定案后，美术是「规格问题」而非「产能无底洞」——规格先锁死，产能可外包、可预估：</p>
+    <table class="tbl">
+      <thead><tr><th style="width:20%">资产类</th><th style="width:48%">规格</th><th>产能与来源</th></tr></thead>
+      <tbody>
+        <tr><td class="em">兵种单位 ×16</td><td>士兵 ≤ 500 tris / 攻城与巨型 1–2k tris；单张 256–512 diffuse 贴图；骨骼 ≤ 16 骨；动画 ≤ 8 clips（待机/移动/攻击/受击/死亡等）；LOD 两档（近景全模 / 远景公告板或点阵）</td><td>外包 1,500–4,000 元/个；M1 先试产 2 个样件校准单件工时，M2 批量完形</td></tr>
+        <tr><td class="em">战场环境</td><td>地形 tile 3–5 种 + 建筑/装饰 10–15 件 + 天候变体 2 套（色调与粒子复用）</td><td>外包套件 1–3.5 万；天候为纯参数变化，不计新资产</td></tr>
+        <tr><td class="em">特效 VFX</td><td>命中/死亡/士气崩溃/指挥旗 8–12 种，GPU 粒子为主，极限模式降级为公告板</td><td>外包 0.5–1.5 万或引擎内置程序化</td></tr>
+        <tr><td class="em">UI 与图标</td><td>兵种图标 16 枚（剪影同源派生）、界面一套、克制关系网可视化</td><td>外包 + 工具生成混合</td></tr>
+      </tbody>
+    </table>
+    <div class="tbl-cap"><i>表 9-1</i> · 资产规格与产能</div>
+    <p>管线工具链以开源/免费为主：Blender 建模 → glTF 导出 → Bevy 资产热重载；贴图 Krita；版本管理 Git + LFS（注意 LFS 免费配额，超配走自托管或付费档；音频侧 kira 开源、FMOD 为商业授权，不与前者混称「免费」）；资产命名与面数/贴图预算写入提交校验脚本（超预算 CI 拒收——与性能回归同一套纪律）。<strong>验证节点：M1 两个试产样件必须通过「剪影辨识测试」（随机 5 帧截图 × ≥ 3 名判卷人，可辨兵种 ≥ 80%）与千人群演帧率实测，二者达标才批量投产。</strong></p>
+  </section>
+
+  <!-- ================= 附录 ================= -->
+  <section id="fn" class="colophon">
+    <div class="colo-t">APPENDIX · 资料来源与研究方法</div>
+    <ol class="src">
+      <li id="fn1"><span class="sn">[1]</span><span>Kongregate：Miragine War 页面（developer: mofunzone；Released: January 27, 2011；"two teams compete to outlast each other by deploying different unit types"）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn2"><span class="sn">[2]</span><span>百度百科「米拉奇战记」词条（上海幻隙网络科技；16 种兵种；红蓝两国领土争夺）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn3"><span class="sn">[3]</span><span>知乎：《这款 8 年前就令人沉迷的策略游戏，今天依然让人上瘾》（2018，「8 年前」指向 2010/2011 首发，与文献[1]一致）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn4"><span class="sn">[4]</span><span>App Store：米拉奇战记评分页（4.0 / 5，292 个评分，2026-09-29 抓取）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn5"><span class="sn">[5]</span><span>bilibili：《十年前神作米拉奇战记至今还在更新？》</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn6"><span class="sn">[6]</span><span>小米游戏中心：米拉奇战记玩家评论区（平衡性口碑）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn7"><span class="sn">[7]</span><span>TapTap：TABS 手游开发日志（联机大厅设计）；iyingdi：TABS 手游报道（沙雕外壳下的严谨底层）；机核：TABS 手游 2025-01-16 上线（PC 与手游时间差旁证）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn8"><span class="sn">[8]</span><span>18183 游戏资讯汇总（2026）：Mechabellum 好评率 84% 并推出免费版</span><a class="back" href="#s1">↩</a></li>
+      <li id="fn9"><span class="sn">[9]</span><span>TMTPost《中国小游戏的中场战事》（2026-06，引伽马数据：2025 年市场规模 535.35 亿元）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn10"><span class="sn">[10]</span><span>财联社（2025-07）：微信小游戏月活用户超 5 亿</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn11"><span class="sn">[11]</span><span>知乎专栏：《从 0 到 1 打造爆款微信小游戏：投放策略全解析》（2025-08，爆款 = 极简玩法 × 社交裂变 × 精准投放）</span><a class="back" href="#s2">↩</a></li>
+      <li id="fn12"><span class="sn">[12]</span><span>docs.rs/bevy_ecs：官方文档（"massively parallel, opinionated" ECS 设计目标）；bevy.org ECS 快速上手</span><a class="back" href="#s5">↩</a></li>
+      <li id="fn13"><span class="sn">[13]</span><span>bevy.org 官方文档与示例：Headless 模式（不带 RenderPlugin 的 MinimalPlugins + ScheduleRunnerPlugin 运行），用于无渲染模拟与专用服务器；另见 bevyengine/bevy GitHub Issue #3155（headless renderer 讨论）</span><a class="back" href="#s4">↩</a></li>
+      <li id="fn14"><span class="sn">[14]</span><span>bevyengine/bevy GitHub Issue #19504：0.16.0 ECS 性能回退报告（2025-06，已列入 0.16.2 修复；版本纪律的依据）</span><a class="back" href="#s5">↩</a></li>
+      <li id="fn15"><span class="sn">[15]</span><span>Unofficial Bevy Cheat Book：Browser (WebAssembly)；bevy.org WASM 环境配置</span><a class="back" href="#s5">↩</a></li>
+    </ol>
+
+    <h3 class="colo-t" style="margin-top:32px">REVISION · 修订记录</h3>
+    <table class="tbl">
+      <thead><tr><th style="width:12%">版本</th><th style="width:20%">日期</th><th>变更摘要</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">V0.1</td><td class="mono">2026-09-29</td><td>初稿：调研、定位、核心循环、四放大器、技术方案、里程碑、风险、附录。</td></tr>
+        <tr><td class="mono">V0.2</td><td class="mono">2026-09-29</td><td>平台收敛为 Windows 独占；重写「规模 = 爽感 × 差异化 × 引擎优势」论证；确定性策略随单平台简化。</td></tr>
+        <tr><td class="mono">V0.3</td><td class="mono">2026-09-29</td><td>定案低模 3D、混合部署、实时 lockstep、开源实验向；新增 5.4 开源策略；里程碑与风险对齐。</td></tr>
+        <tr><td class="mono">V0.4</td><td class="mono">2026-09-29</td><td>新增第 08 章评测者视角预演（A1–A5 / C1–C10 / 三道生死题）；验收项回写里程碑。</td></tr>
+        <tr><td class="mono">V0.5</td><td class="mono">2026-09-29</td><td>按审核报告整改：P0 全部 8 项（米拉奇年份、M0 可外推指标、吞吐口径、护城河重定义、每日同阵改配对、里程碑一致性、基准机与口径定义、排期重排）；P1 全部 9 项；文档工程 D 项（目录锚点、打印样式、脚注回链、修订记录等）。</td></tr>
+        <tr><td class="mono">V0.6</td><td class="mono">2026-09-29</td><td>新增第 09 章资源与产能（P2 首批三项）：EA 前现金预算表（A/B 双情景 + 回本锚点 + 决策门）、音频三层结构与可测量验收、美术资产规格与外包管线（表 9-2）；相关章节交叉引用对齐。</td></tr>
+        <tr><td class="mono">V0.7</td><td class="mono">2026-09-29</td><td>应用户要求移除成本预算表；第 09 章重编号（音频 9.1 / 美术 9.2），标题、目录与交叉引用同步。</td></tr>
+        <tr><td class="mono">V0.8</td><td class="mono">2026-09-29</td><td>全文口径校准为个人开发者：人力假设改为「1 人 + AI 辅助」并明确人力为第一约束，美术产能明确外包路线，评分人构成与签署栏改为最小治理结构（开发者自签 + 外部评审复核）。</td></tr>
+        <tr><td class="mono">V0.9</td><td class="mono">2026-09-29</td><td>立项预验证 grill 定案落档（七项）：①新增 7.2 Q5——先 M0 预验证后定身份，商业承诺降为候选方案，附挂起待决项清单；②版本基线 0.18→0.19（5.3）；③M0 口径按基准机 A 本机固化（表 6-0 型号落定 i5-12490F/32GB/RTX 3050；线程档位 1/3/6/12 实测 + 外推 16；止损阈值不放松、改 12 线程口径；克制表收 1 环——表 6-1、6.1、5.2 CI 矩阵同步）；④M0 载体（新独立仓库）/全职三周 + 首周校准降档/收官序列写入 06；⑤实验场吞吐补「降规模对局 + 全规模抽样对拍」口径，堵规模敏感失真（04）；⑥确定性纪律补 rustc 工具链钉版与超越函数禁入模拟态（5.2）；⑦状态改「立项预验证 · M0 先行，身份未定」，head 区陈旧版本号残留修正。M0 实测数据回写与初值替换顺延至 V1.0（收官修订）。</td></tr>
+        <tr><td class="mono">V0.9.1</td><td class="mono">2026-09-30</td><td>审核轮落实（plan-code-reviewer 裁决「有条件通过」：P0×3 + P1×11 + S×10 + N×3；P0 全改、P1/S 文档级全改、N-2 改，N-1 记档、N-3 市场数据刷新留 V1.0）。P0-1 M0 门禁三口径入表 6-0（tick 30Hz、单线程基线、帧预算分解常态 ≤8ms/极限 22+11ms）+ 6.1 换算公式与「止损通过 ≠ 极限十万保留」（4× vs ≥9× 缺口）+ 渲染腿失败后果；P0-2 降规模对局定义（每方 100 单位、≤1,800 ticks）+ 全规模抽样 ≥100 场/周 + R2 阈值标口径（全规模约 530 场/小时@止损线仅作质量校验）；P0-3 Q5 输入改「技术可行性 + 非技术输入同场评审」、身份结论临时可复议（M1 生死题出口复核；R1 玩法级收窄与 Q5 项目级收缩两级衔接）、挂起清单补 0.20 处置/基准机 B/UGC-Mod 审核授权/用户身份基座。P1：基准机 A 内存差异披露 + 16GB 下限档 M2 前补测、B 获取入挂起、M0 增内存验收⑥与 AI 池扩档重测、跨机 CI 档挂 M1、M2 增地形/寻路复测点、M3 增吞吐复测、新增 R6 双仓边界/R7 悬挂期成本上限、01 章候选方案阅读约定 + 5.4 候选标记、04 章补 4.1–4.4 编号（3.2 引用同步）、R5 desync 口径 ≥2,000 局、C10 残余作弊面如实化、M2/M4 关键路径与外协窗口；S×10 全改（E1 引用改文献[1]、签署栏自解释标签、财联社错字、①模拟单位数标注、单环定义、剪影测试判卷口径、竞技模式措辞、SIMD 与 5.2 对齐、M0⑤非单调注、LFS/FMOD 表述）；复核补遗（同日复核裁决「通过」后三处一致性修正）：M1 验收补模拟成本/吞吐复测点（对齐表 6-0 余量政策）、6.1 极限十万加速比 ≥9× 精确为 ≥9.1×（200ms÷22ms=9.09）、M2 可裁清单补「地形/多 lane 变体 v0 可延 M3」。</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="colo-t" style="margin-top:32px">SIGN-OFF · 评审签署</h3>
+    <table class="tbl">
+      <thead><tr><th style="width:25%">角色</th><th style="width:35%">签署</th><th>日期</th></tr></thead>
+      <tbody>
+        <tr><td class="em">开发者（本报告作者；平台与开源策略等候选条款的决策签署）</td><td>＿＿＿＿＿＿＿＿</td><td>＿＿＿＿＿＿</td></tr>
+        <tr><td class="em">外部评审（M0 阈值与基准口径复核、排期复核，可由资深开发者或社区技术顾问担任）</td><td>＿＿＿＿＿＿＿＿</td><td>＿＿＿＿＿＿</td></tr>
+      </tbody>
+    </table>
+    <p class="colo-meta" style="margin-top:12px">个人开发者项目：签署栏采用「开发者自签 + 一名外部评审复核」的最小治理结构；外部评审可延后至 M0 数据产出后再补。</p>
+    <div class="colo-meta">
+      研究方法：公开网络调研（竞品条目、平台评论区、引擎官方文档与 Issue 追踪），调研日期 2026-09-29。<br>
+      所有性能承诺为立项初值，以 M0 profiling 实测为准；本文档为前期策划稿（pre-production draft），立项身份待 M0 数据与独立复算后定（见 7.2 Q5），未经评审不得作为排期依据——M0 预验证排期例外，它本身即评审对象。
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
