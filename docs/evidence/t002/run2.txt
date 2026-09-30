@@ -1,0 +1,8 @@
+$ ./target/release/sim.exe --seed 42 --ticks 1800
+seed=42
+ticks=1800
+units=0
+final_tick=1800
+hash=0xd3b6408fd46c2008
+elapsed_ms=0
+REAL_EXIT=0

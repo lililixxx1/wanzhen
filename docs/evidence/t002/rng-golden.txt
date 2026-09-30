@@ -1,0 +1,136 @@
+T002 RNG/World 黄金值实测固化记录
+（纪律依据：bevy-ai-workflow 仓 PIT-M-002 教训——黄金值只许实测产出，禁止凭记忆或手算生成）
+================================================================
+
+生成流程：先实现 RNG/World（黄金断言以占位 0 写入）→ cargo test 实测打印实际值
+→ 独立 python 重实现对拍 → 回填断言 → 复跑全绿。
+黄金值固化落点：sim/src/rng.rs（golden_sequence_seed42_first8）、
+sim/src/world.rs（golden_hash_seed42_units0_1800ticks）。
+
+## 1) 实测打印（占位断言运行，失败消息输出实际值）
+命令：cargo test -p sim -j 3
+完整原始输出：
+----
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling serde_core v1.0.229
+   Compiling windows-link v0.2.1
+   Compiling windows-sys v0.61.2
+   Compiling indexmap v2.14.2
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling foldhash v0.2.0
+   Compiling bevy_macro_utils v0.19.1
+   Compiling hashbrown v0.16.1
+   Compiling serde v1.0.229
+   Compiling spin v0.10.1
+   Compiling bytemuck v1.25.2
+   Compiling crossbeam-utils v0.8.23
+   Compiling bevy_platform v0.19.1
+   Compiling derive_more v2.1.1
+   Compiling libm v0.2.16
+   Compiling typeid v1.0.3
+   Compiling disqualified v1.1.0
+   Compiling thiserror v2.0.21
+   Compiling erased-serde v0.4.10
+   Compiling bevy_utils v0.19.1
+   Compiling bevy_reflect_derive v0.19.1
+   Compiling bevy_ptr v0.19.1
+   Compiling glam v0.32.1
+   Compiling downcast-rs v2.0.2
+   Compiling pin-project-lite v0.2.17
+   Compiling futures-core v0.3.34
+   Compiling smallvec v1.16.2
+   Compiling futures-lite v2.6.1
+   Compiling crossbeam-queue v0.3.14
+   Compiling bevy_ecs_macro_logic v0.19.1
+   Compiling arrayvec v0.7.8
+   Compiling async-task v4.7.1
+   Compiling atomic-waker v1.1.2
+   Compiling bevy_tasks v0.19.1
+   Compiling bevy_ecs_macros v0.19.1
+   Compiling slotmap v1.1.1
+   Compiling concurrent-queue v2.5.0
+   Compiling bitflags v2.13.2
+   Compiling bumpalo v3.20.3
+   Compiling log v0.4.34
+   Compiling nonmax v0.5.5
+   Compiling fixedbitset v0.5.7
+   Compiling bevy_derive v0.19.1
+   Compiling either v1.18.0
+   Compiling itertools v0.14.0
+   Compiling const-fnv1a-hash v1.1.0
+   Compiling bevy_reflect v0.19.1
+   Compiling bevy_ecs v0.19.1
+   Compiling bevy_math v0.19.1
+   Compiling bevy_app v0.19.1
+   Compiling bevy_time v0.19.1
+   Compiling bevy_diagnostic v0.19.1
+   Compiling bevy_input v0.19.1
+   Compiling bevy_transform v0.19.1
+   Compiling bevy_internal v0.19.1
+   Compiling bevy v0.19.1
+   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 48.06s
+     Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
+
+running 8 tests
+test hash::tests::fnv1a_matches_published_ascii_vectors ... ok
+test world::tests::golden_hash_seed42_units0_1800ticks ... FAILED
+test rng::tests::golden_sequence_seed42_first8 ... FAILED
+test rng::tests::stats_bit32_ratio_50pct ... ok
+test rng::tests::stats_high4_bits_16_buckets_160k ... ok
+test world::tests::seed_sensitivity_42_vs_43 ... ok
+test world::tests::units_participate_in_hash ... ok
+test world::tests::replay_consistency_checkpoints_start_mid_end ... ok
+
+failures:
+
+---- world::tests::golden_hash_seed42_units0_1800ticks stdout ----
+
+thread 'world::tests::golden_hash_seed42_units0_1800ticks' (22496) panicked at sim\src\world.rs:91:9:
+assertion `left == right` failed: golden world hash mismatch (seed 42, 0 units, 1800 ticks)
+  left: 15255451774252490760
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- rng::tests::golden_sequence_seed42_first8 stdout ----
+
+thread 'rng::tests::golden_sequence_seed42_first8' (11508) panicked at sim\src\rng.rs:71:9:
+assertion `left == right` failed: golden sequence mismatch (seed 42, first 8 next_u64)
+  left: [1546998764402558742, 6990951692964543102, 12544586762248559009, 17057574109182124193, 18295552978065317476, 14199186830065750584, 13267978908934200754, 15679888225317814407]
+ right: [0, 0, 0, 0, 0, 0, 0, 0]
+
+
+failures:
+    rng::tests::golden_sequence_seed42_first8
+    world::tests::golden_hash_seed42_units0_1800ticks
+
+test result: FAILED. 6 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p sim --lib`
+----
+
+## 2) 独立复算对拍（python 重实现 SplitMix64 + Xoshiro256** + FNV-1a 折叠，不引用 Rust 代码）
+结果：
+  first8（seed 42）与 Rust 实测逐值一致（8/8）：
+    [1546998764402558742, 6990951692964543102, 12544586762248559009,
+     17057574109182124193, 18295552978065317476, 14199186830065750584,
+     13267978908934200754, 15679888225317814407]
+  World 黄金哈希（seed 42, units 0, ticks 1800；全新实例、恰好 1800 次消耗）：
+    python 复算 = 15255451774252490760 = 0xd3b6408fd46c2008
+    Rust 实测   = 15255451774252490760 = 0xd3b6408fd46c2008
+    match = True
+  复算备注：首轮 python 复算误用「打印 first8 后的同一 RNG 实例」续跑（共 1808 次
+  消耗）得 0x64a9bd58619f5433 不符——属复算脚本状态复用失误，非 Rust 实现问题；
+  改为全新实例后完全一致（match=True）。Rust 侧实现未因此做任何改动。
+
+## 3) 二进制路径互证（release 二进制 stdout 与单测黄金值一致）
+命令：./target/release/sim.exe --seed 42 --ticks 1800
+输出（全文见 run1.txt）：hash=0xd3b6408fd46c2008 == 单测 GOLDEN_HASH
+
+## 4) FNV-1a 算法自检
+hash.rs 单测 fnv1a_matches_published_ascii_vectors 的期望值以 python 独立计算对拍：
+FNV-1a64("a") = 0xaf63dc4c8601ec8c，与测试断言一致。
+
+## 5) 终态
+回填后 cargo test -p sim -j 3：8/8 全绿（全文见 test.txt），含黄金值两测。

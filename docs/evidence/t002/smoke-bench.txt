@@ -1,0 +1,10 @@
+$ ./target/release/sim.exe --seed 42 --ticks 1800 --units 10000
+seed=42
+ticks=1800
+units=10000
+final_tick=1800
+hash=0x3c4d432ca25c5ef8
+elapsed_ms=18
+REAL_EXIT=0
+
+判定口径：stderr elapsed_ms < 1000 ms 即通过（任务卡验收③，release，能力烟雾非正式量测）

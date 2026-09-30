@@ -1,0 +1,27 @@
+## 1) run1 vs run2 stdout 逐字节对拍
+（剔除 elapsed_ms 行后对两份完整记录做 cmp——该行是壁钟计时，属非确定性内容，其余必须逐字节一致）
+$ cmp <(grep -v "^elapsed_ms=" docs/evidence/t002/run1.txt) <(grep -v "^elapsed_ms=" docs/evidence/t002/run2.txt)
+cmp 结果：逐字节一致（退出码 0，无差异输出）
+
+$ diff <(grep -v "^elapsed_ms=" docs/evidence/t002/run1.txt) <(grep -v "^elapsed_ms=" docs/evidence/t002/run2.txt) && echo DIFF_EXIT=0 || echo DIFF_EXIT=$?
+DIFF_EXIT=0（无差异）
+
+## 2) 两次运行 hash 行
+run1:
+hash=0xd3b6408fd46c2008
+run2:
+hash=0xd3b6408fd46c2008
+
+## 3) seed 43 对照（同参数，哈希必须不同）
+$ ./target/release/sim.exe --seed 43 --ticks 1800
+seed=43
+ticks=1800
+units=0
+final_tick=1800
+hash=0xa81b59deeb98e700
+elapsed_ms=0
+REAL_EXIT=0
+
+## 4) 结论
+seed42_hash=0xd3b6408fd46c2008
+seed43_hash=0xa81b59deeb98e700
