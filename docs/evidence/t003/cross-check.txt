@@ -1,0 +1,48 @@
+## 1) 两次独立进程运行（stdout 落 /tmp 原始文件，stderr 分离；两进程相互独立）
+$ ./target/release/sim.exe --seed 42 --dump-formation > /tmp/snap42a.out 2>/tmp/snap42a.err
+run1 REAL_EXIT=0（stderr: elapsed_ms=0）
+$ ./target/release/sim.exe --seed 42 --dump-formation > /tmp/snap42b.out 2>/tmp/snap42b.err
+run2 REAL_EXIT=0（stderr: elapsed_ms=0）
+
+## 2) 逐字节对拍
+$ cmp /tmp/snap42a.out /tmp/snap42b.out
+cmp：逐字节一致，REAL_EXIT=0
+$ diff /tmp/snap42a.out /tmp/snap42b.out
+diff：无差异，REAL_EXIT=0
+
+## 3) 布阵快照哈希行（tick 0，两进程一致）
+hash=0x22bce4da752220de
+hash=0x22bce4da752220de
+
+## 4) seed 43 对照（同参数，快照必须不同）
+$ ./target/release/sim.exe --seed 43 --dump-formation > /tmp/snap43.out 2>/dev/null
+run43 REAL_EXIT=0
+seed43 hash:
+hash=0x70f65c2f7f585cad
+$ cmp /tmp/snap42a.out /tmp/snap43.out
+/tmp/snap42a.out /tmp/snap43.out differ: byte 7, line 1
+cmp REAL_EXIT=1（预期不同）
+$ diff /tmp/snap42a.out /tmp/snap43.out | head -8
+1c1
+< seed=42
+---
+> seed=43
+5,6c5,6
+< hash=0x22bce4da752220de
+< u0 red heavyknight x=3435973836
+---
+seed42 vs seed43 差异行计数：120（= 60 行变化 × 2：seed 行 + hash 行 + 58 单位行；u1/u31 两行 x 值巧合相同——两 seed 均把 militia 洗到队位 1 且 x_1 = r_0-(r_0+r_1+GAP) 同为 -0.9 m，非缺陷）
+
+## 5) T002 回归锚（CLI 口径）：--units 0 --seed 42 --ticks 1800 必须仍为 0xd3b6408fd46c2008
+$ ./target/release/sim.exe --units 0 --seed 42 --ticks 1800
+seed=42
+ticks=1800
+units=0
+final_tick=1800
+hash=0xd3b6408fd46c2008
+REAL_EXIT=0
+
+## 6) 结论
+seed42 布阵快照哈希 = 0x22bce4da752220de（两次独立进程 stdout 逐字节一致）
+seed43 布阵快照哈希 = 0x70f65c2f7f585cad（与 seed42 不同；u0 heavyknight→archer，洗牌生效）
+T002 锚（units=0, 1800 ticks）= 0xd3b6408fd46c2008 原值保持（D4 折叠扩展未影响 units=0 路径）

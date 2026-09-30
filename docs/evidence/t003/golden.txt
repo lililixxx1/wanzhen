@@ -1,0 +1,40 @@
+# T003 新黄金值实测固化过程（PIT-M-002 流程：占位 0 → 实测 → 回填 → 复跑全绿）
+
+## 1) 占位运行（断言 GOLDEN_HASH=0，失败信息给出实测值；lib 测试路径）
+代码状态：const GOLDEN_HASH: u64 = 0;（占位）
+$ cargo test -p sim -j 3 golden_deploy  （输出摘录）
+----
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... FAILED
+thread panicked: assertion `left == right` failed: golden deploy hash mismatch (default comp, seed 42, 1800 ticks)
+  left: 17489830120905256261
+  right: 0
+----
+
+## 2) release CLI 独立复测（同路径：默认构成 deploy + 1800 ticks，与测试路径交叉验证）
+$ cargo build -p sim --release -j 3   （REAL_EXIT=0，见 build-release.txt）
+$ ./target/release/sim.exe --seed 42
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0xf2b85bd4727c2d45
+REAL_EXIT=0
+CLI hash=0xf2b85bd4727c2d45 == 17489830120905256261（python 换算核验：两路径逐位一致）
+python 核验: 0xf2b85bd4727c2d45 = 17489830120905256261 == 17489830120905256261 → True
+
+## 3) 回填
+const GOLDEN_HASH: u64 = 17489830120905256261; // 0xf2b85bd4727c2d45（默认构成 deploy、seed 42、1800 ticks 终局哈希）
+
+## 4) 回填后复跑（全绿证据见 test.txt；此处摘录该测试行）
+$ cargo test -p sim -j 3  （输出摘录）
+----
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+REAL_EXIT=0
+----
+
+## 5) 附：布阵快照哈希（tick 0）与 T002 锚核验
+布阵快照（--dump-formation, seed 42）hash = 0x22bce4da752220de（见 deploy-snap1/2.txt、cross-check.txt）
+T002 锚（--units 0 --seed 42 --ticks 1800）= 0xd3b6408fd46c2008 原值保持（见 cross-check.txt §5）

@@ -1,0 +1,39 @@
+$ cargo test -p sim -j 3
+   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+     Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
+
+running 17 tests
+test hash::tests::fnv1a_matches_published_ascii_vectors ... ok
+test rng::tests::golden_sequence_seed42_first8 ... ok
+test world::tests::deploy_mirror_symmetry_default_comp ... ok
+test units::tests::fixed_point_constants_selfcheck ... ok
+test world::tests::deploy_deterministic_same_seed_differs_across_seeds ... ok
+test world::tests::full_speed_advance_exact_linear ... ok
+test world::tests::deploy_two_unit_positions_match_formula ... ok
+test world::tests::contact_stop_stable_at_radius_sum ... ok
+test units::tests::counter_table_3x3_exhaustive_and_armor_classification ... ok
+test world::tests::friendly_units_never_interpenetrate_and_queue_behind_stopped_front ... ok
+test rng::tests::stats_bit32_ratio_50pct ... ok
+test rng::tests::stats_high4_bits_16_buckets_160k ... ok
+test world::tests::golden_hash_seed42_units0_1800ticks ... ok
+test world::tests::seed_sensitivity_42_vs_43 ... ok
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test world::tests::units_participate_in_hash ... ok
+test world::tests::replay_consistency_checkpoints_start_mid_end ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running unittests src\main.rs (target\debug\deps\sim-57316e9536b4060f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests sim
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+REAL_EXIT=0

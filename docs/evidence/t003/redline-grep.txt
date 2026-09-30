@@ -1,0 +1,33 @@
+## 模拟态红线 grep 复核（报告 5.2 / AGENTS.md 硬约束 4）
+范围：sim/src 全部（units/world/hash/rng/lib 为模拟态；main.rs 外壳允许 Instant）
+方法：python 剥离注释（//、///、/* */）与字符串字面量后仅对代码 token 正则扫描，
+避免文档注释中「0.05 m」等十进制名义值写法造成的噪声；每条附命中行原文。
+
+## 1) 浮点类型/小数字面量（代码 token，预期 0 命中）
+代码 token 正则：/\b(f32|f64|[0-9]+\.[0-9])\b/
+（0 命中）
+
+## 2) 超越函数（预期 0 命中）
+代码 token 正则：/\b(sin|cos|tan|asin|acos|atan|sqrt|powf|powi|exp|ln|log)\b/
+（0 命中）
+
+## 3) 浮点 as 转换（预期 0 命中）
+代码 token 正则：/as\s+(f32|f64)/
+（0 命中）
+
+## 4) HashMap/迭代序（预期 0 命中）
+代码 token 正则：/\b(HashMap|HashSet)\b|\.keys\(\)|\.values\(\)/
+（0 命中）
+
+## 5) 挂钟时间源（全量 grep 含注释；命中应仅 main.rs 外壳）
+$ grep -rnE "Instant|SystemTime" sim/src --include=*.rs
+C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:4: //! 壁钟计时（Instant）只存在于本外壳，不进模拟态。
+C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:8: use std::time::Instant;
+C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:133: let start = Instant::now();
+
+## 结论
+模拟态代码（units/world/hash/rng/lib）无浮点类型与小数字面量、无超越函数、
+无浮点 as 转换、无 HashMap/迭代序依赖（world/units 遍历一律索引序 for）；
+Instant 仅存在于 main.rs 外壳。模拟态数值一律定点整数表达式（Q32.32 / Q16.16），
+注释中的 0.05 m 等为十进制名义值说明，非代码字面量。
+另：`as` 整型转换仅限 u8/usize/u64（判别值折叠与哈希字节化），无跨类型窄化风险路径。

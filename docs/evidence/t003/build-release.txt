@@ -1,0 +1,4 @@
+$ cargo build -p sim --release -j 3
+   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+    Finished `release` profile [optimized] target(s) in 0.91s
+REAL_EXIT=0
