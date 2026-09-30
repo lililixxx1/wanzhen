@@ -24,7 +24,7 @@
 
 ## 常用命令
 
-- `cargo check --workspace` — 每次代码变更的门禁
+- `cargo check --workspace -j 3` — 每次代码变更的门禁（**cargo 编译并行 ≤3、注意内存**——owner 2026-09-30 指令；量测与 doctest 门禁期间机器须空闲独占，避免负载敏感假红，见 docs/evidence 经验）
 - `cargo run -p sim --release` — headless 模拟入口（骨架期仅验证工具链）
 - M0 验收量测命令随量测套件任务卡（taskset/t007-bench-suite.md）落地后登记于此
 

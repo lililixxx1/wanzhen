@@ -22,3 +22,4 @@
 
 | 编号 | 任务 | 类型 | 一次通过 | 返工次数 | 耗时 | 原因 | 证据 |
 |---|---|---|---|---|---|---|---|
+| T001 | 仓库骨架搭建与台账启用（预备周；taskset/t001-skeleton.md）：AGENTS.md 万阵版 + 报告 V0.9.1 收编 docs/（仓外源字节一致 85984）+ 台账新册 + Cargo workspace（sim headless）+ rust-toolchain 钉版 1.98.1 + git bot 身份 + 私有远程首推 | 骨架 | 否 | 2 | ≈150 min（含三轮执行中断重启） | 返工 2 如实计：①首轮 check 失败——rustup 1.98.1 工具链「安装被中断」损坏（会话中断连锁的次生灾害），修复安装后过；②二轮 check 退出码 0 但带 1 条 manifest 警告（member 级 default-features=false 被 workspace 级忽略→sim 误拉全量 bevy），修正 workspace 级声明后三轮 0 警告 23.2s。环境教训：执行者后台 agent 三次被用户消息中断连带杀除——长命令改由主会话分段执行；doctest/量测门禁负载敏感（并发 bevy 编译曾致另一仓门禁假红挂死），门禁须空闲独占 + cargo -j 3（owner 2026-09-30 指令入 AGENTS.md） | 首提交 707cf75（含三轮 check 证据档）+ 远程 lililixxx1/wanzhen master 核对一致 |
