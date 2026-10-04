@@ -7,20 +7,40 @@
 //! 双方镜像同清单）→ `run_battle(--ticks)` 收束 → stdout 打印 BattleLog 固定
 //! 8 行；`--dump-final-units` 可组合。与 `--units` / `--dump-formation` 互斥
 //! （stderr + usage + exit 2）。非 battle 路径输出逐字节不变（黄金锚证据链依赖）。
+//!
+//! T006 扩展（D6/D7）：
+//! - `--threads <usize>`（默认 1）：线程档位；`0` 或 `>1024` → stderr + usage +
+//!   exit 2。>1 时建 [`sim::pool::ThreadPool`] 传 `Some`，作用域包住整个模拟段
+//!   后 drop。与 `--comp/--units/--battle/--dump-*` 均可组合（无互斥）。
+//!   **stdout 五行摘要 / BattleLog 8 行输出格式零变化**（黄金锚 diff 链依赖）；
+//!   `threads=N` 打 stderr（与 elapsed_ms 同侧）。
+//! - `--hash-samples <t1,t2,...>`：逗号分隔 u64，**必须严格升序**（重复/非升序/
+//!   解析失败 → exit 2）；含 0 合法（= 布阵快照哈希）。**与 `--battle` 互斥**
+//!   （exit 2；BattleLog 已含终局 final_hash）。仅作用非 battle run 路径：分段
+//!   推进（段边界 = 采样点，每段一次 run_with），每达点向 stdout 打一行
+//!   `sample=<tick> hash=0x{:016x}`（打印在五行摘要之前，时序自然）。不用该
+//!   flag 时输出零变化。采样点 > `--ticks` → exit 2（严格解析口径）。
 
 use std::env;
 use std::process::ExitCode;
 use std::time::Instant;
 
+use sim::pool::ThreadPool;
 use sim::units::{kind_from_id, UnitKind};
 use sim::world::{BattleLog, World, DEFAULT_COMPOSITION};
 
 const DEFAULT_SEED: u64 = 42;
 const DEFAULT_TICKS: u64 = 1800;
+/// 线程档位合法域上限（D6：>1024 → exit 2）。
+const MAX_THREADS: usize = 1024;
 
 struct Args {
     seed: u64,
     ticks: u64,
+    /// `--threads`（T006/D6）：线程档位，默认 1（= 串行 None 路径）。
+    threads: usize,
+    /// `--hash-samples`（T006/D7）：严格升序采样 tick 列表（None = 不采样）。
+    hash_samples: Option<Vec<u64>>,
     /// `--units` 显式给出时的值（裸单位路径，保留 T002 语义）。
     units: Option<usize>,
     /// `--comp` 显式给出时的值（布阵路径）。
@@ -84,10 +104,32 @@ fn parse_comp(raw: &str) -> Result<Vec<(UnitKind, usize)>, String> {
     Ok(out)
 }
 
+/// 解析 `--hash-samples`（D7）：逗号分隔 u64，**必须严格升序**（重复/非升序/
+/// 解析失败 → Err，exit 2）；含 0 合法。
+fn parse_hash_samples(raw: &str) -> Result<Vec<u64>, String> {
+    let mut out: Vec<u64> = Vec::new();
+    for part in raw.split(',') {
+        let t: u64 = part
+            .parse()
+            .map_err(|_| format!("invalid --hash-samples tick: '{part}'"))?;
+        if let Some(&last) = out.last() {
+            if t <= last {
+                return Err(format!(
+                    "--hash-samples must be strictly ascending: {t} follows {last}"
+                ));
+            }
+        }
+        out.push(t);
+    }
+    Ok(out)
+}
+
 /// 手写解析（零依赖）：未知参数 / 缺值 / 解析失败 → Err（stderr 报错，exit code 2）。
 fn parse_args(argv: &[String]) -> Result<Args, String> {
     let mut seed = DEFAULT_SEED;
     let mut ticks = DEFAULT_TICKS;
+    let mut threads = 1usize;
+    let mut hash_samples: Option<Vec<u64>> = None;
     let mut units: Option<usize> = None;
     let mut comp: Option<Vec<(UnitKind, usize)>> = None;
     let mut battle = false;
@@ -103,6 +145,13 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
         match name {
             "--seed" => seed = parse_num(take_value(argv, &mut i, inline, "--seed")?, "--seed")?,
             "--ticks" => ticks = parse_num(take_value(argv, &mut i, inline, "--ticks")?, "--ticks")?,
+            "--threads" => {
+                threads = parse_num(take_value(argv, &mut i, inline, "--threads")?, "--threads")?
+            }
+            "--hash-samples" => {
+                hash_samples =
+                    Some(parse_hash_samples(take_value(argv, &mut i, inline, "--hash-samples")?)?)
+            }
             "--units" => {
                 units = Some(parse_num(take_value(argv, &mut i, inline, "--units")?, "--units")?)
             }
@@ -113,6 +162,10 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
             _ => return Err(format!("unknown argument: '{raw}'")),
         }
         i += 1;
+    }
+    // T006/D6 线程档位合法域：1..=1024（0 或 >1024 → exit 2）。
+    if threads == 0 || threads > MAX_THREADS {
+        return Err(format!("--threads must be in 1..={MAX_THREADS}, got {threads}"));
     }
     if units.is_some() && comp.is_some() {
         return Err("--units and --comp are mutually exclusive".to_string());
@@ -125,9 +178,25 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
     if battle && dump_formation {
         return Err("--battle and --dump-formation are mutually exclusive".to_string());
     }
+    // T006/D7 互斥：--hash-samples × --battle（BattleLog 已含终局 final_hash）。
+    if battle && hash_samples.is_some() {
+        return Err("--hash-samples and --battle are mutually exclusive".to_string());
+    }
+    // T006/D7 严格解析口径：采样点超出 --ticks 无段可跑 → exit 2。
+    if let Some(samples) = &hash_samples {
+        if let Some(&last) = samples.last() {
+            if last > ticks {
+                return Err(format!(
+                    "--hash-samples tick {last} exceeds --ticks {ticks}"
+                ));
+            }
+        }
+    }
     Ok(Args {
         seed,
         ticks,
+        threads,
+        hash_samples,
         units,
         comp,
         battle,
@@ -143,10 +212,15 @@ fn main() -> ExitCode {
         Err(msg) => {
             eprintln!("sim: {msg}");
             eprintln!(
-                "usage: sim.exe [--seed <u64>] [--ticks <u64>] ([--comp <kind:count,...>] | \
+                "usage: sim.exe [--seed <u64>] [--ticks <u64>] [--threads <usize>] \
+                 [--hash-samples <u64,u64,...>] ([--comp <kind:count,...>] | \
                  [--units <usize>]) [--battle] [--dump-formation] [--dump-final-units] \
-                 (--flag value or --flag=value; defaults: seed=42 ticks=1800 \
+                 (--flag value or --flag=value; defaults: seed=42 ticks=1800 threads=1 \
                  comp=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5; \
+                 --threads: worker thread tier 1..=1024, 1 = serial (stdout identical); \
+                 --hash-samples: print sample=<tick> hash per strictly-ascending tick \
+                 (0 = formation snapshot) before the summary, run-path only, mutually \
+                 exclusive with --battle; \
                  --battle: run a battle to extinction or tick cap and print BattleLog (8 lines), \
                  mutually exclusive with --units and --dump-formation; values are decimal)"
             );
@@ -154,19 +228,24 @@ fn main() -> ExitCode {
         }
     };
 
+    // T006/D6：threads > 1 时建持久线程池，作用域包住整个模拟段后 drop
+    // （默认 1 = None 串行路径；两档共享同一两阶段代码路径，stdout 逐字节一致）。
+    let _pool = (args.threads > 1).then(|| ThreadPool::new(args.threads));
+    let pool = _pool.as_ref();
+
     let start = Instant::now();
     // 对局路径（T005/D6）：deploy 构战（--comp 或默认构成，双方镜像同清单）
     // → run_battle 收束（cap = --ticks，默认 1800 = TICK_CAP_REDUCED 口径）
     // → stdout 打印 BattleLog 固定 8 行（Display，确定性内容）；
     // --dump-final-units 可组合（终局后按现有格式逐单位打印）。
-    // --units / --dump-formation 已被 parse_args 互斥拒绝。
+    // --units / --dump-formation / --hash-samples 已被 parse_args 互斥拒绝。
     if args.battle {
         let comp: Vec<(UnitKind, usize)> = match &args.comp {
             Some(c) => c.clone(),
             None => DEFAULT_COMPOSITION.to_vec(),
         };
         let mut world = World::deploy(args.seed, &comp);
-        let outcome = world.run_battle(args.ticks);
+        let outcome = world.run_battle_with(args.ticks, pool);
         let log = BattleLog {
             seed: args.seed,
             red_composition: comp.clone(),
@@ -187,6 +266,7 @@ fn main() -> ExitCode {
                 );
             }
         }
+        eprintln!("threads={}", args.threads);
         eprintln!("elapsed_ms={}", start.elapsed().as_millis());
         return ExitCode::SUCCESS;
     }
@@ -200,6 +280,7 @@ fn main() -> ExitCode {
 
     if args.dump_formation {
         // 布阵快照：tick 0、不跑 tick。五行摘要（hash 为布阵快照哈希）+ 每单位一行，全走 stdout。
+        // （--hash-samples 仅作用 run 路径，此路径不生效——D7。）
         println!("seed={}", args.seed);
         println!("ticks={}", args.ticks);
         println!("units={}", world.unit_count());
@@ -214,12 +295,31 @@ fn main() -> ExitCode {
                 unit.x
             );
         }
+        eprintln!("threads={}", args.threads);
         let elapsed = start.elapsed();
         eprintln!("elapsed_ms={}", elapsed.as_millis());
         return ExitCode::SUCCESS;
     }
 
-    world.run(args.ticks);
+    // T006/D7：分段推进（段边界 = 采样点，每段一次 run_with），每达点打一行
+    // sample=<tick> hash=...（stdout，在五行摘要之前）。不用 flag 时零变化。
+    match &args.hash_samples {
+        None => world.run_with(args.ticks, pool),
+        Some(samples) => {
+            let mut current: u64 = 0;
+            for &s in samples {
+                if s > current {
+                    world.run_with(s - current, pool);
+                    current = s;
+                }
+                // s == 0（或与当前 tick 重合的起点）：布阵快照哈希，无需推进。
+                println!("sample={} hash=0x{:016x}", s, world.state_hash());
+            }
+            if current < args.ticks {
+                world.run_with(args.ticks - current, pool);
+            }
+        }
+    }
     let elapsed = start.elapsed();
 
     // stdout：仅确定性五行（跨进程逐字节 diff 用）。
@@ -244,7 +344,8 @@ fn main() -> ExitCode {
         }
     }
 
-    // stderr：壁钟计时（仅外壳，不进模拟态）。
+    // stderr：线程档位（D6）+ 壁钟计时（仅外壳，不进模拟态）。
+    eprintln!("threads={}", args.threads);
     eprintln!("elapsed_ms={}", elapsed.as_millis());
 
     ExitCode::SUCCESS

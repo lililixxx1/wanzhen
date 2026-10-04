@@ -1,0 +1,3 @@
+$ cargo check --workspace -j 3
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
+REAL_EXIT=0

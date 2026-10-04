@@ -1,0 +1,9 @@
+fullscale REAL_EXIT=0 watchdog_wall_ms=1017140
+seed=42
+ticks=14400
+units=9959
+final_tick=14400
+hash=0x29980473140ed39e
+---- stderr ----
+threads=12
+elapsed_ms=1017022

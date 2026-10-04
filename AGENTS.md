@@ -26,6 +26,7 @@
 
 - `cargo check --workspace -j 3` — 每次代码变更的门禁（**cargo 编译并行 ≤3、注意内存**——owner 2026-09-30 指令；量测与 doctest 门禁期间机器须空闲独占，避免负载敏感假红，见 docs/evidence 经验）
 - `cargo run -p sim --release` — headless 模拟入口（骨架期仅验证工具链）
+- `cargo run -p sim --release -- [--comp <kind:count,...> | --units <N>] [--ticks <N>] [--seed <u64>] [--threads <1..=1024>] [--hash-samples <t1,t2,...>] [--battle]` — 对局入口（T006 起）：`--threads` 线程档位（默认 1=串行，stdout 与线程数逐字节无关，`threads=N` 与耗时同打 stderr）；`--hash-samples` 严格升序采样 tick 列表（0=布阵快照哈希；仅 run 路径，×`--battle` 互斥、超 `--ticks` 均 exit 2）
 - M0 验收量测命令随量测套件任务卡（taskset/t007-bench-suite.md）落地后登记于此
 
 ## 知识资产纪律

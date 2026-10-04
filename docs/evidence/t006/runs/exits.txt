@@ -1,0 +1,17 @@
+1k seed=42 threads=1 REAL_EXIT=0
+1k seed=42 threads=3 REAL_EXIT=0
+1k seed=42 threads=6 REAL_EXIT=0
+1k seed=42 threads=12 REAL_EXIT=0
+1k seed=43 threads=1 REAL_EXIT=0
+1k seed=43 threads=3 REAL_EXIT=0
+1k seed=43 threads=6 REAL_EXIT=0
+1k seed=43 threads=12 REAL_EXIT=0
+10k seed=42 threads=1 REAL_EXIT=0
+10k seed=42 threads=3 REAL_EXIT=0
+10k seed=42 threads=6 REAL_EXIT=0
+10k seed=42 threads=12 REAL_EXIT=0
+10k seed=43 threads=1 REAL_EXIT=0
+10k seed=43 threads=3 REAL_EXIT=0
+10k seed=43 threads=6 REAL_EXIT=0
+10k seed=43 threads=12 REAL_EXIT=0
+fullscale REAL_EXIT=124 watchdog_wall_ms=600317

@@ -1,0 +1,11 @@
+sample=0 hash=0x4ceb228fcfdf7c26
+sample=1800 hash=0xd41905109cdd83c0
+sample=4000 hash=0x6febc345b7f10dfe
+sample=8000 hash=0x2b8d5600b2d05988
+sample=11000 hash=0x7ac6a95765e6800f
+sample=14400 hash=0xdf841544c44ae1e3
+seed=42
+ticks=14400
+units=963
+final_tick=14400
+hash=0xdf841544c44ae1e3

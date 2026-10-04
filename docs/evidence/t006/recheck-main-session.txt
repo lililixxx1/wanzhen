@@ -1,0 +1,29 @@
+# T006 主会话复核记录（独立复现，2026-10-04）
+
+## 并行黄金交叉（--battle × threads）
+```
+$ ./target/release/sim.exe --battle --threads 12   # → final_hash
+final_hash=0x958c5938c8682529
+$ ./target/release/sim.exe --battle                # threads=1
+final_hash=0x958c5938c8682529   # 双档逐位 = T004 黄金锚，run_battle_with 并行路径零语义漂移
+```
+
+## CLI 错误路径（4 项全 exit 2）
+```
+$ sim --hash-samples 1,2 --battle   → REAL_EXIT=2（×--battle 互斥）
+$ sim --hash-samples 5,5 --ticks 10  → REAL_EXIT=2（非严格升序）
+$ sim --hash-samples 20 --ticks 10   → REAL_EXIT=2（采样点超 ticks）
+$ sim --threads 0                     → REAL_EXIT=2（线程域 1..=1024）
+```
+
+## 默认路径回归（stdout 零变化）
+```
+$ sim（默认构成 seed42 1800 ticks）→ hash=0x958c5938c8682529（锚原值）
+```
+
+## 门禁复核（主会话独立重跑）
+```
+cargo check --workspace -j 3 → 0 警告 REAL_EXIT=0（check.txt）
+cargo test -p sim -j 3       → 35/35 REAL_EXIT=0（test.txt）
+16 局矩阵跨线程 diff          → 12/12 identical 零 mismatch（matrix-summary.txt）
+```

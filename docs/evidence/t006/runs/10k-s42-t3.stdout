@@ -1,0 +1,9 @@
+sample=0 hash=0xb805e4c7869c5250
+sample=100 hash=0x15d5db42f4f25877
+sample=200 hash=0xe9eb5136d8e4a6a8
+sample=300 hash=0x9e17408bc4b7b909
+seed=42
+ticks=300
+units=10000
+final_tick=300
+hash=0x9e17408bc4b7b909

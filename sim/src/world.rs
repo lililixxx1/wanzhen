@@ -38,11 +38,95 @@
 //! 为战斗日志最小字段（seed / 双方构成 / 终局四元组；Display 固定 8 行确定性
 //! 内容；不含落库——表 6-0 吞吐口径不含落库）。
 //!
+//! ## T006 扩展（主会话 D1~D12 定稿）：意图并行两阶段更新
+//!
+//! [`World::step_with`] 单一实现两阶段重构（D2）：**阶段 1 意图计算**——读该
+//! 阶段开始时刻的快照（[`ScanInput`]，从 `&[Unit]` 一次克隆），per-i 纯函数、
+//! 无共享写、可分片并行；**阶段 2 固定索引序串行应用**。threads=1 与多线程
+//! 走**同一代码路径**（只有意图阶段的执行器不同：`None` = 主线程直接循环整段；
+//! `Some(&pool)` = 经 [`crate::pool`] 连续均摊分片并行，片界
+//! [`crate::pool::chunk_range`]，结果按片 start 升序拼装 = 索引序，分片与结果
+//! 无关）。阶段序不变：tick → RNG 消耗 → move（意图→应用）→ combat
+//! （意图→应用）→ retain → hash。
+//!
+//! 「Intent 缓冲 + 固定索引序 apply」为本模块两阶段更新模式（任务卡 D5 留痕）：
+//! move 与 combat 是两个参照实例，未来士气传播按同型接入（跨单位间接影响 =
+//! 先并行写标记、下一步按固定序应用）；**不抽泛型**（T009+ 再抽象）。
+//!
+//! ### move 两阶段（D3）与等价性
+//!
+//! - 意图（读 move 开始时快照，per 存活 i）：`front(i)` = 运动方向上最近存活者
+//!   （`(x_j - x_i) * dir_i > 0` 中该值最小者，平局取最小索引 j）。
+//! - 应用（索引序串行，读最新位置）：`d_i` = 无前方者 ? `speed_i`
+//!   : `min(speed_i, max((x[f]_now - x_i)·dir_i - (r_i + r_f), 0))`；`x_i += dir_i * d_i`
+//!   （差值必须乘 dir 方向感知——蓝方 dir=−1 裸差值恒负即恒停，首轮门禁实测
+//!   教训见 parity-notes §5）。
+//!
+//! 等价性（对原 T004 串行版逐点一致，构造性论证）：
+//! ① **前方身份恒定**：快照时刻严格在前者全程仍在前——每单位前进量被 clamp 于
+//! 与其前方者的当前正间隙，中心不越过任何「快照时刻在其前方」单位的中心（对更
+//! 远者间隙更小 ⇒ 更不越过）；严格在后者全程仍在后（对称同理）；快照时刻重合的
+//! 对（`(x_j-x_i)*dir == 0`）互不为前方者、各走各的。⇒ 应用阶段用快照 front 与
+//! 原「每 i 现算最近者」是**同一个单位**（这是并行意图可行的根据）。
+//! ② **clamp 式与原版同构**：原版 `d_i = min(speed, max(当前 gap, 0))`，由 ①
+//! 「当前 gap」即以快照 front 的**最新位置**计算之 gap ⇒ 阶段 2 逐字复现原式。
+//! ③ **相向穿插防御内生于 clamp**：后结算者被先结算者已更新位置压停（原版语义
+//! 正是如此；单测 two_phase_move_no_interpenetration_head_on 专查——若实现误用
+//! 旧快照位置直接应用，相向单位将穿插、位置序断言即炸）。
+//!
+//! **对派工单 D3 应用式的一处修正（上报留痕，按 §5「算式与实测冲突按实测执行」）**：
+//! D3 原文应用式为 `min(desire_i, max(x[f]_now - …, 0))`，其中
+//! `desire_i = min(speed_i, max(gap_old, 0))` 由快照间隙预折算。该式在「同侧前方
+//! 者先结算且本 tick 前进」时（gap_now = gap_old + d_f > gap_old，快兵追慢兵的
+//! 贴身瞬态）把本 tick 前进截断在 last-tick 间隙上，与原串行
+//! `min(speed, gap_now⁺)` 不一致；默认构成 deploy 为混速洗牌队列，追近瞬态
+//! 必现 ⇒ T004 黄金锚 0x958c5938c8682529 失守。修正：应用式保留原版
+//! `min(speed_i, gap_now⁺)`（desire 预折算不入意图缓冲；上方 ② 即修正后论证），
+//! 黄金锚实测复现见 docs/evidence/t006/。
+//!
+//! **等价域注记**：快照时刻存在「同侧同位置重合对」时前方身份可翻转（重合对互
+//! 不为前方，先行者前进后成为严格在前），该域内与原串行可分歧。生产布阵
+//! （deploy 严格分离）与移动 clamp（间隙 ≥ 0、中心不越过）保持「严格分离」
+//! 不变式逐 tick 传递，该域不可达；`World::new` 裸路径（N 个重合占位，T002
+//! 冒烟原语）不承载任何哈希证据，留痕于此。
+//!
+//! ### combat 两阶段（D4）与等价性引理
+//!
+//! - 意图（读 combat 开始时快照 = move 应用后、retain 前；per 存活 i）：
+//!   `target_old(i)` = 最近存活敌方（`|x_j - x_i|` 最小，平局取最小索引）；
+//!   `in_range_old(i)` = target_old 存在时 `|dx| <= r_i + r_t + MELEE_MARGIN_Q32`
+//!   （闭区间，恰边界可击）。
+//! - 应用（索引序串行）：1) 先对全部存活单位 `cd = cd.saturating_sub(1)`
+//!   （原样，串行侧）；2) 逐 i：墓碑 skip；target_old 仍存活 → 用之（射程用
+//!   预计算 in_range_old）；已死 → **重索敌**（完整重扫当前墓碑状态，同平局
+//!   规则、射程现算——保障「先手击杀剥夺后手目标选择」语义）；无目标 → skip
+//!   （cd 保持）；射程不过 → skip；`cd[i] != 0` → skip；出手：`hp[t] -=
+//!   damage_dealt(kind_i, kind_t)`、`cd[i] = attack_interval_ticks_i`、
+//!   `hp[t] <= 0 → alive[t] = false`（墓碑即时生效）。伤害值不预计算（应用时
+//!   O(1) 现算，重索敌换目标后自动正确）。
+//!
+//! 等价性引理（D4 留痕）：combat 阶段位置冻结（本阶段不动位置）⇒ 索敌结果仅
+//! 依赖存活集；存活集只缩不增；旧集 argmin（按 (距离, 索引) 字典序）若仍存活
+//! 则必为当前集 argmin（移除元素不影响存活最小值，平局序不变）；若已死则重索敌
+//! ≡ 原版实时索敌同式。cd 只被本单位出手重置（全局递减对全体一致）⇒ 意图预读
+//! 无竞争。
+//!
+//! ### 快照与不变式
+//!
+//! [`ScanInput`] = { x, alive, side, kind }（判别 u8），从 `&[Unit]` 一次克隆；
+//! 每 tick 两次快照（move 意图前、combat 意图前——combat 快照反映 move 后位置）。
+//! 意图阶段开头 `debug_assert!(units 全存活)`（retain 后不变式自检，release 零
+//! 成本）。意图闭包只捕获 `Arc<ScanInput>`（owned 克隆数据）满足 'static，
+//! **零 unsafe**；f 不 panic 契约见 [`crate::pool`]。
+//!
 //! 确定性纪律：无浮点 / 无超越函数 / 无挂钟 / 无 HashMap；
-//! 遍历一律按索引序；同 seed + 同参数 + 同 tick 数 → 状态逐位一致。
-//! 位置为 Q32.32 定点整数（[`crate::units::ONE_Q32_32`]），纯整数运算无舍入。
+//! 遍历一律按索引序；同 seed + 同参数 + 同 tick 数 → 状态逐位一致、与线程数
+//! 无关。位置为 Q32.32 定点整数（[`crate::units::ONE_Q32_32`]），纯整数运算无舍入。
+
+use std::sync::Arc;
 
 use crate::hash::Fnv1a;
+use crate::pool::ThreadPool;
 use crate::rng::Xoshiro256StarStar;
 use crate::units::{damage_dealt, spec, UnitKind, MELEE_MARGIN_Q32, ONE_Q32_32};
 
@@ -182,6 +266,143 @@ impl std::fmt::Display for BattleLog {
             self.outcome.final_hash
         )
     }
+}
+
+/// 意图阶段输入快照（T006/D5）：从 `&[Unit]` 一次克隆构建；per-i 意图纯函数
+/// 只读此结构（并行分片经 `Arc<ScanInput>` 共享，满足 'static，零 unsafe）。
+/// side / kind 存判别 u8（克隆廉价；解释经 [`side_of`] / [`kind_of`]）。
+struct ScanInput {
+    x: Vec<i64>,
+    alive: Vec<bool>,
+    side: Vec<u8>,
+    kind: Vec<u8>,
+}
+
+impl ScanInput {
+    fn from_units(units: &[Unit]) -> Self {
+        ScanInput {
+            x: units.iter().map(|u| u.x).collect(),
+            alive: units.iter().map(|u| u.alive).collect(),
+            side: units.iter().map(|u| u.side as u8).collect(),
+            kind: units.iter().map(|u| u.kind as u8).collect(),
+        }
+    }
+}
+
+/// 判别 u8 → Side（快照值来自本枚举自身，越界不可达；unreachable 兜底）。
+fn side_of(d: u8) -> Side {
+    match d {
+        0 => Side::Red,
+        1 => Side::Blue,
+        _ => unreachable!("Side discriminant out of range"),
+    }
+}
+
+/// 判别 u8 → UnitKind（同上；判别值锁定见 units::UnitKind）。
+fn kind_of(d: u8) -> UnitKind {
+    match d {
+        0 => UnitKind::Shieldman,
+        1 => UnitKind::HeavyKnight,
+        2 => UnitKind::Pikeman,
+        3 => UnitKind::Swordsman,
+        4 => UnitKind::Archer,
+        5 => UnitKind::Militia,
+        _ => unreachable!("UnitKind discriminant out of range"),
+    }
+}
+
+/// move 意图（T006/D3）：per-i 快照前方者索引（None = 运动方向上无存活者）。
+/// 注：派工单 D3 的 desire（gap_old 预折算）**不入缓冲**——应用阶段按模块注释
+/// 「修正」小节以 `min(speed_i, max(gap_now, 0))` 现算（黄金锚等价性要求）。
+struct MoveIntent {
+    front: Option<usize>,
+}
+
+/// combat 意图（T006/D4）：per-i 快照目标与射程预判定（二者都被应用侧消费）。
+struct CombatIntent {
+    target: Option<usize>,
+    in_range: bool,
+}
+
+/// move 意图分片计算（D3：per-i 纯函数，读快照，无共享写 ⇒ 分片与结果无关）。
+/// 片 [start, end) 输出与索引一一对应的意图向量。
+fn move_intent_chunk(input: &ScanInput, start: usize, end: usize) -> Vec<MoveIntent> {
+    let mut out = Vec::with_capacity(end - start);
+    for i in start..end {
+        // 快照全存活不变式由意图阶段开头 debug_assert 兜底；alive 过滤保留为
+        // 语义防御（与原版同口径）。
+        if !input.alive[i] {
+            out.push(MoveIntent { front: None });
+            continue;
+        }
+        let dir = side_of(input.side[i]).dir();
+        let x_i = input.x[i];
+        // 运动方向上最近存活者：扫全索引、取最小正 ahead；严格小于才更新
+        // → 平局取最小 j（与原版同款模式）。
+        let mut front: Option<(usize, i64)> = None;
+        for j in 0..input.x.len() {
+            if j == i || !input.alive[j] {
+                continue;
+            }
+            // 溢出安全：x ∈ [-2^35, 2^42] 量级（原版留痕），差与 *dir 均远不及 i64 上界。
+            let d = (input.x[j] - x_i) * dir;
+            if d > 0 && front.map_or(true, |(_, b)| d < b) {
+                front = Some((j, d));
+            }
+        }
+        out.push(MoveIntent {
+            front: front.map(|(j, _)| j),
+        });
+    }
+    out
+}
+
+/// combat 意图分片计算（D4：per-i 纯函数，读快照 = move 应用后位置）。
+fn combat_intent_chunk(input: &ScanInput, start: usize, end: usize) -> Vec<CombatIntent> {
+    let mut out = Vec::with_capacity(end - start);
+    for i in start..end {
+        if !input.alive[i] {
+            out.push(CombatIntent {
+                target: None,
+                in_range: false,
+            });
+            continue;
+        }
+        let x_i = input.x[i];
+        let side_i = input.side[i];
+        // 索敌：最近存活敌方；平局取最小索引（严格小于才更新，与原版同款）。
+        let mut target: Option<(usize, i64)> = None;
+        for j in 0..input.x.len() {
+            if j == i || !input.alive[j] || input.side[j] == side_i {
+                continue;
+            }
+            let d = (input.x[j] - x_i).abs();
+            let closer = match target {
+                Some((_, best)) => d < best,
+                None => true,
+            };
+            if closer {
+                target = Some((j, d));
+            }
+        }
+        let intent = match target {
+            None => CombatIntent {
+                target: None,
+                in_range: false,
+            },
+            Some((j, dist)) => {
+                // 射程预判定（闭区间；溢出安全：距离与半径和均远不及 i64 上界）。
+                let radius_sum = spec(kind_of(input.kind[i])).radius_q32
+                    + spec(kind_of(input.kind[j])).radius_q32;
+                CombatIntent {
+                    target: Some(j),
+                    in_range: dist <= radius_sum + MELEE_MARGIN_Q32,
+                }
+            }
+        };
+        out.push(intent);
+    }
+    out
 }
 
 /// 单位（T004 起：+ hp / 攻击冷却 cd；死亡为墓碑标记，tick 末物理移除）。
@@ -345,169 +566,205 @@ impl World {
         h.finish()
     }
 
-    /// 推进一个 tick（主会话 D5 定稿阶段序，固定不得倒置）：
+    /// 推进一个 tick（串行路径；T006 起委托 [`World::step_with(None)`]，
+    /// 阶段序与语义同 T005 定稿，签名与语义不变——D6）。
+    pub fn step(&mut self) {
+        self.step_with(None);
+    }
+
+    /// 推进一个 tick（T006/D2/D6 两阶段版，主会话 D5 定稿阶段序固定不得倒置）：
     /// 1) tick 计数 +1；
     /// 2) tick 级 RNG 固定消耗点——取一个 u64 丢弃（T002 设计保留；无单位级
     ///    RNG 消耗，战斗结算确定性不依赖随机）；
-    /// 3) 单 lane 移动（按索引序顺序结算）；
-    /// 4) 战斗结算（按索引序：cd 推进 → 索敌 → 射程 → 伤害 → 墓碑；combat 在
-    ///    move 之后——同 tick 内先动后打）；
+    /// 3) 单 lane 移动：意图（快照，可并行）→ 索引序串行应用；
+    /// 4) 战斗结算：意图（move 后快照，可并行）→ 索引序串行应用（cd 推进 →
+    ///    目标选择/重索敌 → 射程 → 伤害 → 墓碑；combat 在 move 之后——同 tick
+    ///    内先动后打）；
     /// 5) tick 末 `units.retain(|u| u.alive)` 稳定保序清除墓碑（存活者相对序
     ///    不变前移，见模块注释 D6）；
     /// 6) 末尾刷新状态哈希。
-    pub fn step(&mut self) {
+    ///
+    /// `pool`：`None` = 意图阶段主线程直跑（threads=1 语义）；`Some(&pool)` =
+    /// 经线程池分片并行。两档共享同一意图纯函数与应用循环——结果与线程数无关
+    /// （D2 单一实现）。
+    pub fn step_with(&mut self, pool: Option<&ThreadPool>) {
         self.tick = self.tick.wrapping_add(1);
         let _ = self.rng.next_u64();
-        self.move_units();
-        self.combat();
+        self.move_units_with(pool);
+        self.combat_with(pool);
         self.units.retain(|u| u.alive);
         self.last_hash = self.state_hash();
     }
 
-    /// 单 lane 一维移动（主会话 D6 定稿）：
+    /// 单 lane 一维移动两阶段（T006/D3，替代原单阶段 move_units；等价性论证与
+    /// 对派工单应用式的修正见模块注释「move 两阶段」小节）：
     ///
-    /// 对每个存活单位 i（**按索引序顺序结算**——5.2 纪律，固定序与线程数无关；
-    /// 前方查询使用**当前最新位置**，即本 tick 内先结算者的已更新位置）：
-    /// - `dir = ±1`（红 +1 / 蓝 -1）；在所有存活单位 j≠i 中找运动方向上最近者：
-    ///   `ahead = (x_j - x_i) * dir > 0` 中 ahead 最小者（平局取最小索引 j——
-    ///   从 0 向上扫、严格小于才更新，自然实现）；
-    /// - 存在最近者：`gap = ahead - (radius_i + radius_j)`，本 tick 前进
-    ///   `min(speed, max(gap, 0))`；否则前进 `speed`；
-    /// - `x_i += dir * 前进`。
+    /// 阶段 1（意图，可并行）：per 存活 i 在快照上求 `front(i)`（运动方向最近
+    /// 存活者，平局取最小索引）。
+    /// 阶段 2（应用，索引序串行，读最新位置——与原版循环同构）：
+    /// - 无前方者：前进 `speed`；
+    /// - 有前方者：前进 `min(speed, max(x[f]_now - x_i - (r_i + r_f), 0))`——
+    ///   f 若已先结算则读到其已更新位置（友军排队堵停 + 相向穿插防御，原版
+    ///   语义）；f 未结算则读到旧值（未应用）。
     ///
     /// 该模型同时覆盖「与敌方贴身停（间距=半径和）」与「友军排队堵停」（异速
-    /// 友军不穿插——无友军堵则高速兵可穿过低速兵，实验场失真）。
-    /// 最近者查找为朴素 O(N²)；空间划分 / 并行属 T006/T007，本阶段禁止引入。
-    /// T004 起墓碑在 tick 末 retain 物理移除，移动阶段（下一 tick 起）自然只见
-    /// 存活者；`alive` 过滤保留为语义防御。
-    ///
-    /// 溢出安全：x ∈ [-2^35, 2^42] 量级（lane 1000m = 2^42），(x_j - x_i) 与
-    /// `* dir` 均远不及 i64 上界。
-    fn move_units(&mut self) {
+    /// 友军不穿插）。O(N²) 朴素查找；空间划分 / 数据布局留 T007。
+    fn move_units_with(&mut self, pool: Option<&ThreadPool>) {
+        // retain 后不变式自检（意图阶段开头，release 零成本）。
+        debug_assert!(self.units.iter().all(|u| u.alive));
         let n = self.units.len();
+        if n == 0 {
+            return;
+        }
+        // 每 tick 两次快照之第一次（move 意图前）。
+        let input = ScanInput::from_units(&self.units);
+        let intents: Vec<MoveIntent> = match pool {
+            None => move_intent_chunk(&input, 0, n),
+            Some(p) => {
+                let input = Arc::new(input);
+                p.map_chunks(n, move |start, end| move_intent_chunk(&input, start, end))
+            }
+        };
+        // 阶段 2：索引序串行应用（本阶段无死亡 ⇒ 快照索引 = 当前索引）。
         for i in 0..n {
-            if !self.units[i].alive {
-                continue;
-            }
             let dir = self.units[i].side.dir();
-            let x_i = self.units[i].x;
-            let spec_i = spec(self.units[i].kind);
-            // 运动方向上最近者：扫全索引、取最小正 ahead；严格小于才更新 → 平局取最小 j。
-            let mut best_ahead: Option<i64> = None;
-            let mut best_radius_sum: i64 = 0;
-            for j in 0..n {
-                if j == i || !self.units[j].alive {
-                    continue;
-                }
-                let d = (self.units[j].x - x_i) * dir;
-                if d > 0 && best_ahead.map_or(true, |b| d < b) {
-                    best_ahead = Some(d);
-                    best_radius_sum = spec_i.radius_q32 + spec(self.units[j].kind).radius_q32;
-                }
-            }
-            let speed = spec_i.speed_q32;
-            let advance = match best_ahead {
-                Some(ahead) => {
-                    let gap = ahead - best_radius_sum;
-                    if gap > 0 {
-                        if speed < gap {
-                            speed
-                        } else {
-                            gap
-                        }
-                    } else {
-                        0
-                    }
-                }
+            let speed = spec(self.units[i].kind).speed_q32;
+            let advance = match intents[i].front {
                 None => speed,
+                Some(f) => {
+                    // clamp 读 f 的最新位置（修正后原版式，见模块注释 ②③）；
+                    // 差值必须乘 dir（原版 ahead = (x_j - x_i) * dir 方向感知）——
+                    // 蓝方 dir = -1，裸差值恒负即恒停（首轮门禁实测教训，留痕）。
+                    let gap = (self.units[f].x - self.units[i].x) * dir
+                        - (spec(self.units[i].kind).radius_q32
+                            + spec(self.units[f].kind).radius_q32);
+                    let gap = if gap > 0 { gap } else { 0 };
+                    if speed < gap { speed } else { gap }
+                }
             };
+            // 溢出安全：x ∈ [-2^35, 2^42] 量级（原版留痕），advance ≥ 0 有界。
             self.units[i].x += dir * advance;
         }
     }
 
-    /// 战斗结算（主会话 D1/D2/D3/D4 定稿；索引序，5.2 纪律）：
+    /// 战斗结算两阶段（T006/D4，替代原单阶段 combat；等价性引理见模块注释
+    /// 「combat 两阶段」小节。索引序，5.2 纪律）：
     ///
-    /// 1) **先**对全部存活单位 `cd = cd.saturating_sub(1)`（cd 冷却制：出手后置
+    /// 阶段 1（意图，可并行；快照 = move 应用后、retain 前的全存活态）：
+    /// per i 求 target_old 与 in_range_old。
+    /// 阶段 2（应用，索引序串行）：
+    /// 1) 先对全部存活单位 `cd = cd.saturating_sub(1)`（cd 冷却制：出手后置
     ///    间隔值，此后每 tick 战斗阶段开头统一递减；未接敌者自然停在 0——
-    ///    首次接敌即击。interval=30 语义校验：击于 t、t+30、t+60…）；
-    /// 2) **再**按索引序逐单位判定：存活 && 索敌到目标 && 在射程 && `cd == 0`
-    ///    → 伤害立即写目标 hp（目标 hp <= 0 → 墓碑，同 tick 内排在后面的单位
-    ///    不再选它、它也不再行动），攻击者 `cd = attack_interval_ticks`。
+    ///    首次接敌即击）；
+    /// 2) 逐单位判定：目标选择（快照目标仍存活 → 直接用；已死 → 重索敌，保障
+    ///    「先手击杀剥夺后手目标选择」语义）→ 射程 → `cd == 0` → 伤害立即写
+    ///    目标 hp（hp <= 0 → 墓碑，同 tick 内排在后面的单位不再选它、它也不再
+    ///    行动），攻击者 cd = attack_interval_ticks。
     ///
-    /// 索敌（D2）：存活敌方中 |x_j - x_i| 最小者；平局取最小索引（j 自 0 向上扫、
-    /// 严格小于才更新，与 move_units 同款模式）；每 tick 重算，O(n²) 朴素可接受。
-    /// 射程（D3，M0 全近战口径）：`|dx| <= r_i + r_j + MELEE_MARGIN_Q32`
-    /// （闭区间，恰边界可击；1 维无绕后、不区分方向）。
-    /// 伤害（D1）：`attack * counter_multiplier / ONE_Q16_16` 截断除法，
-    /// 溢出安全见 [`crate::units::damage_dealt`]。
-    /// `UnitSpec::range_q32`（D8）本阶段**不读**——远程行为留 T009+ 启用。
-    ///
-    /// 阶段序（D5）：combat 在 move 之后——同 tick 内先动后打；本阶段产生的
-    /// 墓碑由 step 的 retain 物理移除，不出现在本 tick 末哈希与下一 tick 移动中。
-    fn combat(&mut self) {
+    /// 索敌/射程/伤害口径与原版逐项一致（|dx| 最小平局最小索引、闭区间
+    /// MELEE_MARGIN、damage_dealt 截断除法、range_q32 本阶段不读）；每 tick 重算。
+    fn combat_with(&mut self, pool: Option<&ThreadPool>) {
+        // 不变式：move 阶段无死亡（本卡口径），此刻仍全存活。
+        debug_assert!(self.units.iter().all(|u| u.alive));
         let n = self.units.len();
-        // (1) cd 推进：先于个体判定，对全部存活单位统一 -1（饱和减，0 不下穿）。
+        if n == 0 {
+            return;
+        }
+        // 每 tick 两次快照之第二次（combat 意图前——已反映 move 后位置）。
+        let input = ScanInput::from_units(&self.units);
+        let intents: Vec<CombatIntent> = match pool {
+            None => combat_intent_chunk(&input, 0, n),
+            Some(p) => {
+                let input = Arc::new(input);
+                p.map_chunks(n, move |start, end| combat_intent_chunk(&input, start, end))
+            }
+        };
+        // (1) cd 推进：先于个体判定，对全部存活单位统一 -1（饱和减，0 不下穿；
+        //     原样放串行侧）。
         for u in self.units.iter_mut() {
             if u.alive {
                 u.cd = u.cd.saturating_sub(1);
             }
         }
-        // (2) 个体判定：按索引序。
+        // (2) 个体判定：按索引序；墓碑即时生效。
         for i in 0..n {
             if !self.units[i].alive {
                 continue; // 墓碑：不攻击、不可被选
             }
-            let x_i = self.units[i].x;
-            let side_i = self.units[i].side;
-            let kind_i = self.units[i].kind;
-            // 索敌：最近存活敌方；平局取最小索引（严格小于才更新）。
-            let mut target: Option<(usize, i64)> = None;
-            for j in 0..n {
-                if j == i || !self.units[j].alive || self.units[j].side == side_i {
-                    continue;
+            // 目标选择（D4）：快照目标仍存活 → 直接用（引理：仍为当前最近）；
+            // 已被先手击杀 → 重索敌（完整重扫当前墓碑状态，同平局规则）。
+            let (target, in_range) = match intents[i].target {
+                // 快照时已无敌方；存活集只缩不增 ⇒ 现在也无：cd 保持现值跳过
+                // （D4：未接敌不重置）。
+                None => continue,
+                Some(t0) if self.units[t0].alive => (t0, intents[i].in_range),
+                Some(_) => {
+                    let x_i = self.units[i].x;
+                    let side_i = self.units[i].side;
+                    // 重索敌：完整重扫当前墓碑状态；|dx| 最小、平局取最小索引
+                    // （严格小于才更新，与意图阶段同式——原版实时索敌即此式）。
+                    let mut found: Option<(usize, i64)> = None;
+                    for j in 0..n {
+                        if j == i || !self.units[j].alive || self.units[j].side == side_i {
+                            continue;
+                        }
+                        let d = (self.units[j].x - x_i).abs();
+                        if found.map_or(true, |(_, best)| d < best) {
+                            found = Some((j, d));
+                        }
+                    }
+                    match found {
+                        None => continue, // 无存活敌方：cd 保持现值
+                        Some((j, dist)) => {
+                            // 射程现算（重索敌换目标后自动正确；闭区间）。
+                            let radius_sum = spec(self.units[i].kind).radius_q32
+                                + spec(self.units[j].kind).radius_q32;
+                            (j, dist <= radius_sum + MELEE_MARGIN_Q32)
+                        }
+                    }
                 }
-                let d = (self.units[j].x - x_i).abs();
-                let closer = match target {
-                    Some((_, best)) => d < best,
-                    None => true,
-                };
-                if closer {
-                    target = Some((j, d));
-                }
-            }
-            let Some((j, target_dist)) = target else {
-                continue; // 无存活敌方：cd 保持现值（D4：未接敌不重置）
             };
-            // 射程判定（闭区间；溢出安全：距离与半径和均远不及 i64 上界）。
-            let radius_sum = spec(kind_i).radius_q32 + spec(self.units[j].kind).radius_q32;
-            if target_dist > radius_sum + MELEE_MARGIN_Q32 {
+            if !in_range {
                 continue; // 出射程：未出手，cd 不重置（保持 0 或继续衰减）
             }
             if self.units[i].cd != 0 {
                 continue; // 冷却中
             }
-            // 伤害立即写入目标 hp；目标 hp <= 0 → 墓碑。
-            let dmg = damage_dealt(kind_i, self.units[j].kind);
-            self.units[j].hp -= dmg;
-            self.units[i].cd = spec(kind_i).attack_interval_ticks;
-            if self.units[j].hp <= 0 {
-                self.units[j].alive = false;
+            // 伤害立即写入目标 hp（O(1) 现算，不预计算——D4）；hp <= 0 → 墓碑。
+            let dmg = damage_dealt(self.units[i].kind, self.units[target].kind);
+            self.units[target].hp -= dmg;
+            self.units[i].cd = spec(self.units[i].kind).attack_interval_ticks;
+            if self.units[target].hp <= 0 {
+                self.units[target].alive = false;
             }
         }
     }
 
-    /// 连续推进 `ticks` 个 tick。
+    /// 连续推进 `ticks` 个 tick（串行路径；T006 起委托 run_with(None)）。
     pub fn run(&mut self, ticks: u64) {
+        self.run_with(ticks, None);
+    }
+
+    /// 连续推进 `ticks` 个 tick（T006/D6 两阶段版：每 tick 一次 step_with）。
+    pub fn run_with(&mut self, ticks: u64, pool: Option<&ThreadPool>) {
         for _ in 0..ticks {
-            self.step();
+            self.step_with(pool);
         }
     }
 
-    /// 单局收束（T005/D4）：推进至全灭或 max_ticks（先到者），返回终局四元组并
-    /// 冻结（幂等：已收束则直接返回缓存，tick 不再推进——终局冻结机制）。
-    /// 全灭判定每 tick 求值且优先于上限（D3）；上限收束按存活总 hp 判定（D3）。
-    /// step/run 保持 T002/T004 纯原语语义不变；本方法只是控制流 + 判定。
+    /// 单局收束（串行路径；T006 起委托 run_battle_with(None)——控制流与语义
+    /// 与 T005 定稿完全一致）。
     pub fn run_battle(&mut self, max_ticks: u64) -> BattleOutcome {
+        self.run_battle_with(max_ticks, None)
+    }
+
+    /// 单局收束（T006/D6 两阶段版）：推进至全灭或 max_ticks（先到者），返回
+    /// 终局四元组并冻结（幂等：已收束则直接返回缓存，tick 不再推进——终局
+    /// 冻结机制）。控制流与 run_battle 完全一致（D6），仅逐 tick 推进换用
+    /// step_with：全灭判定每 tick 求值且优先于上限（D3）；上限收束按存活总
+    /// hp 判定（D3）。step/run 保持 T002/T004 纯原语语义不变；本方法只是
+    /// 控制流 + 判定。
+    pub fn run_battle_with(&mut self, max_ticks: u64, pool: Option<&ThreadPool>) -> BattleOutcome {
         if let Some(cached) = &self.resolved {
             return cached.clone();
         }
@@ -519,7 +776,7 @@ impl World {
         } else {
             let mut extinction: Option<BattleOutcome> = None;
             while self.tick < max_ticks {
-                self.step();
+                self.step_with(pool);
                 let (ar, ab) = self.alive_counts();
                 if ar == 0 || ab == 0 {
                     // 恰在 tick == max_ticks 发生全灭亦走此分支——全灭优先于上限（D3）。
@@ -1330,4 +1587,240 @@ mod tests {
         );
         assert_eq!(w.outcome(), Some(&outcome), "outcome() 读到冻结终局");
     }
+
+    // ---- T006 并行化 v0 与两阶段更新（主会话 D10 定稿；手算依据见派工单 §3）----
+
+    /// §3.1 构型（代码生成，非 deploy）：每方 250 单位、kind 按 KINDS[i % 6] 轮转、
+    /// 双方前排 3 个单位 hp 直填 2（一击死层——锁定表最小单击伤害 3（民兵→轻甲
+    /// 6×43690/65536 = 3）> 2，任何一击必死）。红队列贴身链 GAP = ONE/2；
+    /// 蓝队首 = 红队首 + 11*ONE/10（首对 |dx| = 1.1 ≤ r+r+margin，恰入射程即开打）。
+    /// 索引序：红 0..250、蓝 250..500（同侧排队链结算次序 = 索引序）。
+    fn build_nearfield_world(seed: u64) -> World {
+        const PER_SIDE: usize = 250;
+        const KINDS: [UnitKind; 6] = [
+            UnitKind::Shieldman,
+            UnitKind::HeavyKnight,
+            UnitKind::Pikeman,
+            UnitKind::Swordsman,
+            UnitKind::Archer,
+            UnitKind::Militia,
+        ];
+        let gap = ONE_Q32_32 / 2;
+        let mut units: Vec<Unit> = Vec::with_capacity(2 * PER_SIDE);
+        // 红队列：x_red(0) = r(kind_0)，向 -x 排队：x_red(k) = x_red(k-1) - (r_{k-1} + r_k + GAP)。
+        let mut x = spec(KINDS[0]).radius_q32;
+        for k in 0..PER_SIDE {
+            let kind = KINDS[k % 6];
+            let hp = if k < 3 { 2 } else { spec(kind).hp };
+            units.push(Unit {
+                alive: true,
+                kind,
+                side: Side::Red,
+                hp,
+                cd: 0,
+                x,
+            });
+            x -= spec(kind).radius_q32 + spec(KINDS[(k + 1) % 6]).radius_q32 + gap;
+        }
+        // 蓝队列：x_blue(0) = 红队首 + 11*ONE/10，向 +x 同式排队。
+        let mut x = spec(KINDS[0]).radius_q32 + 11 * ONE_Q32_32 / 10;
+        for k in 0..PER_SIDE {
+            let kind = KINDS[k % 6];
+            let hp = if k < 3 { 2 } else { spec(kind).hp };
+            units.push(Unit {
+                alive: true,
+                kind,
+                side: Side::Blue,
+                hp,
+                cd: 0,
+                x,
+            });
+            x += spec(kind).radius_q32 + spec(KINDS[(k + 1) % 6]).radius_q32 + gap;
+        }
+        manual_world(units, seed)
+    }
+
+    /// T006 单测 1（D10-1 / §3.1）：近距战斗局 threads{1,3,6,12} 逐采样点哈希全等。
+    /// 覆盖：近战互击 / 一击死 / 墓碑剥夺 / 重索敌 / retain 压缩 / 混速排队 clamp 链。
+    /// 布阵用同一构型代码构造四份（同构造即同初态，tick0 哈希四档相等为首断言）。
+    #[test]
+    fn parallel_parity_nearfield_battle() {
+        let tiers = [1usize, 3, 6, 12];
+        let mut worlds: Vec<World> = tiers.iter().map(|_| build_nearfield_world(7)).collect();
+        let h0 = worlds[0].state_hash();
+        for w in &worlds {
+            assert_eq!(w.state_hash(), h0, "tick0 四档构型必须逐位一致");
+        }
+        // 每 20 ticks 采样 ×6 轮（t=20..120），连同 t0 共 7 个采样点。
+        let mut samples = [[0u64; 7]; 4];
+        for (tier, &t) in tiers.iter().enumerate() {
+            samples[tier][0] = h0;
+            let mut pool = ThreadPool::new(t); // 每档独立建池、跑完 drop（D10-1）
+            for round in 1..=6 {
+                worlds[tier].run_with(20, Some(&pool));
+                samples[tier][round] = worlds[tier].state_hash();
+            }
+        }
+        for round in 0..7 {
+            for tier in 1..4 {
+                assert_eq!(
+                    samples[tier][round],
+                    samples[0][round],
+                    "采样点 {}（t={}）threads={} 与 threads=1 哈希分歧",
+                    round,
+                    round * 20,
+                    tiers[tier]
+                );
+            }
+        }
+    }
+
+    /// T006 单测 2（D10-2 / §3.2）：重索敌正路径手算（seed 7，manual_world）。
+    /// idx1 的快照目标 idx2（民兵 A，hp 直填 6）被 idx0 先手一击死 → 应用时
+    /// 重索敌切至 idx3——「先手击杀剥夺后手目标选择」语义的并行等价实现专测。
+    /// 伤害算式：剑士→民兵 = 12×98304/65536 = 18（整除精确）；
+    /// 民兵→剑士 = 6×43690/65536 = 3（商 3 余 65532，截断）。
+    #[test]
+    fn combat_rescan_after_first_blood_switches_target() {
+        let build = || {
+            manual_world(
+                vec![
+                    unit(UnitKind::Swordsman, Side::Red, 0),
+                    unit(UnitKind::Swordsman, Side::Red, 9 * ONE_Q32_32 / 10),
+                    unit_with_hp(UnitKind::Militia, Side::Blue, 11 * ONE_Q32_32 / 10, 6),
+                    unit(UnitKind::Militia, Side::Blue, 3 * ONE_Q32_32 / 2),
+                ],
+                7,
+            )
+        };
+        let mut w = build();
+        w.run(1);
+        // t=1 移动：四者前方 gap 全负 → 全部原位（逐单位核过：idx0 前方 idx1
+        // gap = 0.9-1.0 = -0.1；idx1 前方 idx2 gap = 0.2-0.9 = -0.7；idx2 前方
+        // idx1 gap = -0.7；idx3 前方 idx2 gap = 0.4-0.8 = -0.4）。
+        // t=1 战斗（索引序）：idx0 击 idx2（|dx| = 1.1 = 0.5+0.4+0.2 恰闭区间
+        // 边界可击）18 → hp 6-18 = -12 墓碑、cd 25；idx1 快照目标 = idx2 已死
+        // → 重索敌 → idx3（0.6 ≤ 1.1 ✓）出手 18 → B hp 32、cd 25；idx3 索敌
+        // idx1（0.6 < 1.5）出手 3 → idx1 hp 87、cd 20；idx2 墓碑 skip。
+        assert_eq!(w.tick, 1);
+        assert_eq!(w.unit_count(), 3, "民兵 A（hp 6）一击死并于 tick 末清除");
+        assert_eq!(w.units[0].hp, 90, "红 idx0 未被反击（A 死、B 目标为 idx1）");
+        assert_eq!(w.units[0].cd, 25, "剑士出手后 cd = interval 25");
+        assert_eq!(w.units[0].x, 0, "四者移动全停");
+        assert_eq!(w.units[1].hp, 87, "idx1 hp = 90 - 3（B 反击）");
+        assert_eq!(w.units[1].cd, 25);
+        assert_eq!(w.units[1].x, 9 * ONE_Q32_32 / 10);
+        assert_eq!(
+            w.units[2].hp,
+            32,
+            "民兵 B = 50 - 18（idx1 重索敌后命中 B——被测分支）"
+        );
+        assert_eq!(w.units[2].cd, 20, "民兵 interval 20");
+        assert_eq!(w.units[2].x, 3 * ONE_Q32_32 / 2);
+        // 同构型 threads=4 走 step_with(Some) 跑一遍 t=1：与串行逐字段相等。
+        let mut wp = build();
+        let mut pool = ThreadPool::new(4);
+        wp.step_with(Some(&pool));
+        assert_eq!(
+            wp.state_hash(),
+            w.state_hash(),
+            "threads=4 与串行 t=1 状态逐位一致"
+        );
+        assert_eq!(wp.unit_count(), w.unit_count());
+        for (p, s) in wp.units().iter().zip(w.units().iter()) {
+            assert_eq!(p.alive, s.alive);
+            assert_eq!(p.kind, s.kind);
+            assert_eq!(p.side, s.side);
+            assert_eq!(p.hp, s.hp);
+            assert_eq!(p.cd, s.cd);
+            assert_eq!(p.x, s.x);
+        }
+    }
+
+    /// T006 单测 3（D10-3 / §3.3）：相向穿插防御——阶段 2 clamp 缺失即炸：
+    /// 红 idx2 结算前进 min(0.12, gap 0.05) = 0.05 后，蓝 idx3（索引序在后，
+    /// 读红 idx2 已更新位置）gap = 0 → 停；若误用旧快照直接应用，蓝 idx3 亦
+    /// 前进 0.05 → 合前进 0.10 > gap 0.05 → 穿插 → 位置序断言炸。
+    /// 【派工单 §3.3 构造笔误修正（上报留痕）：原红队间距 0.9 < 剑士半径和
+    /// 1.0（ONE/2 ×2），初始即自穿插、与断言②「相邻间距 ≥ 半径和（红红 1.0）」
+    /// 直接矛盾——按该测自身的断言口径把红队间距修为恰 = 半径和 1.0·ONE，
+    /// 蓝队首相应 +0.2·ONE（首对间距 0.95 / gap 0.05 不变，被测动力学不变）】。
+    #[test]
+    fn two_phase_move_no_interpenetration_head_on() {
+        let r_sword = spec(UnitKind::Swordsman).radius_q32;
+        let r_mil = spec(UnitKind::Militia).radius_q32;
+        // 红 3 剑士 x = 0 / ONE / 2*ONE（同队贴身链，间距恰 = 半径和 1.0）；
+        // 蓝 3 民兵 x = 2*ONE + 19*ONE/20 起、间距 9*ONE/10（= 半径和 0.8 + 间隙 0.1）。
+        // 首对（红 idx2 @2.0 vs 蓝 idx3 @2.95）间距 0.95，gap = 0.05 > 0。
+        let x_blue0 = 2 * ONE_Q32_32 + 19 * ONE_Q32_32 / 20;
+        let x_blue1 = x_blue0 + 9 * ONE_Q32_32 / 10;
+        let x_blue2 = x_blue1 + 9 * ONE_Q32_32 / 10;
+        let mut w = manual_world(
+            vec![
+                unit(UnitKind::Swordsman, Side::Red, 0),
+                unit(UnitKind::Swordsman, Side::Red, ONE_Q32_32),
+                unit(UnitKind::Swordsman, Side::Red, 2 * ONE_Q32_32),
+                unit(UnitKind::Militia, Side::Blue, x_blue0),
+                unit(UnitKind::Militia, Side::Blue, x_blue1),
+                unit(UnitKind::Militia, Side::Blue, x_blue2),
+            ],
+            7,
+        );
+        // 相邻对半径和：(0,1)(1,2) 红红 = 2×0.5；(2,3) 红蓝 = 0.5+0.4；
+        // (3,4)(4,5) 蓝蓝 = 2×0.4——spec 现算断言（防漂移）。
+        let sums = [
+            r_sword + r_sword,
+            r_sword + r_sword,
+            r_sword + r_mil,
+            r_mil + r_mil,
+            r_mil + r_mil,
+        ];
+        for t in 1..=40u64 {
+            w.step();
+            assert_eq!(
+                w.unit_count(),
+                6,
+                "tick {t}: 40 ticks 内无死亡（击点核过：首对互击起 t=1，蓝 idx3 第三击 t=51 > 40）"
+            );
+            let xs: Vec<i64> = w.units().iter().map(|u| u.x).collect();
+            for pair in 0..5 {
+                assert!(
+                    xs[pair + 1] > xs[pair],
+                    "tick {t}: 对 ({pair},{}) 位置序破坏（穿插）",
+                    pair + 1
+                );
+                let spacing = xs[pair + 1] - xs[pair];
+                assert!(
+                    spacing >= sums[pair],
+                    "tick {t}: 对 ({pair},{}) 间距 {spacing} < 半径和 {}（穿插）",
+                    pair + 1,
+                    sums[pair]
+                );
+            }
+        }
+        // 末态补充（结构性口径——Q32.32 截断传播使精确终值脆断）：修正后几何
+        // （贴身 gap=0，非原派工单重叠 -0.1）下队列出现一步波传播松弛：idx2 于
+        // t=1 前进 214748365（=19·ONE/20 − 半径和）后，idx1（t=2）、idx0（t=3）
+        // 依次跟进同量恢复贴身，t≥4 全静止——故「恒停未动」不成立，改为断言
+        // 队列重新完全贴身（间距恰 = 半径和）。hp 按锁定表逐击推演：
+        // 红 idx2 被击 t=1,21 两击 ×3 = 84；蓝 idx3 被击 t=1,26 两击 ×18 = 14。
+        assert_eq!(
+            w.units[1].x - w.units[0].x,
+            r_sword + r_sword,
+            "红队贴身链波传播后恢复贴身（间距恰 = 半径和）"
+        );
+        assert_eq!(w.units[2].x - w.units[1].x, r_sword + r_sword);
+        assert_eq!(w.units[3].x - w.units[2].x, r_sword + r_mil);
+        assert_eq!(
+            w.units[2].hp,
+            90 - 2 * 3,
+            "民兵→剑士 = 6×43690/65536 = 3/击，击点 t=1,21"
+        );
+        assert_eq!(
+            w.units[3].hp,
+            50 - 2 * 18,
+            "剑士→民兵 = 12×98304/65536 = 18/击，击点 t=1,26"
+        );
+    }
 }
+
