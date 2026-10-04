@@ -1,0 +1,5 @@
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529

@@ -1,0 +1,45 @@
+#############################################################
+# T004 python 独立第二实现 —— 手算对拍 例 2 快照留档
+# 对局：红 militia x=0、蓝 militia A x=0.8m、蓝 militia B x=-0.8m
+# 整数口径注：A 初始 x=3435973836（0.8m 存储值）、B = -A；t=1 B.x = -3822520892
+# 期望（派工单符号式）：t=1 红 hp 38、A 44、B 50（红被 A/B 各命中一次 6）；t=21 红 32、A 38、B 50、B.cd=0
+# x 为 Q32.32 原始整数；每段为「命令 + 完整输出 + 真实退出码 + 期望比对」
+#############################################################
+
+----- t=1 -----
+$ python recalc.py --case 2 --seed 42 --ticks 1
+mode=t004
+case=2
+seed=42
+ticks=1
+units=3
+final_tick=1
+hash=0x671fc39345b45264
+u0 red militia hp=38 cd=20 x=0
+u1 blue militia hp=44 cd=20 x=3435973836
+u2 blue militia hp=50 cd=20 x=-3822520892
+REAL_EXIT=0
+expect: units=3 -> PASS
+expect: u0 red militia hp=38 cd=20 x=0 -> PASS
+expect: u1 blue militia hp=44 cd=20 x=3435973836 -> PASS
+expect: u2 blue militia hp=50 cd=20 x=-3822520892 -> PASS
+
+----- t=21 -----
+$ python recalc.py --case 2 --seed 42 --ticks 21
+mode=t004
+case=2
+seed=42
+ticks=21
+units=3
+final_tick=21
+hash=0xf32ede760b5add39
+u0 red militia hp=32 cd=20 x=0
+u1 blue militia hp=38 cd=20 x=3435973836
+u2 blue militia hp=50 cd=0 x=-11553462012
+REAL_EXIT=0
+expect: units=3 -> PASS
+expect: u0 red militia hp=32 cd=20 x=0 -> PASS
+expect: u1 blue militia hp=38 cd=20 x=3435973836 -> PASS
+expect: u2 blue militia hp=50 cd=0 x=-11553462012 -> PASS
+
+结论：例 2 两检查点全部逐字段 PASS（B 无前方者持续向左全速移动、t=21 出射程不攻击故 cd=0）。

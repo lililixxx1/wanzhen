@@ -21,6 +21,8 @@ struct Args {
     /// `--comp` 显式给出时的值（布阵路径）。
     comp: Option<Vec<(UnitKind, usize)>>,
     dump_formation: bool,
+    /// `--dump-final-units`（T004/D9）：run 结束后在五行摘要之后逐单位打印。
+    dump_final_units: bool,
 }
 
 fn parse_num<T: std::str::FromStr>(raw: &str, name: &str) -> Result<T, String>
@@ -82,6 +84,7 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
     let mut units: Option<usize> = None;
     let mut comp: Option<Vec<(UnitKind, usize)>> = None;
     let mut dump_formation = false;
+    let mut dump_final_units = false;
     let mut i = 0;
     while i < argv.len() {
         let raw = argv[i].as_str();
@@ -97,6 +100,7 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
             }
             "--comp" => comp = Some(parse_comp(take_value(argv, &mut i, inline, "--comp")?)?),
             "--dump-formation" => dump_formation = true,
+            "--dump-final-units" => dump_final_units = true,
             _ => return Err(format!("unknown argument: '{raw}'")),
         }
         i += 1;
@@ -110,6 +114,7 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
         units,
         comp,
         dump_formation,
+        dump_final_units,
     })
 }
 
@@ -121,7 +126,7 @@ fn main() -> ExitCode {
             eprintln!("sim: {msg}");
             eprintln!(
                 "usage: sim.exe [--seed <u64>] [--ticks <u64>] ([--comp <kind:count,...>] | \
-                 [--units <usize>]) [--dump-formation] \
+                 [--units <usize>]) [--dump-formation] [--dump-final-units] \
                  (--flag value or --flag=value; defaults: seed=42 ticks=1800 \
                  comp=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5; \
                  values are decimal)"
@@ -169,6 +174,21 @@ fn main() -> ExitCode {
     println!("units={}", world.unit_count());
     println!("final_tick={}", world.tick);
     println!("hash=0x{:016x}", world.last_hash);
+
+    // --dump-final-units（T004/D9）：逐单位终态（stdout 确定性内容，格式固定）。
+    if args.dump_final_units {
+        for (idx, unit) in world.units().iter().enumerate() {
+            println!(
+                "u{} {} {} hp={} cd={} x={}",
+                idx,
+                unit.side.label(),
+                unit.kind.id(),
+                unit.hp,
+                unit.cd,
+                unit.x
+            );
+        }
+    }
 
     // stderr：壁钟计时（仅外壳，不进模拟态）。
     eprintln!("elapsed_ms={}", elapsed.as_millis());

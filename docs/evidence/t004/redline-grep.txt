@@ -1,0 +1,9 @@
+## 1) float types / decimal literals (code tokens, expect 0): 0 hit(s)
+## 2) transcendentals (expect 0): 0 hit(s)
+## 3) float as-casts (expect 0): 0 hit(s)
+## 4) HashMap / iteration order (expect 0): 0 hit(s)
+## 5) Instant/SystemTime (full grep incl. comments; hits must be main.rs shell only):
+sim/src/main.rs:4://! 壁钟计时（Instant）只存在于本外壳，不进模拟态。
+sim/src/main.rs:8:use std::time::Instant;
+sim/src/main.rs:138:    let start = Instant::now();
+TOTAL_CODE_TOKEN_HITS = 0

@@ -1,0 +1,77 @@
+#############################################################
+# T004 python 独立第二实现 —— 例 4（真等距构造）快照 + seed 43 t004 双实现交叉验证 留档
+# 对局（例 4）：链式贴身全静止；全员 militia（r=0.4m，半径和 0.8m，同类中性 6/击，interval 20）
+# 构造（整数口径）：idx0 红 x=0；idx1 蓝A +0.8m=3435973836；idx2 蓝B -3435973836；
+#   idx3 蓝C -1.6m=-2x3435973836=-6871947672；idx4 红D -2.4m=-3x3435973836=-10307921508
+#   （取 0.8m 存储值的精确整数倍，各链节间距恰为 3435973836、gap=0 全静止）
+# 期望（主会话手推）：
+#   t=1：红0 hp=38（A/B 各击 6）、A=44（红0 击）、B=50（等距决胜证据：未被击）、
+#        C=44（D 击）、D=44（C 击）；五者 cd=20；x 全不变；count=5
+#   t=21（第二击轮）：红0=26、A=38、B=50、C=38、D=38；cd 全 20
+# x 为 Q32.32 原始整数；每段为「命令 + 完整输出 + 真实退出码 + 期望比对」
+#############################################################
+
+----- t=1 -----
+$ python recalc.py --case 4 --seed 42 --ticks 1
+mode=t004
+case=4
+seed=42
+ticks=1
+units=5
+final_tick=1
+hash=0xf0ec0f4e2ca0f363
+u0 red militia hp=38 cd=20 x=0
+u1 blue militia hp=44 cd=20 x=3435973836
+u2 blue militia hp=50 cd=20 x=-3435973836
+u3 blue militia hp=44 cd=20 x=-6871947672
+u4 red militia hp=44 cd=20 x=-10307921508
+REAL_EXIT=0
+expect: units=5 -> PASS
+expect: u0 red militia hp=38 cd=20 x=0 -> PASS
+expect: u1 blue militia hp=44 cd=20 x=3435973836 -> PASS
+expect: u2 blue militia hp=50 cd=20 x=-3435973836 -> PASS
+expect: u3 blue militia hp=44 cd=20 x=-6871947672 -> PASS
+expect: u4 red militia hp=44 cd=20 x=-10307921508 -> PASS
+
+----- t=21 -----
+$ python recalc.py --case 4 --seed 42 --ticks 21
+mode=t004
+case=4
+seed=42
+ticks=21
+units=5
+final_tick=21
+hash=0xd8185d8d28034edf
+u0 red militia hp=26 cd=20 x=0
+u1 blue militia hp=38 cd=20 x=3435973836
+u2 blue militia hp=50 cd=20 x=-3435973836
+u3 blue militia hp=38 cd=20 x=-6871947672
+u4 red militia hp=38 cd=20 x=-10307921508
+REAL_EXIT=0
+expect: units=5 -> PASS
+expect: u0 red militia hp=26 cd=20 x=0 -> PASS
+expect: u1 blue militia hp=38 cd=20 x=3435973836 -> PASS
+expect: u2 blue militia hp=50 cd=20 x=-3435973836 -> PASS
+expect: u3 blue militia hp=38 cd=20 x=-6871947672 -> PASS
+expect: u4 red militia hp=38 cd=20 x=-10307921508 -> PASS
+
+t004 折叠哈希（例 4）：t=1 -> 0xf0ec0f4e2ca0f363；t=21 -> 0xd8185d8d28034edf（见上方输出）
+结论（例 4）：两检查点全部逐字段 PASS。等距决胜路径已被真实触达：t=1 红0 对 A/B 距离严格相等
+（各 3435973836）而 B 未被击（hp=50）、A 被击（44），证明平局取最小索引 j=1（A）；链式互堵使移动阶段 x 全不变。
+
+#############################################################
+# 附：seed 43 + t004 模式终局对拍（默认构成 60 单位、1800 ticks）
+# 用途：Rust 侧同参数终局 = 0x54611ed6ded02540（双进程一致，此前缺 python 对拍），
+#       本项补齐「双实现 x 双 seed」交叉验证：seed 42 -> 0x958c5938c8682529（见 smoke-t004.txt），
+#       seed 43 -> 期望 0x54611ed6ded02540。
+#############################################################
+
+$ python recalc.py --mode t004 --seed 43 --ticks 1800
+mode=t004
+seed=43
+ticks=1800
+units=60
+final_tick=1800
+hash=0x54611ed6ded02540
+REAL_EXIT=0
+expect hash=0x54611ed6ded02540 -> got hash=0x54611ed6ded02540 -> PASS（与 Rust 侧逐位一致）

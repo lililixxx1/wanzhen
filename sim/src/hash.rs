@@ -22,6 +22,14 @@ impl Fnv1a {
         }
     }
 
+    /// 折叠一个 u32 字段：小端 4 字节序（与 [`Fnv1a::write_u64`] 同风格；
+    /// T004 起单位 hp / cd 各以 4 字节进状态哈希，主会话 D7 定稿）。
+    pub fn write_u32(&mut self, v: u32) {
+        for b in v.to_le_bytes() {
+            self.write_u8(b);
+        }
+    }
+
     pub fn write_u8(&mut self, b: u8) {
         self.hash ^= u64::from(b);
         self.hash = self.hash.wrapping_mul(FNV_PRIME);

@@ -1,0 +1,55 @@
+#############################################################
+# T004 python 独立第二实现 —— 手算对拍 例 1 快照留档
+# 对局：红 shieldman x=0.5m、蓝 pikeman x=1.5m（恰贴身 1.0m；射程和 1.0m + 余量 0.2m 内）
+# 期望（派工单符号式 / 本例逐一核对）：
+#   t=151：红 hp 84 / 蓝 hp 8、cd 均 30
+#   t=181：蓝被击杀移除（count=1、红 hp 84、x=0.5m）
+#   t=185：红 x = 0.5m+4x0.05m（存储常量口径 = 2147483648+4x214748364 = 3006477104）、cd=26
+# x 为 Q32.32 原始整数；每段为「命令 + 完整输出 + 真实退出码 + 期望比对」
+#############################################################
+
+----- t=151 -----
+$ python recalc.py --case 1 --seed 42 --ticks 151
+mode=t004
+case=1
+seed=42
+ticks=151
+units=2
+final_tick=151
+hash=0xdd51ba50c9078c14
+u0 red shieldman hp=84 cd=30 x=2147483648
+u1 blue pikeman hp=8 cd=30 x=6442450944
+REAL_EXIT=0
+expect: units=2 -> PASS
+expect: u0 red shieldman hp=84 cd=30 x=2147483648 -> PASS
+expect: u1 blue pikeman hp=8 cd=30 x=6442450944 -> PASS
+
+----- t=181 -----
+$ python recalc.py --case 1 --seed 42 --ticks 181
+mode=t004
+case=1
+seed=42
+ticks=181
+units=1
+final_tick=181
+hash=0x83cd09afa90876f1
+u0 red shieldman hp=84 cd=30 x=2147483648
+REAL_EXIT=0
+expect: units=1 -> PASS
+expect: u0 red shieldman hp=84 cd=30 x=2147483648 -> PASS
+
+----- t=185 -----
+$ python recalc.py --case 1 --seed 42 --ticks 185
+mode=t004
+case=1
+seed=42
+ticks=185
+units=1
+final_tick=185
+hash=0x205eeaaa8e2c63b9
+u0 red shieldman hp=84 cd=26 x=3006477104
+REAL_EXIT=0
+expect: units=1 -> PASS
+expect: u0 red shieldman hp=84 cd=26 x=3006477104 -> PASS
+
+结论：例 1 三个检查点全部逐字段 PASS（含 t=181 红方先手击杀后蓝方当 tick 不再行动、t=182..185 红方无前方者全速推进 4x0.05m）。

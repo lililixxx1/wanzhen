@@ -1,0 +1,81 @@
+# T004 跨进程对拍（同命令双进程 stdout 逐字节 diff）+ dump-final-units 留档
+
+环境：release 构建（cargo build -p sim --release -j 3，REAL_EXIT=0）；
+stdout 仅确定性五行（+ 可选逐单位行），stderr 壁钟 elapsed_ms 分流丢弃。
+
+## 1) seed 42（默认构成，1800 ticks）两进程对拍
+
+$ ./target/release/sim.exe --seed 42 > s42_run1.txt 2>/dev/null   # REAL_EXIT=0
+$ ./target/release/sim.exe --seed 42 > s42_run2.txt 2>/dev/null   # REAL_EXIT=0
+$ diff s42_run1.txt s42_run2.txt && echo DIFF_42=IDENTICAL
+DIFF_42=IDENTICAL
+---- s42_run1.txt ----
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+--------------------
+（units=60：1800 ticks 末全单位存活——与 D10「默认构成不接敌」观察一致）
+
+## 2) seed 43（默认构成，1800 ticks）两进程对拍
+
+$ ./target/release/sim.exe --seed 43 > s43_run1.txt 2>/dev/null   # REAL_EXIT=0
+$ ./target/release/sim.exe --seed 43 > s43_run2.txt 2>/dev/null   # REAL_EXIT=0
+$ diff s43_run1.txt s43_run2.txt && echo DIFF_43=IDENTICAL
+DIFF_43=IDENTICAL
+---- s43_run1.txt ----
+seed=42→43 摘要：
+seed=43
+ticks=1800
+units=60
+final_tick=1800
+hash=0x54611ed6ded02540
+--------------------
+seed 42 ≠ seed 43 → seed 敏感性保持；且两 seed 各自跨进程逐位一致。
+
+## 3) --dump-final-units（T004/D9 新旗标；seed 42 默认构成）
+
+$ ./target/release/sim.exe --seed 42 --dump-final-units > dump_final.txt 2>/dev/null
+REAL_EXIT=0
+总行数 65 = 五行摘要 + 60 单位行；格式 `u{idx} {side} {kind} hp={hp} cd={cd} x={x}`。
+节选（头 3 行 + 末 3 行单位行）：
+----
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+u0 red heavyknight hp=150 cd=0 x=1549624200036
+u1 red militia hp=50 cd=0 x=691919230234
+u2 red heavyknight hp=150 cd=0 x=686765269480
+...
+u57 blue pikeman hp=80 cd=0 x=4073346984952
+u58 blue pikeman hp=80 cd=0 x=4077641952248
+u59 blue shieldman hp=120 cd=0 x=4094821821432
+----
+观察（D10 留痕）：60 单位全存活、hp 全为满值（= 各兵种 spec hp）、cd 全 0
+——默认构成 1800 ticks 内未接敌，无任何伤害/死亡事件。
+
+## 4) 完整文件
+
+s42_run1.txt / s42_run2.txt / s43_run1.txt / s43_run2.txt / dump_final.txt
+（与本文件同目录，均含各自命令与 REAL_EXIT）
+
+## 5) 附：黄金锚复核（CLI 路径）
+
+$ ./target/release/sim.exe --units 0 --seed 42 --ticks 1800
+seed=42
+ticks=1800
+units=0
+final_tick=1800
+hash=0xd3b6408fd46c2008     ← T002 锚原值保持（REAL_EXIT=0）
+
+$ ./target/release/sim.exe --dump-formation --seed 42
+seed=42
+ticks=1800
+units=60
+final_tick=0
+hash=0xe2706f0b91a2be8e     ← 布阵快照哈希（T003 时为 0x22bce4da752220de，
+                               因 D7 折叠扩展 hp/cd 而变；该值非黄金锚、仅留痕）
+REAL_EXIT=0

@@ -1,0 +1,56 @@
+#############################################################
+# T004 python 独立第二实现 —— t004 折叠模式烟雾 + CLI 纪律留档
+# 说明：t004 折叠含 hp/cd（无历史锚可对，供 Rust 双盲对拍用）；此处仅记录可用性与确定性。
+#############################################################
+
+## S1 t004 模式默认构成（60 单位）、seed 42、1800 ticks
+$ python recalc.py --mode t004 --seed 42 --ticks 1800
+mode=t004
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+REAL_EXIT=0
+
+## S2 t004 模式自定义构成 --comp militia:10,archer:2（24 单位）、seed 7、500 ticks
+$ python recalc.py --mode t004 --comp militia:10,archer:2 --seed 7 --ticks 500
+mode=t004
+seed=7
+ticks=500
+units=24
+final_tick=500
+hash=0xfdb4fd1279a23dcc
+REAL_EXIT=0
+
+## S3 跨模式一致性：units=0 时 t004 与 legacy 折叠等价（单位段为空）
+$ python recalc.py --mode t004 --units 0 --seed 42 --ticks 1800
+mode=t004
+seed=42
+ticks=1800
+units=0
+final_tick=1800
+hash=0xd3b6408fd46c2008
+REAL_EXIT=0
+$ python recalc.py --mode legacy --units 0 --seed 42 --ticks 1800 | grep "^hash="
+legacy:hash=0xd3b6408fd46c2008 t004:hash=0xd3b6408fd46c2008
+units=0 跨模式一致 -> PASS
+
+## S4 确定性：同命令两次运行 stdout 逐字节一致（cmp）
+cmp -> 逐字节一致（exit 0）
+
+## S5 CLI 错误路径（保守纪律：exit 2；用 -- 前导参数验证）
+$ python recalc.py --case 1 --comp militia:1 --ticks 5
+REAL_EXIT=2 (expect 2)
+$ python recalc.py --comp bogus:1
+REAL_EXIT=2 (expect 2)
+$ python recalc.py --comp militia:0
+REAL_EXIT=2 (expect 2)
+$ python recalc.py --comp militia:1 --units 3
+REAL_EXIT=2 (expect 2)
+$ python recalc.py --ticks -5
+REAL_EXIT=2 (expect 2)
+
+## S6 布阵字段级互证（对照 t003/deploy-snap1.txt 60 行）
+snapshot cross-check: 60/60 lines, match=True
+REAL_EXIT=0

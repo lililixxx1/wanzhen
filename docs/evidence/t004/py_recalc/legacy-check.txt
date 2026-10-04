@@ -1,0 +1,50 @@
+#############################################################
+# T004 python 独立第二实现（recalc.py）——legacy 锚点校验留档
+# 环境：Windows 10 / Git Bash / python 3.14.4（零第三方依赖）
+# 期望值来源：派工单「legacy 锚点校验」三条（T002/T003 实测固化锚）
+# 说明：下方每段为「命令 + 完整输出 + 真实退出码 + 期望比对」原样记录
+#############################################################
+
+## 00 自检：RNG 黄金序列 / FNV-1a 向量 / 定点常数
+$ python recalc.py --selftest
+selftest rng: OK (seed 42 first 8 match rng.rs golden)
+selftest fnv: OK (FNV-1a64('a') = 0xaf63dc4c8601ec8c)
+selftest const: OK (speed/radius/margin/gap/counter match dispatch)
+selftest result: PASS
+REAL_EXIT=0
+selftest -> PASS
+
+----- A1 空单位锚：units=0（T002 口径）、seed 42、1800 ticks -----
+$ python recalc.py --mode legacy --units 0 --seed 42 --ticks 1800
+mode=legacy
+seed=42
+ticks=1800
+units=0
+final_tick=1800
+hash=0xd3b6408fd46c2008
+REAL_EXIT=0
+expect hash=0xd3b6408fd46c2008 -> got hash=0xd3b6408fd46c2008 -> PASS
+
+----- A2 默认构成锚：六兵种各 5（60 单位）、seed 42、1800 ticks（T003 黄金） -----
+$ python recalc.py --mode legacy --seed 42 --ticks 1800
+mode=legacy
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0xf2b85bd4727c2d45
+REAL_EXIT=0
+expect hash=0xf2b85bd4727c2d45 -> got hash=0xf2b85bd4727c2d45 -> PASS
+
+----- A3 布阵快照锚：默认构成、seed 43、0 ticks（T003 dump-formation 快照） -----
+$ python recalc.py --mode legacy --seed 43 --ticks 0
+mode=legacy
+seed=43
+ticks=0
+units=60
+final_tick=0
+hash=0x70f65c2f7f585cad
+REAL_EXIT=0
+expect hash=0x70f65c2f7f585cad -> got hash=0x70f65c2f7f585cad -> PASS
+
+结论：A1/A2/A3 三锚全 PASS——RNG（SplitMix64 扩展 + Xoshiro256**）/布阵（洗牌+递推+镜像）/移动/FNV-1a 折叠移植与 T002/T003 历史行为逐位一致。

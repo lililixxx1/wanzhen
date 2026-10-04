@@ -1,0 +1,67 @@
+# T004 新黄金值实测固化过程（PIT-M-002 流程：占位 0 → 实测 → 回填 → 复跑全绿）
+
+## 0) 旧黄金失效留痕
+
+- T003 旧黄金：`0xf2b85bd4727c2d45`（= 17489830120905256261，默认构成 deploy、
+  seed 42、1800 ticks 终局哈希，见 docs/evidence/t003/golden.txt）。
+- 失效原因（两项叠加，均为 T004 派工单 D5/D7 规定动作）：
+  1. **哈希折叠扩展（D7）**：每单位折叠序列由
+     `[alive 1B + kind 1B + side 1B + x 8B LE]` 扩展为
+     `[alive 1B + kind 1B + side 1B + hp 4B LE + cd 4B LE + x 8B LE]`——
+     布阵快照哈希即已改变（deploy 快照 0x22bce4da752220de → 0xe2706f0b91a2be8e，
+     见 crossproc.txt §5；T003 时该快照仅为证据留档、非黄金锚）。
+  2. **战斗行为上线（D1~D6）**：cd 冷却、伤害、墓碑移除改变状态演化本身。
+- 附带核验：T002 黄金锚 `0xd3b6408fd46c2008`（units=0）**原值保持**——
+  units=0 时折叠序列不含单位段，D7 扩展不影响（golden_hash_seed42_units0_1800ticks
+  测试 + CLI 复核双绿，见 crossproc.txt §5）。
+
+## 1) 占位运行（断言 GOLDEN_HASH=0，失败信息给出实测值；lib 测试路径）
+
+代码状态：`const GOLDEN_HASH: u64 = 0;`（占位）
+$ cargo test -p sim -j 3   （输出摘录，全量见本轮终端记录）
+----
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... FAILED
+thread 'world::tests::golden_deploy_default_comp_seed42_1800ticks' (4432) panicked at sim\src\world.rs:649:9:
+assertion `left == right` failed: golden deploy hash mismatch (default comp, seed 42, 1800 ticks)
+  left: 10776086108806063401
+ right: 0
+----
+同轮其余 22 测试全过（含 T002 锚、全部手算例 A~F 与改造 G/H）——占位轮失败仅黄金 1 项，
+属 PIT-M-002 规定动作非缺陷。
+
+## 2) release CLI 独立复测（同路径：默认构成 deploy + 1800 ticks，与测试路径交叉验证）
+
+$ cargo build -p sim --release -j 3   （REAL_EXIT=0）
+$ ./target/release/sim.exe --seed 42
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+REAL_EXIT=0
+
+python 换算核验：两路径逐位一致
+>>> hex(10776086108806063401) → '0x958c5938c8682529'
+>>> int('0x958c5938c8682529', 16) == 10776086108806063401 → True
+
+## 3) 回填
+
+const GOLDEN_HASH: u64 = 10776086108806063401; // 0x958c5938c8682529
+    （默认构成 deploy、seed 42、1800 ticks 终局哈希；注释同步记旧值 0xf2b85bd4727c2d45 失效原因）
+
+## 4) 回填后复跑（全绿证据见 test.txt；此处摘录）
+
+$ cargo test -p sim -j 3
+----
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+REAL_EXIT=0
+----
+
+## 5) 跨进程对拍锚
+
+- seed 42：hash=0x958c5938c8682529（两进程逐字节一致，见 crossproc.txt）
+- seed 43：hash=0x54611ed6ded02540（两进程逐字节一致；与 seed 42 不同 → seed 敏感性保持）
+REAL_EXIT=0

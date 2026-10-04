@@ -1,0 +1,42 @@
+#############################################################
+# T004 python 独立第二实现 —— 手算对拍 例 3 快照留档
+# 对局：蓝 militia x=1.8m（hp 直填 6）、红 militia x=1.0m、红 militia x=0
+# 整数口径注：1.8m 存储值 7730941132；红 x=1.0m/0 为精确值
+# 期望（派工单符号式）：t=1 后 count=2（索引压缩前移），units[0] hp 44 cd 20 x=1.0m，units[1] hp 50 cd 0 x=0.09m；
+#   t=10 x = 1.0m+9x0.09m 与 10x0.09m（存储常量口径 = 7773890800 与 3865470560）
+# x 为 Q32.32 原始整数；每段为「命令 + 完整输出 + 真实退出码 + 期望比对」
+#############################################################
+
+----- t=1 -----
+$ python recalc.py --case 3 --seed 42 --ticks 1
+mode=t004
+case=3
+seed=42
+ticks=1
+units=2
+final_tick=1
+hash=0x01229352e1a9e4d4
+u0 red militia hp=44 cd=20 x=4294967296
+u1 red militia hp=50 cd=0 x=386547056
+REAL_EXIT=0
+expect: units=2 -> PASS
+expect: u0 red militia hp=44 cd=20 x=4294967296 -> PASS
+expect: u1 red militia hp=50 cd=0 x=386547056 -> PASS
+
+----- t=10 -----
+$ python recalc.py --case 3 --seed 42 --ticks 10
+mode=t004
+case=3
+seed=42
+ticks=10
+units=2
+final_tick=10
+hash=0xda8a23f9c59d4b09
+u0 red militia hp=44 cd=11 x=7773890800
+u1 red militia hp=50 cd=0 x=3865470560
+REAL_EXIT=0
+expect: units=2 -> PASS
+expect: u0 red militia hp=44 cd=11 x=7773890800 -> PASS
+expect: u1 red militia hp=50 cd=0 x=3865470560 -> PASS
+
+结论：例 3 两检查点全部逐字段 PASS（蓝被红方索引 1 单位后手击杀并 tick 末压缩移除，红方两单位此后同道推进）。

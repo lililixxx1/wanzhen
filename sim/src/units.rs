@@ -17,13 +17,21 @@
 //! python 独立复算提供整数级可对拍性。所有定点常量一律**纯整数表达式**定义——
 //! 禁浮点、禁小数字面量、禁 `as` 浮点转换（报告 5.2 / AGENTS.md 硬约束 4）。
 //! 整数除法为截断除法，表达式实际值以单测 `fixed_point_constants_selfcheck`
-//! 的推导为准。
+//! 与 `damage_formula_all_6x6_pairs` 的推导为准。
 
 /// Q32.32 定点的 1.0（= 1 米）。
 pub const ONE_Q32_32: i64 = 1 << 32;
 
 /// Q16.16 定点的 1.0（= 倍率 1.0）。
 pub const ONE_Q16_16: i32 = 1 << 16;
+
+/// 近战射程余量（Q32.32）：0.2 m（主会话 D3 定稿）。
+///
+/// 攻击条件 `|dx| <= r_i + r_j + MELEE_MARGIN_Q32`（闭区间，恰边界可击）；
+/// M0 全近战口径，1 维无绕后、不区分方向。
+/// 推导：20 × 4_294_967_296 = 85_899_345_920；÷100 → 商 858_993_459 余 20 →
+/// 截断 = 858_993_459。
+pub const MELEE_MARGIN_Q32: i64 = 20 * ONE_Q32_32 / 100;
 
 /// 克制类别（三类单环；环方向见模块注释 D1 留痕）。
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -47,8 +55,8 @@ pub enum UnitKind {
 
 /// 单兵种静态数据 v0。
 ///
-/// `hp / attack / attack_interval_ticks` 在 T003 不参与任何运算（T004 战斗结算启用），
-/// 落表即为目的；`speed_q32 / radius_q32` 为 Q32.32 纯整数表达式。
+/// `hp / attack / attack_interval_ticks` 自 T004 起参与战斗结算（T003 仅落表）；
+/// `speed_q32 / radius_q32 / range_q32` 为 Q32.32 纯整数表达式。
 pub struct UnitSpec {
     pub name_zh: &'static str,
     pub hp: i32,
@@ -59,6 +67,10 @@ pub struct UnitSpec {
     pub speed_q32: i64,
     /// 碰撞半径（Q32.32 米）。
     pub radius_q32: i64,
+    /// 攻击射程（Q32.32 米；主会话 D8 定稿）。近战五兵种填 0（= 贴身语义占位）；
+    /// **M0 战斗判定不读此字段**（统一 D3 贴身口径：半径和 + MELEE_MARGIN_Q32），
+    /// 远程行为留 T009+ 启用。
+    pub range_q32: i64,
     pub armor: ArmorClass,
 }
 
@@ -72,6 +84,7 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 30,
         speed_q32: 5 * ONE_Q32_32 / 100, // 0.05 m/tick
         radius_q32: ONE_Q32_32 / 2,      // 0.5 m
+        range_q32: 0,                    // 近战：贴身语义占位（M0 判定不读，D8）
         armor: ArmorClass::Heavy,
     },
     // HeavyKnight / 重骑兵：重甲高速突击。
@@ -82,6 +95,7 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 45,
         speed_q32: 20 * ONE_Q32_32 / 100, // 0.20 m/tick
         radius_q32: 4 * ONE_Q32_32 / 5,   // 0.8 m
+        range_q32: 0,                     // 近战：贴身语义占位（M0 判定不读，D8）
         armor: ArmorClass::Heavy,
     },
     // Pikeman / 长矛兵：轻甲中坚。
@@ -92,6 +106,7 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 30,
         speed_q32: 10 * ONE_Q32_32 / 100, // 0.10 m/tick
         radius_q32: ONE_Q32_32 / 2,       // 0.5 m
+        range_q32: 0,                     // 近战：贴身语义占位（M0 判定不读，D8）
         armor: ArmorClass::Light,
     },
     // Swordsman / 剑士：轻甲快速近战。
@@ -102,9 +117,10 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 25,
         speed_q32: 12 * ONE_Q32_32 / 100, // 0.12 m/tick
         radius_q32: ONE_Q32_32 / 2,       // 0.5 m
+        range_q32: 0,                     // 近战：贴身语义占位（M0 判定不读，D8）
         armor: ArmorClass::Light,
     },
-    // Archer / 弓箭手：无甲远程（T003 阶段与近战同规则推进，射程 T004 定）。
+    // Archer / 弓箭手：无甲远程（射程字段 D8 落值；M0 战斗判定不读，远程行为 T009+）。
     UnitSpec {
         name_zh: "弓箭手",
         hp: 60,
@@ -112,6 +128,7 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 60,
         speed_q32: 8 * ONE_Q32_32 / 100, // 0.08 m/tick
         radius_q32: 2 * ONE_Q32_32 / 5,  // 0.4 m
+        range_q32: 30 * ONE_Q32_32,      // 30 m（D8；M0 判定不读，留 T009+ 启用）
         armor: ArmorClass::Unarmored,
     },
     // Militia / 民兵：无甲廉价炮灰。
@@ -122,6 +139,7 @@ static SPECS: [UnitSpec; 6] = [
         attack_interval_ticks: 20,
         speed_q32: 9 * ONE_Q32_32 / 100, // 0.09 m/tick
         radius_q32: 2 * ONE_Q32_32 / 5,  // 0.4 m
+        range_q32: 0,                    // 近战：贴身语义占位（M0 判定不读，D8）
         armor: ArmorClass::Unarmored,
     },
 ];
@@ -181,6 +199,19 @@ pub fn counter_multiplier(attacker: ArmorClass, defender: ArmorClass) -> i32 {
     COUNTER_TABLE[attacker as usize][defender as usize]
 }
 
+/// 单次攻击伤害（主会话 D1 定稿，T004 战斗结算唯一伤害入口）：
+///
+/// `dmg = attack * counter_multiplier(攻方类别, 守方类别) / ONE_Q16_16`，
+/// i32 截断除法（操作数全正，无符号歧义）。
+///
+/// 溢出安全：最大 attack 14 × 最大倍率 98_304 = 1_376_256 << i32::MAX（留痕）。
+/// `hp` 减至 `<= 0` 即死亡（墓碑），判定与写入在 [`crate::world`] 战斗阶段。
+pub fn damage_dealt(attacker: UnitKind, defender: UnitKind) -> i32 {
+    let attack = spec(attacker).attack;
+    let mult = counter_multiplier(attacker.armor(), defender.armor());
+    attack * mult / ONE_Q16_16
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -226,6 +257,67 @@ mod tests {
         assert_eq!(UnitKind::Swordsman.armor(), ArmorClass::Light);
         assert_eq!(UnitKind::Archer.armor(), ArmorClass::Unarmored);
         assert_eq!(UnitKind::Militia.armor(), ArmorClass::Unarmored);
+    }
+
+    /// 单测 A（T004 验收 1）：全部 6×6 兵种组合伤害公式对拍 + D1 手算例显式断言。
+    #[test]
+    fn damage_formula_all_6x6_pairs() {
+        // 期望值独立于 damage_dealt 构造：倍率矩阵取 T003 锁定克制表的字面量
+        // （与 counter_table_3x3_exhaustive_and_armor_classification 同源互证），
+        // 期望 dmg = attack × 倍率 / 65536（i32 截断除法，全正数）。
+        const NEUTRAL: i32 = 65_536;
+        const COUNTER: i32 = 98_304; // ×1.5
+        const COUNTERED: i32 = 43_690; // ×2/3 截断
+        // 行 = 攻方类别（Heavy, Light, Unarmored），列 = 守方类别。
+        let mult = [
+            [NEUTRAL, COUNTER, COUNTERED],
+            [COUNTERED, NEUTRAL, COUNTER],
+            [COUNTER, COUNTERED, NEUTRAL],
+        ];
+        let kinds = [
+            UnitKind::Shieldman,
+            UnitKind::HeavyKnight,
+            UnitKind::Pikeman,
+            UnitKind::Swordsman,
+            UnitKind::Archer,
+            UnitKind::Militia,
+        ];
+        let armor_idx = |k: UnitKind| match k.armor() {
+            ArmorClass::Heavy => 0,
+            ArmorClass::Light => 1,
+            ArmorClass::Unarmored => 2,
+        };
+        for a in kinds {
+            for d in kinds {
+                let expected = spec(a).attack * mult[armor_idx(a)][armor_idx(d)] / 65_536;
+                assert_eq!(
+                    damage_dealt(a, d),
+                    expected,
+                    "damage_dealt({a:?} -> {d:?}) 与克制表推导不符"
+                );
+            }
+        }
+        // D1 六个手算例（显式算式写明；例 4/5 按派工单「与 T003 克制表对齐」口径
+        // 以锁定表方向为准，派工单速算值方向互换问题已上报主会话，见
+        // docs/evidence/t004/README.md 上报节）。
+        // 例 1：盾兵(8,Heavy) 打 长矛(Light)：8×98304/65536 = 786432/65536 = 12（整除精确）。
+        assert_eq!(damage_dealt(UnitKind::Shieldman, UnitKind::Pikeman), 12);
+        // 例 2：长矛(10,Light) 打 盾兵(Heavy)：10×43690/65536 = 436900/65536 = 6（商 6 余 43684）。
+        assert_eq!(damage_dealt(UnitKind::Pikeman, UnitKind::Shieldman), 6);
+        // 例 3：弓手(9,Unarmored) 打 重甲：9×98304/65536 = 884736/65536 = 13（13.5 截断）。
+        assert_eq!(damage_dealt(UnitKind::Archer, UnitKind::Shieldman), 13);
+        // 例 4：民兵(6,Unarmored) 打 重甲(Heavy)：6×98304/65536 = 589824/65536 = 9（整除精确）。
+        //   【派工单 D1 例 4 写 6×43690/65536 = 3——43690 是「被克制」倍率，对应
+        //    Unarmored→Light；锁定表无甲克重甲为 ×1.5=98304，故正确值 9。已上报。】
+        assert_eq!(damage_dealt(UnitKind::Militia, UnitKind::Shieldman), 9);
+        // 例 5：重骑(14,Heavy) 打 民兵(Unarmored)：14×43690/65536 = 611660/65536 = 9（余 21836）。
+        //   【派工单 D1 例 5 写 14×98304/65536 = 21——98304 对应 Heavy→Light；锁定表
+        //    Heavy→Unarmored 为被克 ×2/3=43690，故正确值 9。已上报。】
+        assert_eq!(damage_dealt(UnitKind::HeavyKnight, UnitKind::Militia), 9);
+        // 例 6：同类中性：atk×65536/65536 = atk（逐兵种抽验）。
+        assert_eq!(damage_dealt(UnitKind::Militia, UnitKind::Militia), 6);
+        assert_eq!(damage_dealt(UnitKind::Shieldman, UnitKind::Shieldman), 8);
+        assert_eq!(damage_dealt(UnitKind::HeavyKnight, UnitKind::HeavyKnight), 14);
     }
 
     /// 单测 9：定点常量自检（纯整数算术，推导写明；非凭记忆引用）。
