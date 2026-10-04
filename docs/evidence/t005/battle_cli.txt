@@ -1,0 +1,108 @@
+# T005 CLI --battle 用例（release 构建，stdout 确定性内容）
+
+## 1) --battle 默认构成（BattleLog 固定 8 行）
+
+$ ./target/release/sim.exe --battle 2>/dev/null
+seed=42
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x958c5938c8682529
+REAL_EXIT=0
+
+## 2) --battle --dump-final-units 组合（BattleLog 8 行 + 逐单位终态）
+
+$ ./target/release/sim.exe --battle --dump-final-units 2>/dev/null
+---- stdout（前 8 行 = BattleLog，其后 60 行逐单位）----
+seed=42
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x958c5938c8682529
+u0 red heavyknight hp=150 cd=0 x=1549624200036
+u1 red militia hp=50 cd=0 x=691919230234
+u2 red heavyknight hp=150 cd=0 x=686765269480
+u3 red pikeman hp=80 cd=0 x=681181811996
+u4 red militia hp=50 cd=0 x=670873890486
+u5 red shieldman hp=120 cd=0 x=355623290672
+u6 red archer hp=60 cd=0 x=351757820106
+u7 red heavyknight hp=150 cd=0 x=346603859352
+u8 red militia hp=50 cd=0 x=341449898598
+u9 red pikeman hp=80 cd=0 x=337584428032
+u10 red archer hp=60 cd=0 x=333718957466
+u11 red militia hp=50 cd=0 x=330282983630
+u12 red swordsman hp=90 cd=0 x=326417513064
+u13 red shieldman hp=120 cd=0 x=304942676584
+u14 red militia hp=50 cd=0 x=301077206018
+u15 red swordsman hp=90 cd=0 x=297211735452
+u16 red archer hp=60 cd=0 x=293346264886
+u17 red archer hp=60 cd=0 x=289910291050
+u18 red archer hp=60 cd=0 x=286474317214
+u19 red swordsman hp=90 cd=0 x=282608846648
+u20 red shieldman hp=120 cd=0 x=263281493816
+u21 red pikeman hp=80 cd=0 x=258986526520
+u22 red swordsman hp=90 cd=0 x=254691559224
+u23 red shieldman hp=120 cd=0 x=243954140984
+u24 red heavyknight hp=150 cd=0 x=238370683500
+u25 red swordsman hp=90 cd=0 x=232787226016
+u26 red heavyknight hp=150 cd=0 x=227203768532
+u27 red pikeman hp=80 cd=0 x=221620311048
+u28 red pikeman hp=80 cd=0 x=217325343752
+u29 red shieldman hp=120 cd=0 x=200145474568
+u30 blue heavyknight hp=150 cd=0 x=2745343095964
+u31 blue militia hp=50 cd=0 x=3603048065766
+u32 blue heavyknight hp=150 cd=0 x=3608202026520
+u33 blue pikeman hp=80 cd=0 x=3613785484004
+u34 blue militia hp=50 cd=0 x=3624093405514
+u35 blue shieldman hp=120 cd=0 x=3939344005328
+u36 blue archer hp=60 cd=0 x=3943209475894
+u37 blue heavyknight hp=150 cd=0 x=3948363436648
+u38 blue militia hp=50 cd=0 x=3953517397402
+u39 blue pikeman hp=80 cd=0 x=3957382867968
+u40 blue archer hp=60 cd=0 x=3961248338534
+u41 blue militia hp=50 cd=0 x=3964684312370
+u42 blue swordsman hp=90 cd=0 x=3968549782936
+u43 blue shieldman hp=120 cd=0 x=3990024619416
+u44 blue militia hp=50 cd=0 x=3993890089982
+u45 blue swordsman hp=90 cd=0 x=3997755560548
+u46 blue archer hp=60 cd=0 x=4001621031114
+u47 blue archer hp=60 cd=0 x=4005057004950
+u48 blue archer hp=60 cd=0 x=4008492978786
+u49 blue swordsman hp=90 cd=0 x=4012358449352
+u50 blue shieldman hp=120 cd=0 x=4031685802184
+u51 blue pikeman hp=80 cd=0 x=4035980769480
+u52 blue swordsman hp=90 cd=0 x=4040275736776
+u53 blue shieldman hp=120 cd=0 x=4051013155016
+u54 blue heavyknight hp=150 cd=0 x=4056596612500
+u55 blue swordsman hp=90 cd=0 x=4062180069984
+u56 blue heavyknight hp=150 cd=0 x=4067763527468
+u57 blue pikeman hp=80 cd=0 x=4073346984952
+u58 blue pikeman hp=80 cd=0 x=4077641952248
+u59 blue shieldman hp=120 cd=0 x=4094821821432
+--------------------
+统计：unit_lines=60（grep -c "^u"）；hp 分布 120/150/80/90/60/50 各 10
+（= 每兵种 5 红 + 5 蓝全满血）、cd 全 0 —— 「镜像不接敌」（world.rs 模块注释
+D10）在 --battle 路径的实证：1800 ticks 终局 60 单位全存活满血零冷却。
+REAL_EXIT=0
+
+## 3) --battle × --units 互斥报错（T005/D6：裸单位是 T002 冒烟路径非对局）
+
+$ ./target/release/sim.exe --battle --units 5
+stdout 为空；stderr：
+sim: --battle and --units are mutually exclusive
+usage: sim.exe [--seed <u64>] [--ticks <u64>] ([--comp <kind:count,...>] | [--units <usize>]) [--battle] [--dump-formation] [--dump-final-units] (--flag value or --flag=value; defaults: seed=42 ticks=1800 comp=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5; --battle: run a battle to extinction or tick cap and print BattleLog (8 lines), mutually exclusive with --units and --dump-formation; values are decimal)
+REAL_EXIT=2
+
+## 4) --battle × --dump-formation 互斥报错（T005/D6：tick 0 快照与跑终局语义冲突）
+
+$ ./target/release/sim.exe --battle --dump-formation
+stdout 为空；stderr：
+sim: --battle and --dump-formation are mutually exclusive
+usage: sim.exe [--seed <u64>] [--ticks <u64>] ([--comp <kind:count,...>] | [--units <usize>]) [--battle] [--dump-formation] [--dump-final-units] (--flag value or --flag=value; defaults: seed=42 ticks=1800 comp=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5; --battle: run a battle to extinction or tick cap and print BattleLog (8 lines), mutually exclusive with --units and --dump-formation; values are decimal)
+REAL_EXIT=2

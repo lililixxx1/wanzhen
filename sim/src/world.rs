@@ -21,6 +21,23 @@
 //! 1800 ticks 内不接敌（≈999/0.4 ≈ 2498 ticks 才贴身）；本卡不调初值（最小变更，
 //! 平衡初值留 T009 回归），T004 全部战斗验证用测试内手动构造近距对局。
 //!
+//! ## T005 扩展（主会话 D1~D12 定稿）：胜负判定与终局
+//!
+//! [`World::run_battle`]（D4）单局收束：全灭判定**每 tick 求值且优先于上限**
+//! （一方 0 → 对方胜；双方 0 → Draw，仅 tick 0 双空构型可达——同 tick 双灭
+//! 不可达推演见 [`Winner`] 注释 D10）；上限收束（tick == max_ticks 仍双方有
+//! 存活）按每方存活总 hp 判定（索引序 i64 累加，5.2 固定序纪律；高者胜、
+//! 同值 Draw）。tick 0（首 step 前）也求值一次——空阵营边界（0 单位一方）
+//! 立即收束 end_tick=0，不 panic。终局四元组（[`BattleOutcome`]）存入
+//! [`World::resolved`] 并**冻结**：再次 run_battle 幂等返回缓存、tick 不再
+//! 推进。`resolved` **不进 state_hash、不影响 step/run**——哈希折叠序零变化，
+//! T002/T004 黄金锚原值保持（单测 battle_golden_crosscheck_default_comp 以
+//! T004 黄金 0x958c5938c8682529 实证）。final_hash 一律终局点现算
+//! [`World::state_hash`]（不读 last_hash：tick 0 直构 manual world 的
+//! last_hash=0，现算才语义正确；step 过的路径上两者相等）。[`BattleLog`]（D5）
+//! 为战斗日志最小字段（seed / 双方构成 / 终局四元组；Display 固定 8 行确定性
+//! 内容；不含落库——表 6-0 吞吐口径不含落库）。
+//!
 //! 确定性纪律：无浮点 / 无超越函数 / 无挂钟 / 无 HashMap；
 //! 遍历一律按索引序；同 seed + 同参数 + 同 tick 数 → 状态逐位一致。
 //! 位置为 Q32.32 定点整数（[`crate::units::ONE_Q32_32`]），纯整数运算无舍入。
@@ -39,6 +56,13 @@ const GAP_Q32: i64 = ONE_Q32_32 / 2;
 /// **独立** RNG 实例，不消耗 World 的 tick 级 RNG——保证 T002 黄金锚
 /// （units=0 哈希）不受布阵路径影响。
 const DEPLOY_SALT: u64 = 0x6465_706c_6f79_0001;
+
+/// 降规模对局 tick 上限（报告表 6-0 直接落字：单局 ≤ 60s（≤ 1,800 ticks @30Hz））。
+pub const TICK_CAP_REDUCED: u64 = 1800;
+/// 全规模对局 tick 上限（表 6-0 无全规模 tick 上限显式字段；按产品口径
+/// 「单局时长 3–8 分钟」上限 8 分钟 @30Hz 换算钉死：8 × 60 × 30 = 14,400。
+/// V1.0 收官修订可回写。留痕于此。）
+pub const TICK_CAP_FULL: u64 = 8 * 60 * 30;
 
 /// 默认交战构成（CLI `--comp` 缺省值，主会话 D7 定稿）：六兵种各 5，
 /// 双方同清单对称布阵 → 每方 30、共 60 单位。
@@ -77,6 +101,89 @@ impl Side {
     }
 }
 
+/// 胜负（Draw = 平局：tick 0 双方皆空 / 上限判定存活总 hp 同值。
+/// 「双方同 tick 战斗全灭」经归纳不可达——末二存活者必分先后手，
+/// 先死者不再出手，注释留痕此推演）。
+///
+/// 同 tick 双灭不可达推演（主会话 D10 定稿，留痕）：设某 tick 战斗阶段内红的
+/// 最后一死者死于蓝方某单位的攻击（该蓝的行动时刻 = 其索引位 i_B）、蓝的
+/// 最后一死者死于红方某单位（索引位 i_R）。行凶者出手时必仍存活，即行凶发生
+/// 于己方全灭之前：若 i_R < i_B，则 i_R 时刻蓝方最后一人已死 → i_B 处再无蓝方
+/// 可出手——矛盾；若 i_B < i_R，对称矛盾。故「双方同 tick 战斗全灭」不可达，
+/// 全灭 Draw 分支仅 tick 0 双空（或直构双空）构型可达。
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Winner {
+    Red,
+    Blue,
+    Draw,
+}
+
+impl Winner {
+    /// CLI 输出用小写标签。
+    pub fn label(self) -> &'static str {
+        match self {
+            Winner::Red => "red",
+            Winner::Blue => "blue",
+            Winner::Draw => "draw",
+        }
+    }
+}
+
+/// 终局四元组（任务卡口径：winner / 结束 tick / 双方存活计数 / 最终哈希）。
+/// final_hash = 终局点 state_hash()（T002 起折叠 rng 4 状态字——已含 rng_state）。
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct BattleOutcome {
+    pub winner: Winner,
+    pub end_tick: u64,
+    pub alive_red: u32,
+    pub alive_blue: u32,
+    pub final_hash: u64,
+}
+
+/// 战斗日志最小字段（任务卡：对局 seed、双方兵种构成、终局四元组；
+/// 不含落库——表 6-0 吞吐口径不含落库）。Display 输出固定 8 行（顺序固定、
+/// 确定性内容），供 CLI stdout 与 T009 胜率表采集。
+#[derive(Clone, Debug)]
+pub struct BattleLog {
+    pub seed: u64,
+    pub red_composition: Vec<(UnitKind, usize)>,
+    pub blue_composition: Vec<(UnitKind, usize)>,
+    pub outcome: BattleOutcome,
+}
+
+/// 构成清单格式化（D5）：`kind:count` 逗号分隔无空格；kind 用 [`UnitKind::id`]，
+/// 清单顺序 = 构成清单顺序。
+fn fmt_composition(f: &mut std::fmt::Formatter<'_>, comp: &[(UnitKind, usize)]) -> std::fmt::Result {
+    for (i, (kind, count)) in comp.iter().enumerate() {
+        if i > 0 {
+            f.write_str(",")?;
+        }
+        write!(f, "{}:{}", kind.id(), count)?;
+    }
+    Ok(())
+}
+
+impl std::fmt::Display for BattleLog {
+    /// 固定 8 行、无尾随换行（CLI 以 println! 输出即得恰好 8 行）：
+    /// seed / comp_red / comp_blue / winner / end_tick / alive_red / alive_blue / final_hash。
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "seed={}", self.seed)?;
+        f.write_str("\ncomp_red=")?;
+        fmt_composition(f, &self.red_composition)?;
+        f.write_str("\ncomp_blue=")?;
+        fmt_composition(f, &self.blue_composition)?;
+        write!(
+            f,
+            "\nwinner={}\nend_tick={}\nalive_red={}\nalive_blue={}\nfinal_hash=0x{:016x}",
+            self.outcome.winner.label(),
+            self.outcome.end_tick,
+            self.outcome.alive_red,
+            self.outcome.alive_blue,
+            self.outcome.final_hash
+        )
+    }
+}
+
 /// 单位（T004 起：+ hp / 攻击冷却 cd；死亡为墓碑标记，tick 末物理移除）。
 pub struct Unit {
     pub alive: bool,
@@ -100,6 +207,10 @@ pub struct World {
     /// 最近一次 step 末的状态哈希；`deploy` 后为布阵快照哈希（tick 0 语义）；
     /// `World::new` 直构（未 step / 未 deploy）时为 0。
     pub last_hash: u64,
+    /// 终局缓存（T005/D4）：`run_battle` 收束后写入并冻结（幂等返回）；
+    /// `None` = 未收束。**不进 state_hash、不影响 step/run**——哈希折叠序
+    /// 零变化，T002/T004 黄金锚原值保持。
+    resolved: Option<BattleOutcome>,
 }
 
 impl World {
@@ -124,6 +235,7 @@ impl World {
             units,
             rng: Xoshiro256StarStar::from_seed(seed),
             last_hash: 0,
+            resolved: None,
         }
     }
 
@@ -194,6 +306,7 @@ impl World {
             units,
             rng: Xoshiro256StarStar::from_seed(seed),
             last_hash: 0,
+            resolved: None,
         };
         world.last_hash = world.state_hash();
         world
@@ -389,6 +502,121 @@ impl World {
             self.step();
         }
     }
+
+    /// 单局收束（T005/D4）：推进至全灭或 max_ticks（先到者），返回终局四元组并
+    /// 冻结（幂等：已收束则直接返回缓存，tick 不再推进——终局冻结机制）。
+    /// 全灭判定每 tick 求值且优先于上限（D3）；上限收束按存活总 hp 判定（D3）。
+    /// step/run 保持 T002/T004 纯原语语义不变；本方法只是控制流 + 判定。
+    pub fn run_battle(&mut self, max_ticks: u64) -> BattleOutcome {
+        if let Some(cached) = &self.resolved {
+            return cached.clone();
+        }
+        // tick 0 全灭检查（D3：空阵营边界——0 单位一方——立即收束 end_tick=0，
+        // 不 panic；空阵营不进入循环）。
+        let (alive_red, alive_blue) = self.alive_counts();
+        let outcome = if alive_red == 0 || alive_blue == 0 {
+            self.resolve_extinction(alive_red, alive_blue)
+        } else {
+            let mut extinction: Option<BattleOutcome> = None;
+            while self.tick < max_ticks {
+                self.step();
+                let (ar, ab) = self.alive_counts();
+                if ar == 0 || ab == 0 {
+                    // 恰在 tick == max_ticks 发生全灭亦走此分支——全灭优先于上限（D3）。
+                    extinction = Some(self.resolve_extinction(ar, ab));
+                    break;
+                }
+            }
+            match extinction {
+                Some(o) => o,
+                None => self.resolve_by_hp(),
+            }
+        };
+        self.resolved = Some(outcome.clone());
+        outcome
+    }
+
+    /// 已收束的终局（未收束为 `None`）。
+    pub fn outcome(&self) -> Option<&BattleOutcome> {
+        self.resolved.as_ref()
+    }
+
+    /// 双方存活计数（按索引序单遍；retain 后 units 全为存活者，alive 过滤为
+    /// 语义防御，与 move_units 同口径）。
+    fn alive_counts(&self) -> (u32, u32) {
+        let mut red: u32 = 0;
+        let mut blue: u32 = 0;
+        for u in &self.units {
+            if u.alive {
+                match u.side {
+                    Side::Red => red += 1,
+                    Side::Blue => blue += 1,
+                }
+            }
+        }
+        (red, blue)
+    }
+
+    /// 全灭收束（私有，D3）：一方 0 且对方 >0 → 对方胜；双方 0 → Draw（仅
+    /// tick 0 双空构型可达——同 tick 双灭不可达，见 [`Winner`] 注释 D10 推演）。
+    /// final_hash 一律终局点现算 [`World::state_hash`]（不读 last_hash——tick 0
+    /// 直构 manual world 的 last_hash=0，现算才语义正确；step 过的路径两者相等）。
+    fn resolve_extinction(&self, alive_red: u32, alive_blue: u32) -> BattleOutcome {
+        let winner = match (alive_red, alive_blue) {
+            (0, 0) => Winner::Draw,
+            (_, 0) => Winner::Red,
+            (0, _) => Winner::Blue,
+            _ => unreachable!("resolve_extinction requires at least one extinct side"),
+        };
+        BattleOutcome {
+            winner,
+            end_tick: self.tick,
+            alive_red,
+            alive_blue,
+            final_hash: self.state_hash(),
+        }
+    }
+
+    /// 上限收束（私有，D3）：每方存活单位 hp 按索引序 i64 累加求和（5.2 纪律
+    /// 固定序——归约序与线程数无关的要求从现在钉死，本阶段虽单线程亦不豁免，
+    /// 并行求和结果不进模拟态）；高者胜，同值 Draw。
+    /// 溢出安全：存活者 hp ≥ 1、降规模满编 200 单位 × max hp 150 = 30,000
+    /// << i64::MAX（全规模万人量级 20,000 × 150 = 3×10^6 亦安全）。
+    fn resolve_by_hp(&self) -> BattleOutcome {
+        let mut hp_red: i64 = 0;
+        let mut hp_blue: i64 = 0;
+        let mut alive_red: u32 = 0;
+        let mut alive_blue: u32 = 0;
+        for u in &self.units {
+            if !u.alive {
+                continue;
+            }
+            match u.side {
+                Side::Red => {
+                    hp_red += u.hp as i64;
+                    alive_red += 1;
+                }
+                Side::Blue => {
+                    hp_blue += u.hp as i64;
+                    alive_blue += 1;
+                }
+            }
+        }
+        let winner = if hp_red > hp_blue {
+            Winner::Red
+        } else if hp_blue > hp_red {
+            Winner::Blue
+        } else {
+            Winner::Draw
+        };
+        BattleOutcome {
+            winner,
+            end_tick: self.tick,
+            alive_red,
+            alive_blue,
+            final_hash: self.state_hash(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -403,6 +631,7 @@ mod tests {
             units,
             rng: Xoshiro256StarStar::from_seed(seed),
             last_hash: 0,
+            resolved: None,
         }
     }
 
@@ -919,5 +1148,186 @@ mod tests {
         assert_eq!(spec(UnitKind::Swordsman).range_q32, 0);
         assert_eq!(spec(UnitKind::Archer).range_q32, 30 * ONE_Q32_32);
         assert_eq!(spec(UnitKind::Militia).range_q32, 0);
+    }
+
+    // ---- T005 胜负判定与终局（主会话 D7~D9 定稿）----
+
+    /// T005 测 1（验收 1 必胜局，1v1）：复用 T004 单测 B 已锁定时间线
+    /// （docs/evidence/t004/handcalc.md 例 1）——红盾兵 x=0.5m / 蓝长矛 x=1.5m
+    /// 恰贴身（|dx| = 半径和，gap=0 全程 0 移动）；盾兵(Heavy)→长矛(Light)
+    /// 12/击、长矛→盾兵 6/击，interval 均 30 → 击点 t=1,31,…,151；蓝 hp 80
+    /// 耗尽于第 7 击 t=181（80 − 6×12 = 8；8 − 12 = −4 → 墓碑），红存活
+    /// （120 − 6×6 = 84）。全部引用 T004 已证事实，不重新推演。
+    /// final_hash 与另一个独立同构 World 手动 run(181) 后 state_hash() 相等
+    /// （内聚对拍，不固新黄金值）。
+    #[test]
+    fn battle_decisive_1v1_counter_kill_at_181() {
+        let mut w = manual_world(
+            vec![
+                unit(UnitKind::Shieldman, Side::Red, ONE_Q32_32 / 2),
+                unit(UnitKind::Pikeman, Side::Blue, 3 * ONE_Q32_32 / 2),
+            ],
+            7,
+        );
+        let outcome = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(outcome.winner, Winner::Red);
+        assert_eq!(outcome.end_tick, 181, "第 7 击致死 t=181（T004 单测 B 锁定）");
+        assert_eq!(outcome.alive_red, 1);
+        assert_eq!(outcome.alive_blue, 0);
+        let mut w2 = manual_world(
+            vec![
+                unit(UnitKind::Shieldman, Side::Red, ONE_Q32_32 / 2),
+                unit(UnitKind::Pikeman, Side::Blue, 3 * ONE_Q32_32 / 2),
+            ],
+            7,
+        );
+        w2.run(181);
+        assert_eq!(
+            outcome.final_hash,
+            w2.state_hash(),
+            "final_hash = 终局点 state_hash 现算（内聚对拍）"
+        );
+    }
+
+    /// T005 测 2（验收 1 多单位形态）：3 盾兵 vs 3 长矛队列歼灭战。
+    /// 队列构造（同 deploy 口径）：红队首 x = r（=ONE/2），后续
+    /// x_k = x_{k-1} − (r+r+GAP)，GAP 用 ONE/2 → 间距 1.5m；蓝方镜像侧同式
+    /// 相向（x_k = x_{k-1} + (r+r+ONE/2)）。
+    /// 【派工单原蓝队首 x = 1000×ONE − r 不满足本测断言，已按算式上报主会话：
+    /// 队首相距 999m、合闭合 0.05+0.10 = 0.15 m/tick，接敌（|dx| ≤ 0.5+0.5+0.2
+    /// = 1.2m）需 (999−1.2)/0.15 ≈ 6652 ticks > TICK_CAP_REDUCED——只会走上限
+    /// hp 判定而非歼灭。为保住本测被测语义（任务卡验收 1 必胜局的多单位歼灭
+    /// 形态），蓝队首压缩至 x = 2×ONE（2.0m）：初距 1.5m > 1.2m 出射程，t=2
+    /// 移动后恰 1.2m（闭区间）首击；队列间距式一字不改。】
+    /// 断言：Red 胜（盾兵克长矛：12/击 vs 6/击、120 hp vs 80 hp）、alive_blue=0、
+    /// alive_red ≥ 1、end_tick < TICK_CAP_REDUCED；end_tick 具体值不固化
+    /// （实测记入证据档 README）；幂等（终局冻结：同 outcome、tick 不变）。
+    #[test]
+    fn battle_decisive_3v3_counter_queue() {
+        let r = ONE_Q32_32 / 2; // 盾兵 / 长矛半径均 0.5m
+        let gap = ONE_Q32_32 / 2; // GAP = ONE/2（派工单式）
+        let spacing = r + r + gap; // 相邻同侧单位间距 1.5m
+        let mut w = manual_world(
+            vec![
+                unit(UnitKind::Shieldman, Side::Red, r),
+                unit(UnitKind::Shieldman, Side::Red, r - spacing),
+                unit(UnitKind::Shieldman, Side::Red, r - 2 * spacing),
+                unit(UnitKind::Pikeman, Side::Blue, 2 * ONE_Q32_32),
+                unit(UnitKind::Pikeman, Side::Blue, 2 * ONE_Q32_32 + spacing),
+                unit(UnitKind::Pikeman, Side::Blue, 2 * ONE_Q32_32 + 2 * spacing),
+            ],
+            7,
+        );
+        let outcome = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(outcome.winner, Winner::Red);
+        assert_eq!(outcome.alive_blue, 0);
+        assert!(outcome.alive_red >= 1, "alive_red={}", outcome.alive_red);
+        assert!(
+            outcome.end_tick < TICK_CAP_REDUCED,
+            "end_tick={} 应在上限前歼灭收束",
+            outcome.end_tick
+        );
+        // 幂等：再次 run_battle 返回相同 outcome 且 world.tick 不变。
+        let tick_at_resolve = w.tick;
+        let again = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(again, outcome, "终局冻结：幂等返回");
+        assert_eq!(w.tick, tick_at_resolve, "终局冻结：tick 不再推进");
+    }
+
+    /// T005 测 3（验收 1 空阵营边界）：仅红 2 民兵（无蓝）与完全空场两构型。
+    /// tick 0（首 step 前）即收束：end_tick=0、不 panic、二次调用幂等。
+    #[test]
+    fn battle_empty_side_tick0_no_panic() {
+        let mut w = manual_world(
+            vec![
+                unit(UnitKind::Militia, Side::Red, 0),
+                unit(UnitKind::Militia, Side::Red, ONE_Q32_32),
+            ],
+            7,
+        );
+        let outcome = w.run_battle(1800);
+        assert_eq!(outcome.winner, Winner::Red);
+        assert_eq!(outcome.end_tick, 0);
+        assert_eq!(outcome.alive_red, 2);
+        assert_eq!(outcome.alive_blue, 0);
+        assert_eq!(w.run_battle(1800), outcome, "幂等：同 outcome");
+        assert_eq!(w.tick, 0, "tick 0 收束不再推进");
+
+        let mut empty = manual_world(vec![], 7);
+        let outcome = empty.run_battle(1800);
+        assert_eq!(outcome.winner, Winner::Draw, "双空 → Draw");
+        assert_eq!(outcome.end_tick, 0);
+        assert_eq!(outcome.alive_red, 0);
+        assert_eq!(outcome.alive_blue, 0);
+        assert_eq!(empty.run_battle(1800), outcome, "幂等：同 outcome");
+        assert_eq!(empty.tick, 0);
+    }
+
+    /// T005 测 4（验收 2 僵局到上限 + 终局冻结）：镜像民兵（x=1m / x=999m，
+    /// 1+999=1000=LANE，同速同 hp）。合闭合速度 2×0.09 = 0.18 m/tick，接敌
+    /// （|dx| ≤ 0.4+0.4+0.2 = 1.0m）需 (998−1.0)/0.18 ≈ 5539 ticks > 1800
+    /// ——上限前不接敌。→ Winner::Draw（上限等 hp 平局分支）、end_tick=1800、
+    /// alive (1,1)；终局冻结：再次 run_battle 同 outcome、tick 仍 1800、
+    /// state_hash 不变。
+    #[test]
+    fn battle_cap_mirror_stalemate_draw_and_freeze() {
+        let mut w = manual_world(
+            vec![
+                unit(UnitKind::Militia, Side::Red, ONE_Q32_32),
+                unit(UnitKind::Militia, Side::Blue, 999 * ONE_Q32_32),
+            ],
+            7,
+        );
+        let outcome = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(outcome.winner, Winner::Draw);
+        assert_eq!(outcome.end_tick, TICK_CAP_REDUCED);
+        assert_eq!(outcome.alive_red, 1);
+        assert_eq!(outcome.alive_blue, 1);
+        let hash_at_resolve = w.state_hash();
+        let again = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(again, outcome, "终局冻结：幂等返回");
+        assert_eq!(w.tick, TICK_CAP_REDUCED, "tick 不再推进");
+        assert_eq!(w.state_hash(), hash_at_resolve, "state_hash 不变");
+    }
+
+    /// T005 测 5（验收 2 判定规则分支）：上限 hp 判定高者胜——红民兵 hp 覆盖
+    /// 100 @ x=1m vs 蓝民兵 hp 50 @ x=999m（镜像位同测 4，不接敌）→ cap →
+    /// Winner::Red（hp 100 > 50 高者胜分支）。等 hp 对照组 → Draw 已由测 4
+    /// 覆盖（互证，不重复构造）。
+    #[test]
+    fn battle_cap_hp_judgment_asymmetric() {
+        let mut w = manual_world(
+            vec![
+                unit_with_hp(UnitKind::Militia, Side::Red, ONE_Q32_32, 100),
+                unit(UnitKind::Militia, Side::Blue, 999 * ONE_Q32_32),
+            ],
+            7,
+        );
+        let outcome = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(outcome.winner, Winner::Red, "hp 100 > 50 高者胜分支");
+        assert_eq!(outcome.end_tick, TICK_CAP_REDUCED);
+        assert_eq!(outcome.alive_red, 1);
+        assert_eq!(outcome.alive_blue, 1);
+    }
+
+    /// T005 测 6（验收 3 内聚 + 黄金锚零成本复用）：默认构成 seed 42 走
+    /// run_battle——镜像不接敌（模块注释 D10：队首相距约 998m、合闭合 ≤0.4
+    /// m/tick ≈ 2498 ticks 才贴身）→ 上限收束、双方 hp 和对称相等 → Draw、
+    /// alive (30,30)；final_hash 必须逐位复现 T004 黄金锚 0x958c5938c8682529
+    /// ——run_battle 只逐步 step 1800 次 + 判定不动状态，此断言同时证明
+    /// resolved 字段零哈希影响。
+    #[test]
+    fn battle_golden_crosscheck_default_comp() {
+        let mut w = World::deploy(42, &DEFAULT_COMPOSITION);
+        let outcome = w.run_battle(TICK_CAP_REDUCED);
+        assert_eq!(outcome.winner, Winner::Draw);
+        assert_eq!(outcome.end_tick, TICK_CAP_REDUCED);
+        assert_eq!(outcome.alive_red, 30);
+        assert_eq!(outcome.alive_blue, 30);
+        assert_eq!(
+            outcome.final_hash, 10_776_086_108_806_063_401, // 0x958c5938c8682529
+            "T004 黄金锚原值必须逐位复现（resolved 零哈希影响实证）"
+        );
+        assert_eq!(w.outcome(), Some(&outcome), "outcome() 读到冻结终局");
     }
 }

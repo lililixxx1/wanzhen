@@ -1,0 +1,10 @@
+== 命令: cargo check --workspace -j 3（机器空闲独占，AGENTS.md cargo -j 3 纪律）==
+$ cargo check --workspace -j 3
+    Checking sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
+REAL_EXIT=0
+
+== 收尾复跑（主会话收尾指示 3：防收尾期间代码意外变动）==
+$ cargo check --workspace -j 3
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+REAL_EXIT=0

@@ -1,0 +1,53 @@
+# T005 跨进程对拍（--battle 同命令双进程 stdout 逐字节 diff）+ 黄金交叉
+
+环境：release 构建（cargo build --release -p sim -j 3，REAL_EXIT=0）；
+--battle stdout 仅确定性 BattleLog 固定 8 行，stderr 壁钟 elapsed_ms 分流丢弃。
+门禁期间机器空闲独占（AGENTS.md cargo -j 3 纪律）。
+
+## 1) seed 42（默认构成，--battle，cap=--ticks 默认 1800）两进程对拍
+
+$ ./target/release/sim.exe --battle --seed 42 > s42_run1.txt 2>/dev/null   # REAL_EXIT=0
+$ ./target/release/sim.exe --battle --seed 42 > s42_run2.txt 2>/dev/null   # REAL_EXIT=0
+$ diff s42_run1.txt s42_run2.txt && echo DIFF_42=IDENTICAL
+DIFF_42=IDENTICAL
+---- s42_run1.txt ----
+seed=42
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x958c5938c8682529
+--------------------
+（winner=draw / end_tick=1800 / alive 30,30：默认构成镜像不接敌走上限 hp 判定，与模块注释 D10 观察一致）
+
+## 2) seed 43（默认构成，--battle）两进程对拍
+
+$ ./target/release/sim.exe --battle --seed 43 > s43_run1.txt 2>/dev/null   # REAL_EXIT=0
+$ ./target/release/sim.exe --battle --seed 43 > s43_run2.txt 2>/dev/null   # REAL_EXIT=0
+$ diff s43_run1.txt s43_run2.txt && echo DIFF_43=IDENTICAL
+DIFF_43=IDENTICAL
+---- s43_run1.txt ----
+seed=43
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x54611ed6ded02540
+--------------------
+$ diff s42_run1.txt s43_run1.txt >/dev/null || echo SEED42_NE_43=DIFFERENT
+SEED42_NE_43=DIFFERENT
+
+## 3) 黄金交叉（--battle 终局 final_hash vs T004 已固化锚）
+
+seed 42 → final_hash = 0x958c5938c8682529 = 10776086108806063401，与 T004 黄金锚
+（docs/evidence/t004/golden.txt 固化、单测 golden_deploy_default_comp_seed42_1800ticks
+与 battle_golden_crosscheck_default_comp 双断言）**逐位一致**；
+seed 43 → final_hash = 0x54611ed6ded02540，与 T004 跨进程对拍记录**逐位一致**。
+即 run_battle 在上限收束路径上只逐步 step 1800 次 + 判定不动状态，resolved 字段
+零哈希影响在 CLI 侧同样成立（单测侧由 battle_golden_crosscheck_default_comp 实证）。
+
+REAL_EXIT 汇总：run1/run2（42/43）均 0；diff 均一致；42≠43 互异保持。
