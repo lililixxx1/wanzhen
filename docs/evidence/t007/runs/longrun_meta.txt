@@ -1,0 +1,9 @@
+T007 验收⑥ 长跑元数据（50k 模拟单位 × 12 线程，单局）
+探针（ticks=10, warmup=0, repeats=1）median_ns: 13192854200
+探针估算每 tick 墙钟（s）: 1.31928542
+K6（校准使壁钟 ≥ 630s）: 478
+长跑命令: target/release/bench.exe --units 50000 --threads 12 --ticks 478 --warmup 0 --repeats 1 --seed 42
+采样器: Get-Process WorkingSet64 + PrivateMemorySize64, 间隔 5000ms, 共 134 条 → runs/longrun_memory.csv
+开始: 2026-10-05 08:12:57  结束: 2026-10-05 08:24:13
+壁钟（s）: 675.6134246
+REAL_EXIT: 0

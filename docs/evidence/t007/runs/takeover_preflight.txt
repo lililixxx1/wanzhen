@@ -1,0 +1,3 @@
+takeover preflight OK: 2026-10-05 08:08:59
+bench: target/release/bench.exe（含 2026-10-05 summarize ticks 一致性补丁；量测路径零改动）
+declaration: no cargo/compilation/download is started during this batch (AGENTS.md discipline).

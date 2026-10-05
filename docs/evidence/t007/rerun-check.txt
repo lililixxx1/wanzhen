@@ -1,0 +1,3 @@
+10000-t1 median_1=123030308400 median_2=117914970000 drift_pct=4.1578 assertion(<5%)=PASS
+10000-t12 median_1=17036880000 median_2=15431543600 drift_pct=9.4227 assertion(<5%)=FAIL
+1000-t6 median_1=596894500 median_2=477196200 drift_pct=20.0535 assertion(<5%)=FAIL

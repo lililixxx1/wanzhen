@@ -1,0 +1,39 @@
+T007 环境档（M0-06 基准量测；基准机 A = 开发机本机，报告 V0.9.1 表 6-0）
+生成时间: 2026-10-04 15:28:02 +08:00
+
+== CPU (Win32_Processor) ==
+  Name: 12th Gen Intel(R) Core(TM) i5-12490F
+  Cores: 6  LogicalProcessors: 12  MaxClockMHz: 3000
+
+== GPU + 驱动 (Win32_VideoController) ==
+  Name: GameViewer Virtual Display Adapter
+  DriverVersion: 15.6.5.199  DriverDate: 02/28/2026 08:00:00
+  Name: NVIDIA GeForce RTX 3050
+  DriverVersion: 31.0.15.3758  DriverDate: 10/04/2023 08:00:00
+
+== RAM (Win32_ComputerSystem / Win32_PhysicalMemory) ==
+  TotalPhysicalMemory: 34187943936 bytes
+  Module: 32 GiB  SpeedMHz: 3600  Manufacturer: Kingston
+
+== OS (Win32_OperatingSystem) ==
+  Caption: Microsoft Windows 10 IoT 企业版 LTSC
+  Version: 10.0.19044  BuildNumber: 19044  Arch: 64 位
+
+== 工具链 ==
+  rustc: rustc 1.98.1 (48a229cea 2026-09-01)
+  cargo: cargo 1.98.1 (797e8a9bc 2026-08-05)
+  rust-toolchain.toml: channel = "1.98.1"
+
+== 依赖版本（Cargo.lock） ==
+  name = "bevy"  version = "0.19.1"
+  注: bench/sim 代码路径零 bevy API 参与（headless 模拟核心）；bevy 版本仅作仓库基线记录。
+
+== 构建 profile（读取自证） ==
+  Cargo.toml [profile.release] 声明行: debug = false
+  → opt-level 未声明 = 默认 3；lto 未声明 = 默认 off；debug = false（与 release 默认一致）。
+  注: D9 措辞假定『workspace 无 [profile.release] 覆盖』——实际存在该段且仅声明 debug = false（等值默认，不改变构建产物）；以上按文件实际内容记录。
+  .cargo/config.toml: 不存在
+
+== 量测产物（bench.exe） ==
+  path: target/release/bench.exe  size: 503808 bytes  mtime: 2026-10-04 15:19:29
+  sha256: D8E251B06C4FFA01F94527B1E5730A139BF24573B35A703A72DDF5D7D73DF089

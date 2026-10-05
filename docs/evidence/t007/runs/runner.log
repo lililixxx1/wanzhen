@@ -1,0 +1,29 @@
+environment.txt written: docs/evidence/t007/environment.txt
+== matrix start 15:28:04 ==
+== run 1000-t1 units=1000 threads=1 ticks=600 seed=42 warmup=1 repeats=5 ==
+== run 1000-t3 units=1000 threads=3 ticks=600 seed=42 warmup=1 repeats=5 ==
+== run 1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=5 ==
+== run 1000-t12 units=1000 threads=12 ticks=600 seed=42 warmup=1 repeats=5 ==
+== run 5000-t1 units=5000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 5000-t3 units=5000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 5000-t6 units=5000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 5000-t12 units=5000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 10000-t1 units=10000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 10000-t3 units=10000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 10000-t6 units=10000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 ==
+== run 50000-t1 units=50000 threads=1 ticks=30 seed=42 warmup=1 repeats=5 ==
+== run 50000-t3 units=50000 threads=3 ticks=30 seed=42 warmup=1 repeats=5 ==
+== run 50000-t6 units=50000 threads=6 ticks=30 seed=42 warmup=1 repeats=5 ==
+== run 50000-t12 units=50000 threads=12 ticks=30 seed=42 warmup=1 repeats=5 ==
+== matrix done 16:44:58 ==
+== rerun checks start 16:44:58 ==
+10000-t1 median_1=123030308400 median_2=117914970000 drift_pct=4.1578 assertion(<5%)=PASS
+10000-t12 median_1=17036880000 median_2=15431543600 drift_pct=9.4227 assertion(<5%)=FAIL
+WARNING: rerun drift assertion FAILED for 10000-t12 (disclose and add samples per card)
+1000-t6 median_1=596894500 median_2=477196200 drift_pct=20.0535 assertion(<5%)=FAIL
+WARNING: rerun drift assertion FAILED for 1000-t6 (disclose and add samples per card)
+== rerun checks done 16:53:57 ==
+== longrun start 16:53:57 ==
+probe: median_ns=12483655700 per_tick_s=1.2484 K6=481 est_wall_s=600.5
+longrun started: pid=11692 ticks=481 args=--units 50000 --threads 12 --ticks 481 --warmup 0 --repeats 1 --seed 42

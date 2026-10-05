@@ -1,0 +1,26 @@
+1000-t1 units=1000 threads=1 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=14557
+1000-t3 units=1000 threads=3 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=5200
+1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=3620
+1000-t12 units=1000 threads=12 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=2971
+5000-t1 units=5000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=178579
+5000-t3 units=5000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=65255
+5000-t6 units=5000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=38760
+5000-t12 units=5000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=26725
+10000-t1 units=10000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=736243
+10000-t3 units=10000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=260570
+10000-t6 units=10000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=149382
+10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=103649
+50000-t1 units=50000 threads=1 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1812527
+50000-t3 units=50000 threads=3 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=635835
+50000-t6 units=50000 threads=6 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=350296
+50000-t12 units=50000 threads=12 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=228252
+rerun-10000-t1 units=10000 threads=1 ticks=300 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+rerun-10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+rerun-1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+rerun2-10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0
+rerun2-1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0
+rerun3-10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0
+rerun3-1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0
+longrun-50000-t12 ticks=478 REAL_EXIT=0 wall_s=675.6 samples=134 csv=runs/longrun_memory.csv
+summarize REAL_EXIT=0 (takeover, 2026-10-05)
+summarize REAL_EXIT=0 (post D7-revision rerun, 2026-10-05, memory-judgment re-adjudicated)

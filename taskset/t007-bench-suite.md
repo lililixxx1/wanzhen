@@ -32,3 +32,85 @@ docs/evidence/t007/：原始 JSON + 汇总表 + 环境 + 命令 + REAL_EXIT，�
 ## 审核
 
 **plan-code-reviewer 完整审核轮**（独立复跑抽查 ≥3 配置 + 判定核对）；通过后 ①②⑥ 数据才可用于 T011/T013。
+
+## 执行裁决记录（主会话 2026-10-04 定稿，worker-1 配额不可用窗口）
+
+> 口径依据全部逐字取自报告 V0.9.1（表 6-0 / 6.1，本轮 grep 原文复核）：
+> 止损 = 「每单位每 tick 成本 > 2µs（单线程基线），或 12 线程实测加速比 < 4×
+> （16 线程外推值 < 4× 同判）」；换算 = 「所需加速比 = 单位数 × 单线程每单位
+> 每 tick 成本 ÷ 每帧模拟预算」（常态 8ms / 极限 22ms；报告示例：常态 1 万 @2µs
+> 需 ≥2.5×、极限十万 @2µs 需 ≥9.1×、@1µs 需 ≥4.6×）；余量政策 = 「承诺线 =
+> 止损线 × 0.5」（µs 侧承诺 = 1µs）。加速比止损锚定「万人常态」= 10k 采样点评判。
+
+- **D1 形态**：sim 包第二 bin `bench`（`src/bin/bench.rs` 自动发现，零 manifest
+  改动、零新依赖——JSON 手写发射固定 schema 纯 ASCII 数值）。只复用 lib 公共
+  API（`World::deploy/run_with/state_hash/unit_count`、`pool::ThreadPool`），
+  **lib 零改动红线**（T002/T004 黄金锚与 35 测不动）。
+- **D2 CLI**：`--units <usize> --threads <usize> --ticks <u64> --warmup <usize>`
+  （默认 1）`--repeats <usize>`（默认 5）`--seed <u64>`（默认 42）；
+  `--summarize <matrix.jsonl>` 汇总模式。units 偶数且 ≥2（否则 exit 2）；
+  threads 1..=1024（同 sim CLI 口径）。
+- **D3 构成映射**：per_side = units/2，六兵种均分 q=per_side/6、余数 r 按表序
+  前 r 个 +1；`World::deploy(seed, comp)` 双方镜像。50k 溢出复查：队列 ~35km
+  ×2^32 ≈ 2^47.5 << i64 上界 ✓（留痕）。
+- **D4 计时口径**：每配置建池一次（T>1；跨 warmup+repeats 复用；T=1 走
+  `run_with(ticks, None)` 与 sim CLI threads=1 同路径）→ warmup W 局（同 ticks
+  完整 run 不计时；「完整局」口径 = 同配置 ticks 全程，留痕）→ repeats R 局各
+  计时：每局 fresh `deploy`（同 seed 同构）+ `Instant` 只包 `run_with(ticks)`
+  （deploy/建池排除）；记录 final_hash，R 局哈希一致为自由旁证（非验收④，T008
+  范畴）。
+- **D5 指标**：samples_ns 全量入 JSON + min/median/mean/max/样本标准差 CV%；
+  `us_per_unit_tick = median_ns / ticks / units / 1000`（浮点仅存在于量测壳，
+  模拟态零浮点红线不动）。
+- **D6 判定行（`--summarize` 内代码计算，防手算漂移）**：①四采样点单线程 µs
+  对照止损 2µs / 承诺 1µs；②加速比表（对 threads=1）+ 16 线程外推 = Amdahl
+  时间模型 `elapsed_per_tick(T) = c1 + c2/T` 对 T∈{1,3,6,12} OLS（基变量
+  [1, 1/T]），`speedup16 = elapsed(1)_实测 ÷ (c1 + c2/16)`，R²/最大残差入档；
+  ③外推十万 = `C(N) = a·N + b·N²` OLS 于四采样点（单线程 median ns/tick）→
+  `C(100000) ÷ speedup16`（取 50k 档外推的 speedup16——最大规模最近外推目标）
+  ≤ 22ms 判「极限十万保留」；④止损判定如实：任一阈值触发即标 TRIPPED 不粉饰
+  （任务卡断言 4）。加速比外推不确定度留痕（50k→100k 为 2× 超界外推）。
+- **D7 验收⑥ 内存**：长跑 = bench 单局 50k × K6 ticks @ threads=12（K6 校准至
+  壁钟 ≥600s，预计 ~1.77s/tick × ~340 ticks；窗口为纯移动段——首接触
+  ~2500 ticks > K6，分配模式与战斗段一致：每 tick 双快照+意图缓冲+retain，
+  留痕）；外部 PowerShell 采样器每 5s 读 `Get-Process WorkingSet64 +
+  PrivateMemorySize64` → CSV；判定（方法入档）：稳态 = 弃首 10% 样本后
+  max ≤ 2GiB；无单调增长 = 末 25% 均值 ≤ 稳态中位数 × 1.05。
+  **再裁决（主会话 2026-10-05，实测后；P1-1 数字修正版）**：原「末 25% 均值 ≤
+  中位数×1.05」口径对**振荡型平稳序列误报**——实测 675.6s 长跑（134 样本）中
+  高水位 t≈5s 即近触顶（i=1 处 7090176B），670s 内全局 max 7102464B（i=72）
+  较之仅高 0.17%、后半高水位 7098368B 更低，序列为 5.07~6.77 MiB
+  （5.3~7.1 MB）页修剪振荡；后半段样本多钉在高水位使末 25% 均值（6.6 MiB）
+  超中位数×1.05（6.1 MiB）——非泄漏（泄漏物理签名 = 高水位单调爬升）。
+  **终版判定口径：无单调增长 = 稳态段后半高水位 ≤ 前半高水位 × 1.01**
+  （1% 容差容纳采样相位；审核轮独立核算检出阈值 ≈75 KB，优于「0.7 MiB/
+  11min 量级泄漏即被捕获」的宣称——论证偏保守方向成立）。原口径保留计算与
+  输出作为披露行（标注振荡敏感、不作判定），再裁决因果链于证据档 README 与
+  bench.rs 注释双留痕；实测 CSV 不变、无重测。
+  【P1-1 修正留痕（2026-10-05 审核轮）：原文两处数字/单位错误——误将后半
+  高水位 7098368B 写作「全局 max 仅高 0.11%」（实全局 max 7102464B、+0.17%），
+  且振荡区间按十进制 MB 数值误标 MiB（5.3~7.1 MB = 5.07~6.77 MiB）。修正后
+  数字仍支撑再裁决结论；审核裁定再裁决本身为「口径修正、非为过而改」。】
+- **D8 跑批**：docs/evidence/t007/ 内顺序 runner——全矩阵（1k×600t / 5k×300t /
+  10k×300t / 50k×30t × threads{1,3,6,12} → matrix.jsonl + 每配置
+  stdout/stderr/REAL_EXIT 归档）+ 复测 3 配置（10k-t1 / 10k-t12 / 1k-t6，
+  |median₂−median₁|/median₁ < 5% 断言，口径=同配置跨调用中位数漂移）+ ⑥ 长跑。
+  矩阵期间机器空闲独占（启动前 tasklist 查无 cargo/rustc 进程，声明入档；
+  AGENTS.md 纪律）。
+- **D9 环境档**：environment.txt = CPU（Win32_Processor）/GPU+驱动
+  （Win32_VideoController）/RAM/OS/rustc -V/Cargo.lock bevy 版本（记录值，
+  bench 路径零 bevy 参与，留痕）/构建 profile（workspace 无 [profile.release]
+  覆盖 → 默认 opt-level 3、LTO off，读取自证）。
+- **D10 证据**：docs/evidence/t007/ = README + environment.txt + matrix.jsonl +
+  runs/ + summary.md + 内存 CSV+判定 + 复测档，REAL_EXIT 全自含。
+- **D11 审核**：plan-code-reviewer 完整审核轮（独立复跑抽查 ≥3 配置 + 判定
+  核对）；若审核 agent 同受配额限制则顺延配额窗口（18:32 重置）后执行；通过后
+  ①②⑥ 数据方可供 T011/T013。
+- **D12 执行路径**：worker-1 触达 5h 配额上限（T006 留痕，2026-10-04 18:32
+  重置）。先试 worker-2 派工（若共享配额即刻失败）；均不可用则主会话直接执行
+  （T005/T006 接管先例），台账如实记。
+- **D13 预期管理（预注册防粉饰质疑）**：T006 先导数据外推——朴素 O(N²) 索敌下
+  1k≈4µs、10k≈40µs，四采样点全部超 2µs 止损线属**预期结果**；本卡范围（卡文
+  原文）不含优化——止损触发后 R2「两轮优化」是后续卡决策（owner 级），本卡只
+  产出数据与判定（断言 4）。
+- **D14**：量测命令落地后登记 AGENTS.md「常用命令」（卡文要求）。

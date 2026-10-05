@@ -1,0 +1,1 @@
+bench: units=10000 per_side=5000 threads=1 ticks=300 seed=42 warmup=1 repeats=3 median_ms=117914.970 ns_per_tick=393049900.0 us_per_unit_tick=39.304990 final_hash=0xc5915d042208e267 hash_consistent=true

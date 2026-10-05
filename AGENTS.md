@@ -27,7 +27,8 @@
 - `cargo check --workspace -j 3` — 每次代码变更的门禁（**cargo 编译并行 ≤3、注意内存**——owner 2026-09-30 指令；量测与 doctest 门禁期间机器须空闲独占，避免负载敏感假红，见 docs/evidence 经验）
 - `cargo run -p sim --release` — headless 模拟入口（骨架期仅验证工具链）
 - `cargo run -p sim --release -- [--comp <kind:count,...> | --units <N>] [--ticks <N>] [--seed <u64>] [--threads <1..=1024>] [--hash-samples <t1,t2,...>] [--battle]` — 对局入口（T006 起）：`--threads` 线程档位（默认 1=串行，stdout 与线程数逐字节无关，`threads=N` 与耗时同打 stderr）；`--hash-samples` 严格升序采样 tick 列表（0=布阵快照哈希；仅 run 路径，×`--battle` 互斥、超 `--ticks` 均 exit 2）
-- M0 验收量测命令随量测套件任务卡（taskset/t007-bench-suite.md）落地后登记于此
+- `cargo build -p sim --bin bench --release -j 3` — M0 量测套件构建（T007：`sim` 第二 bin，零新依赖、lib 零改动）
+- `./target/release/bench.exe --units <N> --threads <T> --ticks <K> [--warmup <W>=1] [--repeats <R>=5] [--seed <S>=42]` — M0 量测入口（T007，验收①②⑥）：stdout 单行 JSON（samples_ns 全量/median/CV/us_per_unit_tick/final_hash；同配置多局哈希不一致 exit 4）；`--summarize <matrix.jsonl> [--memory-csv <mem.csv>] [--out <summary.md>]` = 判定汇总（①②③④⑥ 全判定行代码计算，防手算漂移；口径常量逐字取自报告表 6-0/6.1）。全矩阵/复测/⑥ 长跑可复现跑批与两窗口空闲预检声明见 docs/evidence/t007/（run_matrix.sh / finish_takeover.sh / run_longrun.ps1）；量测窗口机器空闲独占纪律同前
 
 ## 知识资产纪律
 
