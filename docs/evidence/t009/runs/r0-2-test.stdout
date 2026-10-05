@@ -1,0 +1,72 @@
+
+running 44 tests
+test hash::tests::fnv1a_matches_published_ascii_vectors ... ok
+test rng::tests::golden_sequence_seed42_first8 ... ok
+test pool::tests::chunk_ranges_cover_partition_balanced ... ok
+test spatial::tests::sorted_order_basic_total_order_and_inverse ... ok
+test spatial::tests::fast_queries_small_handbuilt_examples ... ok
+test units::tests::counter_table_3x3_exhaustive_and_armor_classification ... ok
+test units::tests::fixed_point_constants_selfcheck ... ok
+test units::tests::damage_formula_all_6x6_pairs ... ok
+test pool::tests::threadpool_lifecycle_map_chunks ... ok
+test world::tests::battle_empty_side_tick0_no_panic ... ok
+test world::tests::combat_rescan_after_first_blood_switches_target ... ok
+test rng::tests::stats_high4_bits_16_buckets_160k ... ok
+test rng::tests::stats_bit32_ratio_50pct ... ok
+test spatial::tests::build_matches_serial_across_thread_tiers ... ok
+test world::tests::deploy_deterministic_same_seed_differs_across_seeds ... ok
+test world::tests::deploy_two_unit_positions_match_formula ... ok
+test world::tests::deploy_mirror_symmetry_default_comp ... ok
+test world::tests::contact_stop_stable_at_radius_sum ... ok
+test world::tests::full_speed_advance_exact_linear ... ok
+test world::tests::battle_decisive_1v1_counter_kill_at_181 ... ok
+test world::tests::handcalc_death_removal_compacts_indices ... ok
+test world::tests::handcalc_equal_distance_target_tiebreak_by_index ... ok
+test world::tests::golden_hash_seed42_units0_1800ticks ... ok
+test world::tests::death_tick_hash_replay_pairwise ... ok
+test world::tests::melee_margin_and_range_constants_selfcheck ... ok
+test world::tests::handcalc_true_equal_distance_tiebreak_chain_contact ... ok
+test world::tests::handcalc_pair_counter_fight_to_kill ... ok
+test world::tests::spatial_combat_true_equal_distance_tiebreak_five_militia_chain ... ok
+test world::tests::battle_decisive_3v3_counter_queue ... ok
+test world::tests::spatial_fallback_eligibility_degenerate_domains ... ok
+test world::tests::friendly_units_never_interpenetrate_and_queue_behind_stopped_front ... ok
+test world::tests::two_phase_move_no_interpenetration_head_on ... ok
+test world::tests::seed_sensitivity_42_vs_43 ... ok
+test world::tests::battle_cap_hp_judgment_asymmetric ... ok
+test world::tests::battle_cap_mirror_stalemate_draw_and_freeze ... ok
+test world::tests::spatial_differential_move_fast_matches_naive_25_seeds ... ok
+test world::tests::spatial_differential_combat_fast_matches_naive_25_seeds ... ok
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test world::tests::battle_golden_crosscheck_default_comp ... ok
+test world::tests::spatial_world_thread_parity_near_contact_checkpoints ... ok
+test world::tests::units_participate_in_hash ... ok
+test world::tests::replay_consistency_checkpoints_start_mid_end ... ok
+test world::tests::parallel_parity_nearfield_battle ... ok
+test world::tests::deploy_versus_mirror_equivalence_matches_deploy ... ok
+
+test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+
+running 3 tests
+test tests::w4_resolved_semantics_truncation_and_engagement ... ok
+test tests::w2_determinism_same_params_and_cross_thread_final_hash ... ok
+test tests::w3_seed_formulas_matrix_and_sampling ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

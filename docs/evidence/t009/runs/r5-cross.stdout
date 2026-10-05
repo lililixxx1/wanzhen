@@ -1,0 +1,5 @@
+# R5 CLI 黄金交叉（arena --sampling --games 1 vs sim --comp shieldman:5000 --seed 3000000 --battle --ticks 14400）
+arena=0x564cf46fdf191710
+sim_t1=0x564cf46fdf191710
+sim_t12=0x564cf46fdf191710
+match=PASS (三方 final_hash 逐位一致)

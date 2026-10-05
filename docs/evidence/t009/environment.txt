@@ -1,0 +1,40 @@
+T009 环境档（平衡实验场 v0 与吞吐量测；基准机 A = 开发机本机，报告 V0.9.1 表 6-0）
+生成时间: 2026-10-05 22:46:12 +08:00
+
+== CPU (Win32_Processor) ==
+  Name: 12th Gen Intel(R) Core(TM) i5-12490F
+  Cores: 6  LogicalProcessors: 12  MaxClockMHz: 3000
+
+== GPU + 驱动 (Win32_VideoController) ==
+  Name: GameViewer Virtual Display Adapter
+  DriverVersion: 15.6.5.199  DriverDate: 02/28/2026 08:00:00
+  Name: NVIDIA GeForce RTX 3050
+  DriverVersion: 31.0.15.3758  DriverDate: 10/04/2023 08:00:00
+
+== RAM (Win32_ComputerSystem / Win32_PhysicalMemory) ==
+  TotalPhysicalMemory: 34187943936 bytes
+  Module: 32 GiB  SpeedMHz: 3600  Manufacturer: Kingston
+
+== OS (Win32_OperatingSystem) ==
+  Caption: Microsoft Windows 10 IoT 企业版 LTSC
+  Version: 10.0.19044  BuildNumber: 19044  Arch: 64 位
+
+== 工具链 ==
+  rustc: rustc 1.98.1 (48a229cea 2026-09-01)
+  cargo: cargo 1.98.1 (797e8a9bc 2026-08-05)
+  rust-toolchain.toml: channel = "1.98.1"
+
+== 依赖版本（Cargo.lock） ==
+  name = "bevy"  version = "0.19.1"
+  注: sim/arena 代码路径零 bevy API 参与（headless 模拟核心）；bevy 版本仅作仓库基线记录。
+
+== 构建 profile（读取自证） ==
+  Cargo.toml [profile.release] 声明行: debug = false
+  → opt-level 未声明 = 默认 3；lto 未声明 = 默认 off；debug = false（与 release 默认一致）。
+  .cargo/config.toml: 不存在
+
+== 量测产物（arena.exe / sim.exe） ==
+  path: target\release\arena.exe  size: 544768 bytes  mtime: 2026-10-05 22:17:36
+  sha256: B541460316D464B5DB0AC9E64DA3BE67B34E693C970E4EE5667F5AAA018DE062
+  path: target\release\sim.exe  size: 405504 bytes  mtime: 2026-10-05 22:17:34
+  sha256: 6E113DC1FBFB401FC91EB2213810DE3589F2DCD0B332735FF121965CD01507D9

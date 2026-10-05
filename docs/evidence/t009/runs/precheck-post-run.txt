@@ -1,0 +1,9 @@
+T009 load precheck @ 2026-10-05 22:50:08
+policy: no other cargo/heavy-load process at batch start (empty processes section = idle).
+  (excluded: pythonw.exe = ZCode harness telemetry tps_stats_server.py, resident, ~0 CPU)
+
+== processes (cargo/rustc/sim/bench/arena/python match) ==
+  (no match -> idle)
+
+== cpu_load_percent == 1
+== free_physical_mem_gb == 20.2

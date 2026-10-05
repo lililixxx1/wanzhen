@@ -1,0 +1,34 @@
+# T009 G1 · 主会话独立复验（Lead，2026-10-05）
+
+不信任 worker 汇报、全部独立复跑；命令在本档逐条可复现（仓库根 = 隔离树根）。
+
+## 1. diff 纯增量核验
+
+- `git diff --no-index --numstat sim/src/world.rs <树>/sim/src/world.rs` → `146 0`（+146/−0，deploy 既有行零改动实证）
+- world.rs 新增段逐行审阅：deploy_versus 契约 §1 逐项一致（独立双洗同盐/同式队列/lane 参数化/红块蓝块序/from_seed/last_hash=布阵快照哈希）；W1 测试构型×种子全组合断言 last_hash+final_hash+winner 三对拍。
+
+## 2. 门禁复跑（独立）
+
+- `cargo check --workspace -j 3` → REAL_EXIT=0（0 警告）
+- `cargo test -p sim -j 3` → REAL_EXIT=0：44 lib + 3 arena bin = **47/47 全绿**（含既有 43 原值）
+
+## 3. R5 CLI 黄金交叉独立复跑（三方）
+
+- `./target/release/arena.exe --sampling --games 1 --out <tmp>` → row0: cell0 shieldman:5000 双方 / seed 3000000 / lane_m 1000 / final_hash=**0x564cf46fdf191710** / winner=red / alive 4990:4990 / resolved=false（exit 0）
+- `./target/release/sim.exe --comp shieldman:5000 --seed 3000000 --battle --ticks 14400 --threads 1` → final_hash=**0x564cf46fdf191710**
+- `./target/release/sim.exe --comp shieldman:5000 --seed 3000000 --battle --ticks 14400 --threads 12` → final_hash=**0x564cf46fdf191710**
+- 判定：三方逐位一致 ✓ PASS（数据自洽旁证：镜像局存活对称 4990:4990、红 hp-sum 先手优势胜 = H2 预注册形态）
+
+## 4. 吞吐独立抽跑（t12）
+
+- `./target/release/arena.exe --throughput --threads 12 --repeats 1 --out <tmp>` → exit 0；wall_s=1.6536374 → games_per_hour=**1,114,633.7**
+- 对照 worker 档案值 1,099,638.6（drift ≈1.4%，同数量级）；判定线 10,000 → PASS 裕度 ≈110×，判定稳健
+
+## 5. 证据档卫生
+
+- `grep -rn "C:\Users\|C:/Users" docs/evidence/t009/` → 零命中 ✓
+- summary.md 判定行全部脚本生成（头部声明禁手改）；README 含 R0 四门禁明细与 attempt1=101 修复留痕
+
+## 6. G1 结论
+
+四门禁 + 等价性红线 + 判定行抽查全部独立复现通过；上报 4 项待 G2 后由 Lead 统一裁决落卡（W4② 派工单速算值笔误 = B.2⑤ 双盲生效实例、per-side 合法域收窄、final_hash_xor 附加键保留、precheck 编码缺陷披露不补跑——r4 CV<3% + hash_xor 跨档全等旁证数据稳健）。

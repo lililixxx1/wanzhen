@@ -27,3 +27,27 @@
 ## 证据要求
 
 docs/evidence/t009/：吞吐原始数据 + 胜率矩阵 + 抽样首批数据 + REAL_EXIT。
+
+## 设计裁决（2026-10-05 主会话定稿 D1~D13，开工前冻结）
+
+- **D1 契约先行（lib 增量）**：新增 `World::deploy_versus(seed: u64, red: &[(UnitKind, usize)], blue: &[(UnitKind, usize)], lane_q32: i64) -> World`——红蓝各自展开构成清单、各自独立 Fisher-Yates 全洗（洗牌 RNG 均为 `Xoshiro256StarStar::from_seed(seed ^ DEPLOY_SALT)`，复用 `world.rs` 既有 `DEPLOY_SALT` 常量），队列位置同 `deploy` 同式（队头 x=radius_0、向 -x 按 `r_{k-1}+r_k+GAP_Q32` 排队，GAP_Q32 复用既有常量），蓝方 `x'_k = lane_q32 − x_blue_k`；tick 级 RNG 同式 `from_seed(seed)`。**`deploy` 函数与既有全部行零改动**（deploy_versus 独立实现，重复deploy内联逻辑可接受——回退语义参照 + 审核可 diff）。等价性：red==blue 且 lane_q32==LANE_LEN_Q32 时与 `deploy` 逐位一致（last_hash 与 run_battle final_hash 双对拍，单测断言）。
+- **D2 降规模 lane = 50 m**（`LANE_SCALED_Q32 = 50 * ONE_Q32_32`，arena 内常量）：表 6-0 只锁「每方 100 单位、≤1,800 ticks」，lane 为 sim 内部 v0 参数。依据（接敌可达性算式，源 `units.rs` 速度/半径表 + `world.rs` 布阵式）：LANE 1000 m 下任何兵种对 1800t 内不可接敌（最快对 heavyknight,heavyknight：(1000−2×1.6)/0.40 = 2492t > 1800——T008 red200「移动段-only」成因）；LANE 50 m 下 21 对全部接敌 ≤480t（最慢对 shieldman,shieldman：(50−2×1.0)/0.10 = 480t）。首杀最坏链：S,S 镜像 15 击（ceil(120/8)）×30 interval = 420t ⇒ 首杀 t = 480+420 = 900 < 1800 ✓（保证每 cell 接敌实证，断言 A4）。
+- **D3 三层数据**：①口径层 = 每方 100 × 1800t × lane 50m，矩阵 6×6 全表（行红列蓝含对角镜像）× 每格 100 局 = 3600 局；②探针层 = 每方 10 × 1800t × lane 50m，同矩阵 36 格 × 100 局（**非表 6-0 口径**、显式标注「探针层」——v0 单 lane 序贯决斗在 100 深度队列 1800t 内不可全歼（单杀链 ~450t/对 × 100 ≫ 1800），口径层判定以截断 hp-sum 主导，探针层给克制环方向更高分辨率）；③全规模层 = 每方 5000 × 14400t × lane 1000m（LANE_LEN_Q32 原值，T008/CLI 锚链兼容）× 100 局（cell = g mod 36 轮转）。三层层级标注入 JSONL `layer` 字段。
+- **D4 种子算式**（确定性、与锚种子 42/43/44 及 T008 种子空间隔离）：口径层 seed = 1_000_000 + (cell_idx×100 + k)，cell_idx = i×6+j；探针层 seed = 1_500_000 + (cell_idx×100 + k)；全规模 seed = 3_000_000 + g×7919（g=0..99）；吞吐批 seed = 2_000_000 + g。
+- **D5 镜像 sanity 双假设预注册**（对角 6 格 × 各层）：H1（卡面预期）蓝胜率 50%±涨落；H2（结构性）红方系统优势或 Draw 主导——依据 apply 索引序语义（红索引恒前于蓝、同 tick 互杀不可达推演见 world.rs D10 注记）+ 镜像 hp 同和截断平局。判定行 = 二项 z 检验（z = (p_blue−0.5)/sqrt(0.25/n)，脚本计算）；H2 形态如实披露为「结构性先手偏差/截断平局」，判 FAIL-披露不粉饰，移交 T013 口径仲裁（v0 模拟器语义特性非平衡缺陷）。
+- **D6 吞吐口径**（验收③，表 6-0/03 原文语义）：批 = 512 局口径层对局（构成=36 cell 轮转），线程档 {1,3,6,12} 实测（跨局并发：`ThreadPool::map_chunks` 按局分片、每局内部串行 None 路径），warmup 16 局不计时，每档 repeats 3 批取中位；`Instant` 只包批量对局循环（deploy_versus + run_battle + 结果写内存 Vec；stdout/文件 IO 一律窗外——断言 4 代码路径指认）；吞吐(场/h) = 512×3600/中位墙钟秒；16 线程档按 elapsed(T)=c1+c2/T 双参数 OLS 拟合外推（复用 T007 汇总同式，python 脚本）。判定行：吞吐@12t ≥ 10_000 场/h（R2 终止判据阈值）。预注册预期：单局 200u×1800t ≈ 20~60 ms 单线程（T015 后曲线：1k×300 实测 18~45ms 量级、200×1800 = 1.2× 单位·tick）⇒ 12t 吞吐预期 ≥100_000 场/h ≫ 阈值；以实测为准、如实披露。
+- **D7 黄金锚等价红线**：①既有 43 单测原值原绿、world.rs 既有测试逐字节零改动；②deploy_versus 镜像等价单测（≥3 构型 × 3 seed）；③CLI 黄金交叉：全规模层第 0 局（cell 0 = shieldman:5000 双方、seed 3_000_000、lane 1000m）与 `sim --comp shieldman:5000 --seed 3000000 --battle --ticks 14400`（threads 1 与 12 各跑一次）final_hash 三方逐位一致。
+- **D8 arena CLI**：`--matrix [--per-side 100|10] [--per-cell 100] [--threads 1]`、`--throughput [--games 512] [--threads 12] [--repeats 3]`、`--sampling [--games 100] [--threads 12]`；模式互斥 exit 2（同 sim CLI 纪律）；`--out <dir>` 必选；stdout 单行 JSON 摘要（bench 纪律、手写格式化零新依赖）；`--per-side` 只作用于 matrix（口径层 100 / 探针层 10 两次调用产出）。
+- **D9 证据档**：`docs/evidence/t009/`（README + summary.md 判定行脚本生成 + matrix.jsonl 全量 + throughput 各档原始 + sampling JSONL + 分层比对表脚本生成 + runs/ 门禁档 + 环境档（arena.exe/bench 二进制 sha256 链，复用 t007 collect_environment.ps1 同式）+ 跑批脚本断点续跑 + dispatches/）。分层比对 v0：逐 cell 胜方方向一致性（层间符号一致比例 + 小样本注明）+ 击溃率（v0 定义：胜方存活率 ≥80% 局占比）+ end_tick 分布三层对比；初版结论行。
+- **D10 range 不启用**：M0 战斗判定维持贴身口径（range_q32 继续不读，units.rs D8 注释「远程行为留 T009+」的启用属战斗机制变更 = 全锚失效，不在本卡）；弓箭手按近战参战、矩阵解读如实注明；移交 T013 注记。
+- **D11 AI 决策口径**：镜像 AI v0 = 构成确定性生成 + deploy 即决策，无独立逐 tick 决策模块；吞吐 JSON 单列 `ai_decision_cost: 0`（表 6-0「AI 池扩档后须重测」钩子字段预留）。
+- **D12 时间盒 ≤3h（worker 执行段）；量测窗口机器空闲独占（预检声明留档）。**
+- **D13 分工**：worker-1 隔离树 `trees/wanzhen/t009-a` 基线 45a0741；中断处置按项目附录 E；收获后 Lead G1 + plan-code-reviewer 完整轮（量测卡）。
+
+## 执行记录（2026-10-05 收口）
+
+- **执行**：worker-1 隔离树一次完成（零中断零接管，时间盒内）；world.rs 纯增量 +146/−0（deploy 逐字零改动），arena.rs 新 bin 941 行，47 单测全绿（既有 43 原值 + 新增 4：W1/W2/W3/W4）。
+- **核心判定**（summary.md 脚本生成，审核轮独立复算逐位一致）：吞吐@12t = **1,099,638.6 场/h ≥ 10_000 PASS（裕度 ≈110×）**，16 线程外推 1,405,967.6；**镜像 sanity = H2 结构性红偏**（口径/探针两层对角 12 格全红胜 100%、z=−10——apply 索引序先手 + hp-sum 截断语义，预注册双假设形态如实判定，**移交 T013 口径仲裁**：镜像 sanity 口径在 v0 单 lane 序贯决斗语义下不可达 50/50）；接敌实证三层全过（口径层 avg 存活 max 194<200、探针 14<20、全规模 9980<10000）；分层方向一致 33/36（cell 29/34/35 翻转，小样本如实披露）；CLI 交叉三方 `0x564cf46fdf191710` 逐位一致；口径层 resolved 0/3600（**预注册预期成立**——单 lane 序贯决斗 1800t 不可全歼、截断 hp-sum 主导，v0 语义如实入档，克制环分辨率受限移交 T011/T013 注记）。
+- **上报裁决（Lead，4 项）**：①派工单 W4② 速算值自相矛盾（(ceil(50/6)−1)×20 = 160 非 140、首杀 ≈429 非 409）——B.2⑤ 双盲制度生效实例，worker 按实测落断言，正确；②`--per-side` 合法域收窄 {10,100}（其余 exit 2）——采纳（种子基只定义两层）；③throughput JSON 附加键 `final_hash_xor`（四档全等旁证确定性）——保留；④r1~r6 批次前 precheck .txt 缺失（ps1 首版无 BOM 被 PowerShell 5.1 按 ANSI 解析）——操作者手工预检（进程表 + CPU 3%）+ post-run idle 补检 + r4 CV<3% 旁证，**裁定不补跑**（数据稳健性充分，披露如实）。
+- **审核（G2 完整轮，量测卡口径）**：**通过**，P0=0；独立复算 3 项（A3 三方复跑 / A4 全量重算 / A5 四档 gph+OLS）逐位一致；Minor×4——①arena.rs:194 doc 残留旧签名表述、③README 行数笔误 2101→2100（两处随手清、check 复跑 0 警告）；②`--throughput` 对无关参数静默忽略 vs `--sampling` 拒绝的 CLI 卫生不一致——**移交清单**（超出派工单要求，行为变更不随手改）；④台账行随收获回写（本行）。报告存档 `docs/evidence/t009/review-plan-code-reviewer.md`。
+- **验收断言对照**：断言 1 ✓（吞吐在档 + R2 判据 PASS）；断言 2 ✓（全表 + sanity 判定行 + CI）；断言 3 ✓（100 局 + 分层比对初版）；断言 4 ✓（计时窗纯度代码路径指认 arena.rs:522-526 + ai_decision_cost:0 单列）。

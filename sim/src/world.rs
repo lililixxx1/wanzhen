@@ -546,6 +546,114 @@ impl World {
         world
     }
 
+    /// T009 平衡实验场对阵布阵（主会话派工单 §1 契约；关联函数、全新 World）——
+    /// [`World::deploy`] 的非镜像泛化：红蓝双方可有**不同构成清单**、lane 长度
+    /// 可参数化。镜像情形（red == blue 且 lane_q32 == LANE_LEN_Q32）与 `deploy`
+    /// **逐位一致**（等价性红线，单测 deploy_versus_mirror_equivalence_matches_deploy
+    /// 断言）。逐项（与 `deploy` 现行实现同式，重复内联 = 语义参照 + 可 diff）：
+    ///
+    /// 1. 红方清单按顺序展开为 seq_red（清单顺序 = 兵种块顺序）；蓝方同理 seq_blue；
+    /// 2. 各自独立 Fisher-Yates 全洗：`for i in (1..m).rev() { j = rng.next_u64()
+    ///    % (i+1); swap(i, j) }`；洗牌 RNG 均为**独立**实例
+    ///    `Xoshiro256StarStar::from_seed(seed ^ DEPLOY_SALT)`（同 seed 同盐，
+    ///    不消耗 World 的 tick 级 RNG）——red == blue 时两洗逐位一致（镜像等价性
+    ///    的来源）；`%` 取模偏差可接受，与 `deploy` 同口径；
+    /// 3. 队列位置同 `deploy` 现行式：红队头 x = radius_0，其后
+    ///    `x_k = x_{k-1} - (r_{k-1} + r_k + GAP_Q32)`（向 -x 排队）；蓝方同式由
+    ///    seq_blue 半径算得 x_blue 后镜像 `x'_k = lane_q32 - x_blue[k]`；
+    /// 4. units 顺序 = 红块（索引 0..m_r）后蓝块；tick = 0、tick 级 RNG
+    ///    `Xoshiro256StarStar::from_seed(seed)`、`last_hash` = 布阵快照哈希
+    ///    （tick 0 状态哈希）。
+    pub fn deploy_versus(
+        seed: u64,
+        red: &[(UnitKind, usize)],
+        blue: &[(UnitKind, usize)],
+        lane_q32: i64,
+    ) -> World {
+        let mut seq_red: Vec<UnitKind> = Vec::new();
+        for (kind, count) in red {
+            for _ in 0..*count {
+                seq_red.push(*kind);
+            }
+        }
+        let mut seq_blue: Vec<UnitKind> = Vec::new();
+        for (kind, count) in blue {
+            for _ in 0..*count {
+                seq_blue.push(*kind);
+            }
+        }
+        let m_r = seq_red.len();
+        let m_b = seq_blue.len();
+
+        // Fisher-Yates 全洗（各自独立 RNG，seed ^ DEPLOY_SALT；% 取模偏差可接受，
+        // 见 deploy 同款注释；red == blue ⇒ 两洗逐位一致）。
+        let mut shuffler = Xoshiro256StarStar::from_seed(seed ^ DEPLOY_SALT);
+        for i in (1..m_r).rev() {
+            let j = (shuffler.next_u64() % (i as u64 + 1)) as usize;
+            seq_red.swap(i, j);
+        }
+        let mut shuffler = Xoshiro256StarStar::from_seed(seed ^ DEPLOY_SALT);
+        for i in (1..m_b).rev() {
+            let j = (shuffler.next_u64() % (i as u64 + 1)) as usize;
+            seq_blue.swap(i, j);
+        }
+
+        // 红方队列位置：队头 x = radius_0，向 -x 方向排队（间隙 GAP_Q32）。
+        let mut x_red: Vec<i64> = Vec::with_capacity(m_r);
+        for k in 0..m_r {
+            let r_k = spec(seq_red[k]).radius_q32;
+            let x_k = if k == 0 {
+                r_k
+            } else {
+                x_red[k - 1] - (spec(seq_red[k - 1]).radius_q32 + r_k + GAP_Q32)
+            };
+            x_red.push(x_k);
+        }
+        // 蓝方队列位置：同式由 seq_blue 半径计算，再镜像到 lane 对侧。
+        let mut x_blue: Vec<i64> = Vec::with_capacity(m_b);
+        for k in 0..m_b {
+            let r_k = spec(seq_blue[k]).radius_q32;
+            let x_k = if k == 0 {
+                r_k
+            } else {
+                x_blue[k - 1] - (spec(seq_blue[k - 1]).radius_q32 + r_k + GAP_Q32)
+            };
+            x_blue.push(x_k);
+        }
+
+        let mut units: Vec<Unit> = Vec::with_capacity(m_r + m_b);
+        for k in 0..m_r {
+            units.push(Unit {
+                alive: true,
+                kind: seq_red[k],
+                side: Side::Red,
+                hp: spec(seq_red[k]).hp,
+                cd: 0,
+                x: x_red[k],
+            });
+        }
+        for k in 0..m_b {
+            units.push(Unit {
+                alive: true,
+                kind: seq_blue[k],
+                side: Side::Blue,
+                hp: spec(seq_blue[k]).hp,
+                cd: 0,
+                x: lane_q32 - x_blue[k],
+            });
+        }
+
+        let mut world = Self {
+            tick: 0,
+            units,
+            rng: Xoshiro256StarStar::from_seed(seed),
+            last_hash: 0,
+            resolved: None,
+        };
+        world.last_hash = world.state_hash();
+        world
+    }
+
     pub fn unit_count(&self) -> usize {
         self.units.len()
     }
@@ -2095,6 +2203,44 @@ mod tests {
             "终局存活 {} 应 < 24（接敌可达性算式保证战斗发生）",
             worlds[0].unit_count()
         );
+    }
+
+    // ---- T009 平衡实验场（WP-A）：deploy_versus 新增测试（既有 43 测试零改动）----
+
+    /// T009 W1（派工单 §5）：deploy_versus 镜像等价红线——red == blue 且
+    /// lane_q32 == LANE_LEN_Q32 时与 deploy 逐位一致：布阵快照哈希（last_hash）
+    /// 相等，且各自 run_battle(1800) 后 final_hash 逐位相等。
+    /// 构型 × 种子：{[(Shieldman,10)], [(HeavyKnight,2),(Militia,3)], [(Militia,5)]}
+    /// × {42, 43, 1_000_007}（全组合 9 对）。
+    #[test]
+    fn deploy_versus_mirror_equivalence_matches_deploy() {
+        let configs: [Vec<(UnitKind, usize)>; 3] = [
+            vec![(UnitKind::Shieldman, 10)],
+            vec![(UnitKind::HeavyKnight, 2), (UnitKind::Militia, 3)],
+            vec![(UnitKind::Militia, 5)],
+        ];
+        for c in &configs {
+            for seed in [42u64, 43, 1_000_007] {
+                let mut a = World::deploy_versus(seed, c, c, LANE_LEN_Q32);
+                let mut b = World::deploy(seed, c);
+                assert_eq!(
+                    a.unit_count(),
+                    b.unit_count(),
+                    "seed={seed} c={c:?}: 单位总数必须一致"
+                );
+                assert_eq!(
+                    a.last_hash, b.last_hash,
+                    "seed={seed} c={c:?}: 布阵快照哈希必须逐位一致"
+                );
+                let oa = a.run_battle(TICK_CAP_REDUCED);
+                let ob = b.run_battle(TICK_CAP_REDUCED);
+                assert_eq!(
+                    oa.final_hash, ob.final_hash,
+                    "seed={seed} c={c:?}: 终局 final_hash 必须逐位相等"
+                );
+                assert_eq!(oa.winner, ob.winner, "seed={seed} c={c:?}: 胜负必须一致");
+            }
+        }
     }
 }
 
