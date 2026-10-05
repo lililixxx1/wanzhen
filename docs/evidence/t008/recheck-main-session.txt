@@ -1,0 +1,26 @@
+# T008 主会话独立复现（2026-10-05 收尾，WP-D 之后；与 worker 产出相互独立执行）
+
+1. 判定复算（独立重跑 compare_matrix.py，输出重定向 target/ 不碰交付档）：
+   $ python docs/evidence/t008/compare_matrix.py docs/evidence/t008/runs target/t008-main-recheck-matrix.md
+   RECHECK_COMPARE_EXIT=0
+   $ diff docs/evidence/t008/matrix.md target/t008-main-recheck-matrix.md
+   → 仅 1 行差异：第 3 行「生成命令」自引用行（本次命令带 out 参数所致，非判定内容）；
+     判定行/矩阵表逐字节一致。结论：matrix.md 可复算，判定成立。
+
+2. 跨卡锚独立 diff（不经 compare_matrix.py，命令直出）：
+   $ diff docs/evidence/t008/runs/anchor1-t006-fullscale.stdout docs/evidence/t006/runs/fullscale.stdout   → A1_IDENTICAL
+   $ diff docs/evidence/t008/runs/anchor2-t006-10k300.stdout docs/evidence/t006/runs/10k-s42-t12.stdout   → A2_IDENTICAL
+   结论：T006 两锚逐字节复现，跨卡黄金锚零漂移。
+
+3. 新进程独立重跑（命令从 runs/plan.txt 原文提取执行，不手抄参数）：
+   $ eval "$(sed -n 's/^red200-th12-s42 //p' docs/evidence/t008/runs/plan.txt)" > target/t008-fixtures/main-recheck/red200-th12-s42.stdout 2> .../red200-th12-s42.stderr
+   RERUN_EXIT=0
+   $ diff target/t008-fixtures/main-recheck/red200-th12-s42.stdout docs/evidence/t008/runs/red200-th12-s42.stdout
+   → FRESH_RERUN_IDENTICAL（跨进程第 3 次独立启动逐字节一致；全规模侧由 full10000-th12-s42-r2 加样局覆盖）。
+
+4. 完整性与卫生：
+   exits.txt 行数 29 / REAL_EXIT=0 计数 29 / 非 0 计数 0；
+   机器路径扫描（4 类机器路径/账号名模式，与 WP-D 自查同口径；模式串不在本档复述、防复扫自命中，排除 dispatches/ 流程文档）→ 0 命中；
+   git status --porcelain sim/ → 0 行（sim/ 零改动，T008 验证卡零代码变更红线成立）。
+
+综合：主会话独立复现通过，与 WP-A~D 产出结论一致（24 局零 mismatch / 中间哈希一致 / 加样一致 / 双锚一致 / 种子互异）。

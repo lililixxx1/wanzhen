@@ -1,0 +1,135 @@
+T008 夹具自测记录（WP-B D2：防分析器假绿）
+生成方式: bash target/t008-fixtures/run_selftest.sh（本文件由脚本自动生成；命令、退出码、关键输出行均为实跑捕获，无手抄）
+分析器: docs/evidence/t008/compare_matrix.py（sha256 = a9de0b6406276b2658ced378774f954afd61b0d519e83572c2a41487402186c1）
+夹具数据: docs/evidence/t006/runs/1k-s42-t{1,3,6,12}.stdout → red200-th{1,3,6,12}-s42.stdout
+          docs/evidence/t006/runs/10k-s42-t{1,3,6,12}.stdout → full10000-th{1,3,6,12}-s42.stdout
+          （真 sample 行数据；组内四档逐字节一致，按派工单「同组合内真一致的 4 档数据铺组」）
+夹具伪 exits.txt（base，wall_ms=1 为占位）:
+  red200-th1-s42 REAL_EXIT=0 wall_ms=1
+  red200-th3-s42 REAL_EXIT=0 wall_ms=1
+  red200-th6-s42 REAL_EXIT=0 wall_ms=1
+  red200-th12-s42 REAL_EXIT=0 wall_ms=1
+  full10000-th1-s42 REAL_EXIT=0 wall_ms=1
+  full10000-th3-s42 REAL_EXIT=0 wall_ms=1
+  full10000-th6-s42 REAL_EXIT=0 wall_ms=1
+  full10000-th12-s42 REAL_EXIT=0 wall_ms=1
+说明 1: 夹具刻意只铺 2 个 (scale,seed) 组合（8 局），故齐全性必然缺 21 局。
+说明 2: PASS 路径验收目标 = 组合判定行走 PASS（无 mismatch），不是全局 exit 0（缺局必然 exit 3）。
+说明 3: 夹具采样列沿用 T006 归档（red200: 0/1800/4000/8000/11000/14400；full10000: 0/100/200/300），
+        与正式标准列（red200: 0/450/900/1350；full10000: 0/3600/7200/10800/12600）不同，
+        故断言 2 在夹具上如实显示未完全判定（标准列 450/900/1350 覆盖 0/4）——属夹具数据差异，非判定缺陷。
+说明 4: 夹具 units/ticks 与正式 red200/full10000 参数不同属预期（T006 归档原文，只验解析与判定逻辑）。
+说明 5: 未覆盖分支 = 种子互异碰撞（需伪造第三种子的 stdout 且改跑 seed 校验，交由正式数据轮覆盖）。
+
+================================================================================
+路径 1/3：PASS 路径（同组合一致 → 组合判定 PASS）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/base target/t008-fixtures/base-matrix.md
+实际退出码: 3
+退出码解读: 组合判定 2/2 PASS、无 mismatch；exit 3 因夹具缺 21 局（预期行为，见说明 1）
+关键输出行:
+  | 判定 red200-s42（4/4 档）→ PASS | — | PASS | PASS | PASS | PASS | PASS | PASS | PASS | — |
+  | 判定 full10000-s42（4/4 档）→ PASS | — | PASS | PASS | PASS | PASS | PASS | — |
+  ## 8. 汇总判定（任务卡验收断言 1/2/3）
+  
+  - 断言 1（零 mismatch：每 (scale,seed) 组合 4 线程档 × 全部采样列 + 终局列逐位一致）: INCOMPLETE — 2/6 组合逐位一致，4 组合缺局/数据不足未判定
+    - 组合明细: red200-s42 PASS；red200-s43 INCOMPLETE；red200-s44 INCOMPLETE；full10000-s42 PASS；full10000-s43 INCOMPLETE；full10000-s44 INCOMPLETE
+  - 断言 2（中间哈希：每 scale 标准采样列组内一致）: INCOMPLETE
+    - red200: INCOMPLETE（1/12 判定点 PASS；未判定 11 处: t=450(s42); t=900(s42); t=1350(s42); t=0(s43); t=450(s43); t=900(s43); t=1350(s43); t=0(s44)…）
+    - full10000: INCOMPLETE（1/15 判定点 PASS；未判定 14 处: t=3600(s42); t=7200(s42); t=10800(s42); t=12600(s42); t=0(s43); t=3600(s43); t=7200(s43); t=10800(s43)…）
+  - 断言 3（mismatch 全量如实列出）: 未触发（无 mismatch）
+  - 加样局（跨进程同配置逐列一致）: INCOMPLETE — red200-th12-s42-r2 INCOMPLETE；red200-th12-s42-r3 INCOMPLETE；full10000-th12-s42-r2 INCOMPLETE
+  - 锚局（vs T006 归档逐字节 diff）: INCOMPLETE — anchor1-t006-fullscale INCOMPLETE；anchor2-t006-10k300 INCOMPLETE
+  - 种子互异 sanity（同 (scale,threads) 下 3 种子终局哈希两两不同）: 数据不足 — 可判定 0/8 个 (scale,threads)（缺局/失败局所致）
+  - 退出码: 3
+  
+
+================================================================================
+路径 2/3：FAIL 路径（改 1 个哈希字符 → exit 5 且如实列出不一致值）
+构造: python 就地改写 target/t008-fixtures/fail/red200-th1-s42.stdout 的首个 sample 哈希末位 hex 字符（'6'→'0'）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/fail target/t008-fixtures/fail-matrix.md
+实际退出码: 5
+关键输出行:
+  | 判定 red200-s42（4/4 档）→ FAIL | — | FAIL | PASS | PASS | PASS | PASS | PASS | PASS | — |
+  ## 5. 不一致全量明细（禁止折叠/省略）
+  
+  ### 组合 red200-s42：列 t=0 不一致
+  4 档全量值（禁止折叠/省略）：
+    - red200-th1-s42 = 0x4ceb228fcfdf7c20
+    - red200-th3-s42 = 0x4ceb228fcfdf7c26
+    - red200-th6-s42 = 0x4ceb228fcfdf7c26
+    - red200-th12-s42 = 0x4ceb228fcfdf7c26
+  
+  - 断言 3（mismatch 全量如实列出）: 触发 — 共 1 处不一致，全部值见 §5（禁止折叠/省略）
+  - 退出码: 5
+
+================================================================================
+路径 3/3：缺局路径（删 1 个文件 → exit 3）
+构造: rm target/t008-fixtures/missing/red200-th6-s42.stdout（base 副本删除 1 档）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/missing target/t008-fixtures/missing-matrix.md
+实际退出码: 3
+关键输出行:
+  | 判定 red200-s42（3/4 档）→ INCOMPLETE | — | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | — |
+  | red200-th6-s42 | 缺局 | 有 exits 行（REAL_EXIT=0）但无 stdout 档 |
+  ## 8. 汇总判定（任务卡验收断言 1/2/3）
+  - 断言 1（零 mismatch：每 (scale,seed) 组合 4 线程档 × 全部采样列 + 终局列逐位一致）: INCOMPLETE — 1/6 组合逐位一致，5 组合缺局/数据不足未判定
+  - 退出码: 3
+
+================================================================================
+附加覆盖（非派工单三路径要求；为覆盖锚局 diff / 加样 / 格式错 / 失败局分支，防未测分支带病交付）
+
+-- 附加 1：锚局与加样分支（真 T006 归档复制 → 逐字节一致 PASS；rc=3 因缺局）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/branches target/t008-fixtures/branches-matrix.md
+实际退出码: 3
+关键输出行:
+  | red200-th12-s42-r2 | red200-th12-s42 | PASS | 7/7 列一致（采样 6 + 终局 1） |
+  | red200-th12-s42-r3 | red200-th12-s42 | PASS | 7/7 列一致（采样 6 + 终局 1） |
+  | full10000-th12-s42-r2 | full10000-th12-s42 | PASS | 5/5 列一致（采样 4 + 终局 1） |
+  | anchor1-t006-fullscale | docs/evidence/t006/runs/fullscale.stdout | 72 | 72 | PASS — 逐字节一致（72 bytes） | 0 | 0x29980473140ed39e | 0x29980473140ed39e |
+  | anchor2-t006-10k300 | docs/evidence/t006/runs/10k-s42-t12.stdout | 207 | 207 | PASS — 逐字节一致（207 bytes） | 0 | 0x9e17408bc4b7b909 | 0x9e17408bc4b7b909 |
+  | red200-th12-s42-r2 | spike | 42 | 14400 | 14400 | 963 | 0 |
+  | red200-th12-s42-r3 | spike | 42 | 14400 | 14400 | 963 | 0 |
+  | full10000-th12-s42-r2 | spike | 42 | 300 | 300 | 10000 | 0 |
+  | anchor1-t006-fullscale | anchor | 42 | 14400 | 14400 | 9959 | 0 |
+  | anchor2-t006-10k300 | anchor | 42 | 300 | 300 | 10000 | 0 |
+  - 加样局（跨进程同配置逐列一致）: PASS — red200-th12-s42-r2 PASS；red200-th12-s42-r3 PASS；full10000-th12-s42-r2 PASS
+  - 锚局（vs T006 归档逐字节 diff）: PASS — anchor1-t006-fullscale PASS；anchor2-t006-10k300 PASS
+
+-- 附加 2：锚局 diff 不一致分支（改 anchor2 1 个 hex 字符 → exit 5 + 字节差异明细）
+构造: python 就地改写 target/t008-fixtures/branches-anchor-bad/anchor2-t006-10k300.stdout 的 sample=300 哈希末位（'9'→'0'）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/branches-anchor-bad target/t008-fixtures/branches-anchor-bad-matrix.md
+实际退出码: 5
+关键输出行:
+  | anchor2-t006-10k300 | docs/evidence/t006/runs/10k-s42-t12.stdout | 207 | 207 | FAIL — 不一致（参照 207 bytes / 实测 207 bytes，共 1 处字节差异）；offset 136: 实测 0x30 vs 参照 0x39 | 0 | 0x9e17408bc4b7b909 | 0x9e17408bc4b7b909 |
+  | anchor2-t006-10k300 | anchor | 42 | 300 | 300 | 10000 | 0 |
+  ## 5. 不一致全量明细（禁止折叠/省略）
+  
+  ### 锚局逐字节 diff 不一致: anchor2-t006-10k300 vs docs/evidence/t006/runs/10k-s42-t12.stdout
+  不一致（参照 207 bytes / 实测 207 bytes，共 1 处字节差异）；offset 136: 实测 0x30 vs 参照 0x39
+  - 断言 3（mismatch 全量如实列出）: 触发 — 共 1 处不一致，全部值见 §5（禁止折叠/省略）
+  - 退出码: 5
+
+-- 附加 3：输入格式错分支（追加非契约行 → exit 2 + 全量错误清单）
+构造: printf 'garbage line here\n' >> target/t008-fixtures/fmt/red200-th3-s42.stdout
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/fmt target/t008-fixtures/fmt-matrix.md
+实际退出码: 2
+关键输出行:
+  # T008 对拍矩阵（输入格式错，判定未执行）
+  
+  - runs 目录: target/t008-fixtures/fmt
+  - 退出码: 2（输入格式错；判定未执行，修正输入后重跑）
+  
+  ## 输入格式错误全量清单（禁止折叠/省略）
+  
+  1. red200-th3-s42.stdout 解析错误: 第 12 行: 不符合契约语法: 'garbage line here'
+
+-- 附加 4：失败局分支（REAL_EXIT=124 + 半截 stdout（无摘要行）→ exit 3 + 失败局如实入档，不误报 mismatch）
+构造: head -n 3 截断 target/t008-fixtures/failed/red200-th1-s42.stdout；exits.txt 该行改 REAL_EXIT=124（watchdog 场景）
+命令: python docs/evidence/t008/compare_matrix.py target/t008-fixtures/failed target/t008-fixtures/failed-matrix.md
+实际退出码: 3
+关键输出行:
+  | 判定 red200-s42（3/4 档）→ INCOMPLETE | — | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | INCOMPLETE | — |
+  | red200-th1-s42 | 失败局（REAL_EXIT=124） | REAL_EXIT=124≠0（失败局；stdout 仅作披露，不参与判定） |
+  ## 8. 汇总判定（任务卡验收断言 1/2/3）
+  - 断言 1（零 mismatch：每 (scale,seed) 组合 4 线程档 × 全部采样列 + 终局列逐位一致）: INCOMPLETE — 1/6 组合逐位一致，5 组合缺局/数据不足未判定
+  - 断言 3（mismatch 全量如实列出）: 未触发（无 mismatch）
+  - 退出码: 3

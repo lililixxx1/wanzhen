@@ -1,0 +1,44 @@
+T008 环境档（M0-07 同种子重放确定性验证；基准机 A = 开发机本机，报告 V0.9.1 表 6-0）
+生成时间: 2026-10-05 10:04:57 +08:00
+
+== CPU (Win32_Processor) ==
+  Name: 12th Gen Intel(R) Core(TM) i5-12490F
+  Cores: 6  LogicalProcessors: 12  MaxClockMHz: 3000
+
+== GPU + 驱动 (Win32_VideoController) ==
+  Name: GameViewer Virtual Display Adapter
+  DriverVersion: 15.6.5.199  DriverDate: 02/28/2026 08:00:00
+  Name: NVIDIA GeForce RTX 3050
+  DriverVersion: 31.0.15.3758  DriverDate: 10/04/2023 08:00:00
+
+== RAM (Win32_ComputerSystem / Win32_PhysicalMemory) ==
+  TotalPhysicalMemory: 34187943936 bytes
+  Module: 32 GiB  SpeedMHz: 3600  Manufacturer: Kingston
+
+== OS (Win32_OperatingSystem) ==
+  Caption: Microsoft Windows 10 IoT 企业版 LTSC
+  Version: 10.0.19044  BuildNumber: 19044  Arch: 64 位
+
+== 工具链 ==
+  rustc: rustc 1.98.1 (48a229cea 2026-09-01)
+  cargo: cargo 1.98.1 (797e8a9bc 2026-08-05)
+  rust-toolchain.toml 内容（逐行）:
+    # 确定性纪律（报告 5.2）：模拟态可复现性要求 rustc 钉版；升版视同行为变更，须重跑确定性验证。
+    [toolchain]
+    channel = "1.98.1"
+
+== 依赖版本（Cargo.lock） ==
+  name = "bevy"  version = "0.19.1"
+  注: sim/bench 代码路径零 bevy API 参与（headless 模拟核心）；bevy 版本仅作仓库基线记录。
+
+== 对拍产物（sim.exe / bench.exe） ==
+  path: target/release/sim.exe  size: 330240 bytes  mtime: 2026-10-05 09:53:26
+  sha256: C8006C0A104507B8014612EDC16736928C989D3E31083130988A39F462827EE9
+  path: target/release/bench.exe  size: 512000 bytes  mtime: 2026-10-05 08:58:11
+  sha256: 80EBCCB0CABB7C607D60EB529548E5C1F9B2DE6C625CACB22CD482467123AF0D
+
+== 版本控制 ==
+  git HEAD: b2dad10a438d295bdcfbdfd5cfd7bce0d5a8b917
+  HEAD 摘要: b2dad10 2026-10-05 2026-10-05 owner grill 六项定案落地（会话间工作方式与执行序登记）：①执行序定案——T008（重放确定性）→ T015 优化轮一（止损响应）→ 视判定开轮二 → 按依赖链，极限十万去留待两轮复测后定（AGENTS.md 当前状态节 + taskset/README 执行序行）；②T015 任务卡立项（taskset/t015-opt-round-1.md）：时间盒 ≤2 工作日、出口判据 = 字面止损解除（四采样点 µs 全 ≤2µs 且加速比 ≥4×）、一轮达标即停、黄金锚等价性红线（T002/T004 锚 + 35 单测原值原绿）、复测复用 T007 bench 套件；③审核粒度修订（AGENTS.md + taskset/README）：每卡过审分轻重——代码卡轻量轮（diff+门禁三断言+抽查复跑）/ 节点卡·量测复测卡·主会话接管卡完整轮 / T012 收官轮不变（T007 节点轮已过）；④派工口径留痕：三层职责不变、worker-2 并发 1~3（独立卡并行，量测窗口仍空闲独占）、执行中断→主会话接管+台账如实记（连续四卡先例）、子智能体模型 owner 侧配置；⑤W1 投入口径定案（AGENTS.md）：严格字面——台账挂钟全计、按日历窗口切分（预备周任务不计 W1）、降档如实接受、自然节奏不灌水；⑥T003 遗留机器路径清理（owner 拍板随本提交顺手清）：redline-grep.txt 3 处绝对路径前缀重写相对路径（命中行号与内容原样未动——路径前缀属命令回显元数据非证据内容）+ t003/README 修正留痕（先例 = T007 P1-2）；连带 taskset 索引状态补账（T002~T007 全列完成态，此前六卡状态行漏更）
+
+声明: T008 量测窗口机器空闲独占（2026-10-05）

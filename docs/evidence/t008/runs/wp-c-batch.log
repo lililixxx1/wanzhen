@@ -1,0 +1,18 @@
+2026-10-05 10:12:22 +0800 start: run_t008.sh anchor1 full10000 (WP-C, 14 runs)
+OK          anchor1-t006-fullscale REAL_EXIT=0 wall_ms=775872
+OK          full10000-th12-s42 REAL_EXIT=0 wall_ms=815705
+OK          full10000-th12-s43 REAL_EXIT=0 wall_ms=813339
+OK          full10000-th12-s44 REAL_EXIT=0 wall_ms=793107
+OK          full10000-th6-s42 REAL_EXIT=0 wall_ms=1161442
+OK          full10000-th6-s43 REAL_EXIT=0 wall_ms=1129090
+OK          full10000-th6-s44 REAL_EXIT=0 wall_ms=1136976
+OK          full10000-th3-s42 REAL_EXIT=0 wall_ms=2020227
+OK          full10000-th3-s43 REAL_EXIT=0 wall_ms=2045684
+OK          full10000-th3-s44 REAL_EXIT=0 wall_ms=2109000
+OK          full10000-th1-s42 REAL_EXIT=0 wall_ms=5889632
+OK          full10000-th1-s43 REAL_EXIT=0 wall_ms=5839226
+OK          full10000-th1-s44 REAL_EXIT=0 wall_ms=5476078
+OK          full10000-th12-s42-r2 REAL_EXIT=0 wall_ms=758409
+----
+summary: executed_ok=14 skipped=0 failed_total=0
+BATCH_DONE rc=0

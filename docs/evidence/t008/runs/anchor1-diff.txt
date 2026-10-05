@@ -1,0 +1,16 @@
+# T008 WP-C D2 锚 1 复现判定（anchor1-t006-fullscale，2026-10-05 10:32:33 +0800）
+# 命令逐字复现 T006（出处 docs/evidence/t006/batch.sh:8 COMP5000 + :32；经 plan.txt 执行，无 --hash-samples）：
+#   ./target/release/sim.exe --comp "shieldman:840,heavyknight:830,pikeman:830,swordsman:830,archer:830,militia:840" --ticks 14400 --threads 12 --seed 42
+# 判定方法：stdout 与 T006 归档参考逐字节 diff：
+#   diff docs/evidence/t008/runs/anchor1-t006-fullscale.stdout docs/evidence/t006/runs/fullscale.stdout
+# diff 退出码 = 0（无任何差异输出）→ 逐字节 identical。
+# 双侧 sha256 佐证（跨进程、跨卡复现）：
+94d0439fff30f2d705f0f59fd08b1a30fe4654e8fc5b8ecd38f1c7ac28064136 *docs/evidence/t008/runs/anchor1-t006-fullscale.stdout
+94d0439fff30f2d705f0f59fd08b1a30fe4654e8fc5b8ecd38f1c7ac28064136 *docs/evidence/t006/runs/fullscale.stdout
+# 归档摘要行原文（期望值出处；哈希值由命令输出直取，非手抄）：
+#   seed=42
+#   ticks=14400
+#   units=9959
+#   final_tick=14400
+#   hash=0x29980473140ed39e
+RESULT: IDENTICAL（预期成立，跨卡黄金锚零漂移）

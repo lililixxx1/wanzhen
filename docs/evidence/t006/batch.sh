@@ -1,7 +1,7 @@
 #!/bin/bash
 # T006 证据跑批（D9 对拍矩阵 16 局 + D8 fullscale 长跑）。机器空闲独占，后台运行。
 set -u
-cd /c/Users/Administrator/Desktop/ccc/wanzhen
+cd "$(dirname "$0")/../../.."  # T008 附带卫生清理：机器绝对路径改相对（T003/T007 P1-2 先例），内容零改动
 EVID=docs/evidence/t006
 BIN=./target/release/sim.exe
 COMP500="shieldman:84,heavyknight:83,pikeman:83,swordsman:83,archer:83,militia:84"

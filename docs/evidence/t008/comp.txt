@@ -1,0 +1,20 @@
+# T008 D2 构成映射生成记录（gen_comp.py 自动产出，2026-10-05）
+#
+# 算法逐字引用：sim/src/bin/bench.rs:284-301 composition_for
+#   per_side = units / 2; q = per_side / 6; r = per_side % 6;
+#   表序（bench.rs:288-295）= Shieldman/HeavyKnight/Pikeman/Swordsman/Archer/Militia，
+#   按表序前 r 个兵种各 +1（comp = q + usize::from(i < r)）。
+#
+## red200 降规模（units=200 → per_side=100, q=16, r=4）
+comp=shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16
+assert_per_side_sum: sum=100 expect=100 -> PASS
+assert_kind_q_or_q_plus_1: -> PASS
+assert_blind_ref_match: -> PASS
+#
+## full10000 全规模（units=10000 → per_side=5000, q=833, r=2）
+comp=shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833
+assert_per_side_sum: sum=5000 expect=5000 -> PASS
+assert_kind_q_or_q_plus_1: -> PASS
+assert_blind_ref_match: -> PASS
+#
+RESULT: PASS（两串全部断言通过，与主会话速算参考值逐字一致）

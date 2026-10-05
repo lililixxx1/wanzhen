@@ -1,0 +1,10 @@
+# T008 WP-A D7 锚 2 复现判定（anchor2-t006-10k300，2026-10-05）
+# 命令逐字复现 T006（出处 docs/evidence/t006/batch.sh:8 COMP5000 + :24，打开核对后写入 plan.txt）：
+#   ./target/release/sim.exe --comp "shieldman:840,heavyknight:830,pikeman:830,swordsman:830,archer:830,militia:840" --ticks 300 --hash-samples 0,100,200,300 --threads 12 --seed 42
+# 判定方法：stdout 与 T006 归档参考逐字节 diff：
+#   diff docs/evidence/t008/runs/anchor2-t006-10k300.stdout docs/evidence/t006/runs/10k-s42-t12.stdout
+# diff 退出码 = 0（无任何差异输出）→ 逐字节 identical。
+# 双侧 sha256 佐证（跨进程、跨卡复现）：
+194eb1406872831af3722563efe56d4c69e25a7a96dc2aaa4ed47159cf25107d *docs/evidence/t008/runs/anchor2-t006-10k300.stdout
+194eb1406872831af3722563efe56d4c69e25a7a96dc2aaa4ed47159cf25107d *docs/evidence/t006/runs/10k-s42-t12.stdout
+RESULT: IDENTICAL（预期成立，跨卡黄金锚零漂移）

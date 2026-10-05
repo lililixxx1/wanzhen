@@ -1,0 +1,57 @@
+# T008 runs/plan.txt —— 全 29 局清单（WP-A + WP-C 共用；D4 证据契约）
+# 每行格式：<run_id> <完整相对命令>（一行一局；命令相对仓库根执行）。
+# 本文件以 # 开头的注释行与空行由 run_t008.sh 解析时跳过。
+#
+# 固定顺序理由（派工单 D6 留痕）：
+#   1) anchor1 跨卡黄金锚居首——若锚先漂，后续矩阵数据全部存疑，尽早暴露；
+#   2) full10000 线程档按 th12 → th6 → th3 → th1 递减（快档先行）——快档先跑完，
+#      若哈希 mismatch 可在投入最贵的 th1 档（单局约 2h 量级）之前暴露；
+#   3) full10000-th12-s42-r2（跨进程加样）紧随全规模矩阵；
+#   4) red200 同样快档先行（th12 → th6 → th3 → th1）+ 加样 r2/r3；
+#   5) anchor2 压轴（WP-A 唯一锚局，T006 10k×300 逐字复现，秒级）。
+# 分工：WP-A 执行选择集 = anchor2 + red200 前缀（15 局）；
+#       WP-C 执行选择集 = anchor1 + full10000 前缀（14 局）。
+#       两选择集互不重叠，可独立先后执行（run_t008.sh 按前缀匹配）。
+#
+# ---- 锚局（2）----
+anchor1-t006-fullscale ./target/release/sim.exe --comp "shieldman:840,heavyknight:830,pikeman:830,swordsman:830,archer:830,militia:840" --ticks 14400 --threads 12 --seed 42
+anchor2-t006-10k300 ./target/release/sim.exe --comp "shieldman:840,heavyknight:830,pikeman:830,swordsman:830,archer:830,militia:840" --ticks 300 --hash-samples 0,100,200,300 --threads 12 --seed 42
+#
+# ---- 全规模矩阵 full10000（units=10000，--ticks 14400 = world.rs:149 TICK_CAP_FULL = 8*60*30；
+#      采样点 0,3600,7200,10800,12600 + 终局 14400 走摘要 hash= 行；
+#      构成 = D2 算法重算（docs/evidence/t008/comp.txt，comp.txt RESULT: PASS）----
+full10000-th12-s42 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 12 --seed 42
+full10000-th12-s43 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 12 --seed 43
+full10000-th12-s44 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 12 --seed 44
+full10000-th6-s42 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 6 --seed 42
+full10000-th6-s43 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 6 --seed 43
+full10000-th6-s44 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 6 --seed 44
+full10000-th3-s42 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 3 --seed 42
+full10000-th3-s43 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 3 --seed 43
+full10000-th3-s44 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 3 --seed 44
+full10000-th1-s42 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 1 --seed 42
+full10000-th1-s43 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 1 --seed 43
+full10000-th1-s44 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 1 --seed 44
+#
+# ---- 全规模跨进程加样（1，WP-C 执行）----
+full10000-th12-s42-r2 ./target/release/sim.exe --comp "shieldman:834,heavyknight:834,pikeman:833,swordsman:833,archer:833,militia:833" --ticks 14400 --hash-samples 0,3600,7200,10800,12600 --threads 12 --seed 42
+#
+# ---- 降规模矩阵 red200（units=200，--ticks 1800 = world.rs:145 TICK_CAP_REDUCED 逐字；
+#      采样点 0,450,900,1350 + 终局 1800 走摘要 hash= 行；
+#      构成 = D2 算法重算（docs/evidence/t008/comp.txt，comp.txt RESULT: PASS）----
+red200-th12-s42 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 12 --seed 42
+red200-th12-s43 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 12 --seed 43
+red200-th12-s44 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 12 --seed 44
+red200-th6-s42 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 6 --seed 42
+red200-th6-s43 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 6 --seed 43
+red200-th6-s44 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 6 --seed 44
+red200-th3-s42 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 3 --seed 42
+red200-th3-s43 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 3 --seed 43
+red200-th3-s44 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 3 --seed 44
+red200-th1-s42 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 1 --seed 42
+red200-th1-s43 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 1 --seed 43
+red200-th1-s44 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 1 --seed 44
+#
+# ---- 降规模跨进程加样（2，WP-A 执行）----
+red200-th12-s42-r2 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 12 --seed 42
+red200-th12-s42-r3 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 12 --seed 42

@@ -1,0 +1,41 @@
+# T008 WP-A 门禁留痕（worker-1，2026-10-05）
+# 门禁 1/2: cargo check --workspace -j 3 （要求 0 警告）
+# 机器空闲独占声明：本门禁与后续跑批窗口内无其他重负载任务并行。
+# REAL_EXIT=0 warnings=0 errors=0
+```
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s
+```
+
+# 门禁 2/2: cargo build -p sim --release -j 3
+# REAL_EXIT=0 warnings=0
+```
+   Compiling sim v0.1.0 (sim)
+    Finished `release` profile [optimized] target(s) in 0.77s
+```
+# 留痕（T003 先例 / T007 P1-2 同款）：门禁 2/2 输出中 cargo 回显的机器绝对路径前缀
+# 已重写为相对路径（…/wanzhen/sim → sim），命中行 1 处，其余内容原样未动——
+# 路径前缀属命令回显元数据非证据内容。
+
+# 门禁 3/3（D6⑤）: 幂等自检——重跑 ./docs/evidence/t008/run_t008.sh anchor2 red200
+# 预期：15 局全 SKIP + BATCH_DONE rc=0 + exits.txt 行数不变（15 → 15，无新增行）。
+# 实测：SCRIPT_EXIT=0，SKIP=15/15，executed_ok=0，failed_total=0，PRIOR-FAIL/FAIL/RERUN=0，exits.txt 行数 15→15。
+```
+SKIP        anchor2-t006-10k300 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th12-s42 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th12-s43 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th12-s44 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th6-s42 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th6-s43 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th6-s44 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th3-s42 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th3-s43 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th3-s44 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th1-s42 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th1-s43 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th1-s44 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th12-s42-r2 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+SKIP        red200-th12-s42-r3 （exits.txt 已有 REAL_EXIT=0，幂等跳过）
+----
+summary: executed_ok=0 skipped=15 failed_total=0
+BATCH_DONE rc=0
+```
