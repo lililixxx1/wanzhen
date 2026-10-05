@@ -21,9 +21,9 @@
 
 ## 5) 挂钟时间源（全量 grep 含注释；命中应仅 main.rs 外壳）
 $ grep -rnE "Instant|SystemTime" sim/src --include=*.rs
-C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:4: //! 壁钟计时（Instant）只存在于本外壳，不进模拟态。
-C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:8: use std::time::Instant;
-C:/Users/Administrator/Desktop/ccc/wanzhen/sim/src/main.rs:133: let start = Instant::now();
+sim/src/main.rs:4: //! 壁钟计时（Instant）只存在于本外壳，不进模拟态。
+sim/src/main.rs:8: use std::time::Instant;
+sim/src/main.rs:133: let start = Instant::now();
 
 ## 结论
 模拟态代码（units/world/hash/rng/lib）无浮点类型与小数字面量、无超越函数、
