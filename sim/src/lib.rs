@@ -8,7 +8,9 @@
 //! tick 上限双路径、BattleOutcome 终局冻结、BattleLog 最小日志）、
 //! 意图并行两阶段更新（T006：step_with / run_with / run_battle_with）；
 //! [`pool`] 手写持久线程池执行器（T006/D5：std::thread + mpsc，零新依赖，
-//! 连续均摊分块 map_chunks，结果与线程数无关）。
+//! 连续均摊分块 map_chunks，结果与线程数无关）；[`spatial`] 意图阶段排序序
+//! 快路径（T015：`(x, 索引)` 全序建序 + O(1) 邻域 / O(n) 扫掠查询，eligibility
+//! 不满足即逐字回退朴素 O(N²) 分片——等价加速，模拟行为逐位不变）。
 //!
 //! 确定性纪律（报告 5.2 / AGENTS.md 硬约束 4）：模拟态禁 HashMap 迭代序、浮点、
 //! 超越函数、挂钟时间源；tick 为纯计数；位置 / 距离 / 倍率一律定点整数；
@@ -18,5 +20,6 @@
 pub mod hash;
 pub mod pool;
 pub mod rng;
+pub mod spatial;
 pub mod units;
 pub mod world;

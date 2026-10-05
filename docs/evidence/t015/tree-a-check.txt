@@ -1,0 +1,287 @@
+    Checking sim v0.1.0 (<repo-root>/sim)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33s
+
+----
+[gate] G1: cargo check --workspace -j 3
+[attempt] 第3次通过；前2次编译错误如实留痕：E0521（build 并行闭包借用 x 逃逸 → x 克隆进 Arc）、E0373（闭包缺 move）
+[REAL_EXIT=0] [warnings=0]
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling serde_core v1.0.229
+   Compiling windows-link v0.2.1
+   Compiling windows-sys v0.61.2
+   Compiling indexmap v2.14.2
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling foldhash v0.2.0
+   Compiling bevy_macro_utils v0.19.1
+   Compiling hashbrown v0.16.1
+   Compiling serde v1.0.229
+   Compiling spin v0.10.1
+   Compiling bytemuck v1.25.2
+   Compiling typeid v1.0.3
+   Compiling bevy_platform v0.19.1
+   Compiling crossbeam-utils v0.8.23
+   Compiling derive_more v2.1.1
+   Compiling libm v0.2.16
+   Compiling disqualified v1.1.0
+   Compiling thiserror v2.0.21
+   Compiling erased-serde v0.4.10
+   Compiling bevy_utils v0.19.1
+   Compiling glam v0.32.1
+   Compiling bevy_reflect_derive v0.19.1
+   Compiling smallvec v1.16.2
+   Compiling pin-project-lite v0.2.17
+   Compiling bevy_ptr v0.19.1
+   Compiling futures-core v0.3.34
+   Compiling downcast-rs v2.0.2
+   Compiling futures-lite v2.6.1
+   Compiling crossbeam-queue v0.3.14
+   Compiling bevy_ecs_macro_logic v0.19.1
+   Compiling atomic-waker v1.1.2
+   Compiling async-task v4.7.1
+   Compiling arrayvec v0.7.8
+   Compiling bevy_tasks v0.19.1
+   Compiling bevy_ecs_macros v0.19.1
+   Compiling slotmap v1.1.1
+   Compiling concurrent-queue v2.5.0
+   Compiling bitflags v2.13.2
+   Compiling fixedbitset v0.5.7
+   Compiling log v0.4.34
+   Compiling nonmax v0.5.5
+   Compiling bumpalo v3.20.3
+   Compiling bevy_derive v0.19.1
+   Compiling either v1.18.0
+   Compiling itertools v0.14.0
+   Compiling const-fnv1a-hash v1.1.0
+   Compiling bevy_reflect v0.19.1
+   Compiling bevy_ecs v0.19.1
+   Compiling bevy_math v0.19.1
+   Compiling bevy_app v0.19.1
+   Compiling bevy_time v0.19.1
+   Compiling bevy_diagnostic v0.19.1
+   Compiling bevy_input v0.19.1
+   Compiling bevy_transform v0.19.1
+   Compiling bevy_internal v0.19.1
+   Compiling bevy v0.19.1
+   Compiling sim v0.1.0 (<repo-root>/sim)
+error[E0616]: field `order` of struct `spatial::SortedOrder` is private
+    --> sim\src\world.rs:1931:29
+     |
+1931 |             assert_eq!(so_p.order, so.order, "s={s}: 建序应与线程数无关");
+     |                             ^^^^^ private field
+
+error[E0616]: field `order` of struct `spatial::SortedOrder` is private
+    --> sim\src\world.rs:1931:39
+     |
+1931 |             assert_eq!(so_p.order, so.order, "s={s}: 建序应与线程数无关");
+     |                                       ^^^^^ private field
+
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1696:17
+     |
+1696 |             let mut pool = ThreadPool::new(t); // 每档独立建池、跑完 drop（D10-1）
+     |                 ----^^^^
+     |                 |
+     |                 help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1760:13
+     |
+1760 |         let mut pool = ThreadPool::new(4);
+     |             ----^^^^
+     |             |
+     |             help: remove this `mut`
+
+For more information about this error, try `rustc --explain E0616`.
+warning: `sim` (lib test) generated 2 warnings
+error: could not compile `sim` (lib test) due to 2 previous errors; 2 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+
+----
+[gate] G2: cargo test -p sim -j 3
+[attempt] 第1次编译错误：world 测试访问 spatial 私有字段 order（E0616）→ spatial 加 #[cfg(test)] pub(crate) order() 访问器后重跑
+   Compiling sim v0.1.0 (<repo-root>/sim)
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1696:17
+     |
+1696 |             let mut pool = ThreadPool::new(t); // 每档独立建池、跑完 drop（D10-1）
+     |                 ----^^^^
+     |                 |
+     |                 help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1760:13
+     |
+1760 |         let mut pool = ThreadPool::new(4);
+     |             ----^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: `sim` (lib test) generated 2 warnings (run `cargo fix --lib -p sim --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.28s
+     Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
+
+running 43 tests
+test hash::tests::fnv1a_matches_published_ascii_vectors ... ok
+test rng::tests::golden_sequence_seed42_first8 ... ok
+test pool::tests::chunk_ranges_cover_partition_balanced ... ok
+test units::tests::counter_table_3x3_exhaustive_and_armor_classification ... ok
+test spatial::tests::fast_queries_small_handbuilt_examples ... ok
+test spatial::tests::sorted_order_basic_total_order_and_inverse ... FAILED
+test units::tests::fixed_point_constants_selfcheck ... ok
+test units::tests::damage_formula_all_6x6_pairs ... ok
+test pool::tests::threadpool_lifecycle_map_chunks ... ok
+test world::tests::battle_empty_side_tick0_no_panic ... ok
+test rng::tests::stats_high4_bits_16_buckets_160k ... ok
+test world::tests::combat_rescan_after_first_blood_switches_target ... ok
+test world::tests::deploy_deterministic_same_seed_differs_across_seeds ... ok
+test rng::tests::stats_bit32_ratio_50pct ... ok
+test world::tests::deploy_mirror_symmetry_default_comp ... ok
+test world::tests::deploy_two_unit_positions_match_formula ... ok
+test spatial::tests::build_matches_serial_across_thread_tiers ... ok
+test world::tests::contact_stop_stable_at_radius_sum ... ok
+test world::tests::handcalc_death_removal_compacts_indices ... ok
+test world::tests::full_speed_advance_exact_linear ... ok
+test world::tests::handcalc_equal_distance_target_tiebreak_by_index ... ok
+test world::tests::battle_decisive_1v1_counter_kill_at_181 ... ok
+test world::tests::melee_margin_and_range_constants_selfcheck ... ok
+test world::tests::handcalc_true_equal_distance_tiebreak_chain_contact ... ok
+test world::tests::golden_hash_seed42_units0_1800ticks ... ok
+test world::tests::spatial_combat_true_equal_distance_tiebreak_five_militia_chain ... ok
+test world::tests::handcalc_pair_counter_fight_to_kill ... ok
+test world::tests::death_tick_hash_replay_pairwise ... ok
+test world::tests::spatial_fallback_eligibility_degenerate_domains ... ok
+test world::tests::friendly_units_never_interpenetrate_and_queue_behind_stopped_front ... ok
+test world::tests::two_phase_move_no_interpenetration_head_on ... ok
+test world::tests::battle_decisive_3v3_counter_queue ... ok
+test world::tests::seed_sensitivity_42_vs_43 ... ok
+test world::tests::spatial_differential_combat_fast_matches_naive_25_seeds ... ok
+test world::tests::spatial_differential_move_fast_matches_naive_25_seeds ... ok
+test world::tests::battle_cap_hp_judgment_asymmetric ... ok
+test world::tests::battle_cap_mirror_stalemate_draw_and_freeze ... ok
+test world::tests::battle_golden_crosscheck_default_comp ... ok
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test world::tests::units_participate_in_hash ... ok
+test world::tests::spatial_world_thread_parity_near_contact_checkpoints ... ok
+test world::tests::replay_consistency_checkpoints_start_mid_end ... ok
+test world::tests::parallel_parity_nearfield_battle ... ok
+
+failures:
+
+---- spatial::tests::sorted_order_basic_total_order_and_inverse stdout ----
+
+thread 'spatial::tests::sorted_order_basic_total_order_and_inverse' (19528) panicked at sim\src\spatial.rs:402:9:
+互异序列沿序必严格递增
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    spatial::tests::sorted_order_basic_total_order_and_inverse
+
+test result: FAILED. 42 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+error: test failed, to rerun pass `-p sim --lib`
+   Compiling sim v0.1.0 (<repo-root>/sim)
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1696:17
+     |
+1696 |             let mut pool = ThreadPool::new(t); // 每档独立建池、跑完 drop（D10-1）
+     |                 ----^^^^
+     |                 |
+     |                 help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> sim\src\world.rs:1760:13
+     |
+1760 |         let mut pool = ThreadPool::new(4);
+     |             ----^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: `sim` (lib test) generated 2 warnings (run `cargo fix --lib -p sim --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.74s
+     Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
+
+running 43 tests
+test hash::tests::fnv1a_matches_published_ascii_vectors ... ok
+test rng::tests::golden_sequence_seed42_first8 ... ok
+test pool::tests::chunk_ranges_cover_partition_balanced ... ok
+test spatial::tests::sorted_order_basic_total_order_and_inverse ... ok
+test units::tests::damage_formula_all_6x6_pairs ... ok
+test units::tests::counter_table_3x3_exhaustive_and_armor_classification ... ok
+test units::tests::fixed_point_constants_selfcheck ... ok
+test spatial::tests::fast_queries_small_handbuilt_examples ... ok
+test pool::tests::threadpool_lifecycle_map_chunks ... ok
+test world::tests::battle_empty_side_tick0_no_panic ... ok
+test world::tests::combat_rescan_after_first_blood_switches_target ... ok
+test rng::tests::stats_high4_bits_16_buckets_160k ... ok
+test world::tests::deploy_deterministic_same_seed_differs_across_seeds ... ok
+test rng::tests::stats_bit32_ratio_50pct ... ok
+test world::tests::contact_stop_stable_at_radius_sum ... ok
+test world::tests::deploy_mirror_symmetry_default_comp ... ok
+test spatial::tests::build_matches_serial_across_thread_tiers ... ok
+test world::tests::deploy_two_unit_positions_match_formula ... ok
+test world::tests::full_speed_advance_exact_linear ... ok
+test world::tests::battle_decisive_1v1_counter_kill_at_181 ... ok
+test world::tests::handcalc_death_removal_compacts_indices ... ok
+test world::tests::handcalc_equal_distance_target_tiebreak_by_index ... ok
+test world::tests::death_tick_hash_replay_pairwise ... ok
+test world::tests::handcalc_true_equal_distance_tiebreak_chain_contact ... ok
+test world::tests::melee_margin_and_range_constants_selfcheck ... ok
+test world::tests::golden_hash_seed42_units0_1800ticks ... ok
+test world::tests::handcalc_pair_counter_fight_to_kill ... ok
+test world::tests::battle_decisive_3v3_counter_queue ... ok
+test world::tests::spatial_combat_true_equal_distance_tiebreak_five_militia_chain ... ok
+test world::tests::friendly_units_never_interpenetrate_and_queue_behind_stopped_front ... ok
+test world::tests::two_phase_move_no_interpenetration_head_on ... ok
+test world::tests::spatial_fallback_eligibility_degenerate_domains ... ok
+test world::tests::seed_sensitivity_42_vs_43 ... ok
+test world::tests::battle_cap_hp_judgment_asymmetric ... ok
+test world::tests::battle_cap_mirror_stalemate_draw_and_freeze ... ok
+test world::tests::spatial_differential_combat_fast_matches_naive_25_seeds ... ok
+test world::tests::spatial_differential_move_fast_matches_naive_25_seeds ... ok
+test world::tests::battle_golden_crosscheck_default_comp ... ok
+test world::tests::golden_deploy_default_comp_seed42_1800ticks ... ok
+test world::tests::units_participate_in_hash ... ok
+test world::tests::spatial_world_thread_parity_near_contact_checkpoints ... ok
+test world::tests::replay_consistency_checkpoints_start_mid_end ... ok
+test world::tests::parallel_parity_nearfield_battle ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running unittests src\bin\bench.rs (target\debug\deps\bench-ce6f9266c3781cd1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\sim-57316e9536b4060f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests sim
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+----
+[gate] G2 attempt2 REAL_EXIT=0：test result ok. 43 passed; 0 failed（既有 35 + 新增 8：spatial.rs 3 + world.rs 5）；lib test 段 2 条 unused_mut 警告为 T006 基线既有（docs/evidence/t006/test.txt 同款同位，既有测试禁改未动）
+
+[卫生披露] 本档原始 cargo 输出含机器绝对路径 4 处（Checking/Compiling sim 行），按 T003/T007 P1-2 先例仅清理前缀：<repo-root>\sim；命中行其余内容原样未动。
+
+----
+[gate] G3: cargo build -p sim --release -j 3 && cargo build -p sim --bin bench --release -j 3
+   Compiling sim v0.1.0 (<repo-root>/sim)
+    Finished `release` profile [optimized] target(s) in 1m 07s
+    Finished `release` profile [optimized] target(s) in 0.13s
+[G3a_REAL_EXIT=0] [G3b_REAL_EXIT=0]

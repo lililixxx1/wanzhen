@@ -122,6 +122,19 @@
 //! 确定性纪律：无浮点 / 无超越函数 / 无挂钟 / 无 HashMap；
 //! 遍历一律按索引序；同 seed + 同参数 + 同 tick 数 → 状态逐位一致、与线程数
 //! 无关。位置为 Q32.32 定点整数（[`crate::units::ONE_Q32_32`]），纯整数运算无舍入。
+//!
+//! ## T015 扩展（优化轮一 WP-A）：意图阶段排序序快路径（行为逐位不变）
+//!
+//! move / combat 意图构造段接 [`crate::spatial`]：快照 x 沿 `(x, 索引)` 全序
+//! **严格递增且全存活**（eligibility，D2）时走快路径（O(n log n) 建序 + O(1)
+//! 序紧邻 / O(n) 扫掠查询），否则**逐字回退** T006 朴素 O(N²) 分片
+//! （`move_intent_chunk` / `combat_intent_chunk` 原样保留 = 回退路径 + 语义
+//! 参照）。等价性一句话留痕：x 互异 ⇒ move 前方最近 = 序紧邻（D4）、combat
+//! 最近敌 = 左右紧邻敌二选一（等距取最小单位索引，D5），与朴素扫描
+//! `(距离, 索引)` 字典序 argmin 逐位一致——differential 单测 25 种子 ×
+//! n∈{1,2,3,5,17,60} 全对拍 + 五民兵链真等距决胜局锚定；应用段 / cd 段 /
+//! 重索敌 / state_hash 零改动，生产域退化情形（`World::new` 重合 x、同 x
+//! 手构局、含墓碑快照）一律走回退、行为与优化前一致。
 
 use std::sync::Arc;
 
@@ -618,13 +631,25 @@ impl World {
         }
         // 每 tick 两次快照之第一次（move 意图前）。
         let input = ScanInput::from_units(&self.units);
-        let intents: Vec<MoveIntent> = match pool {
-            None => move_intent_chunk(&input, 0, n),
-            Some(p) => {
-                let input = Arc::new(input);
-                p.map_chunks(n, move |start, end| move_intent_chunk(&input, start, end))
-            }
-        };
+        // T015 快路径分发：eligibility（x 沿 (x,索引) 序严格递增 + 全存活）成立
+        // 走排序序快路径（O(1) 序紧邻），否则逐字回退 T006 朴素分片（等价性见
+        // 模块注释「T015 扩展」节与 spatial.rs 模块注释 D4）。
+        let so = crate::spatial::SortedOrder::build(&input.x, pool);
+        let intents: Vec<MoveIntent> =
+            if so.x_strictly_increasing(&input.x) && input.alive.iter().all(|&a| a) {
+                crate::spatial::move_fronts_fast(&input.x, &input.side, &so, pool)
+                    .into_iter()
+                    .map(|front| MoveIntent { front })
+                    .collect()
+            } else {
+                match pool {
+                    None => move_intent_chunk(&input, 0, n),
+                    Some(p) => {
+                        let input = Arc::new(input);
+                        p.map_chunks(n, move |start, end| move_intent_chunk(&input, start, end))
+                    }
+                }
+            };
         // 阶段 2：索引序串行应用（本阶段无死亡 ⇒ 快照索引 = 当前索引）。
         for i in 0..n {
             let dir = self.units[i].side.dir();
@@ -672,13 +697,26 @@ impl World {
         }
         // 每 tick 两次快照之第二次（combat 意图前——已反映 move 后位置）。
         let input = ScanInput::from_units(&self.units);
-        let intents: Vec<CombatIntent> = match pool {
-            None => combat_intent_chunk(&input, 0, n),
-            Some(p) => {
-                let input = Arc::new(input);
-                p.map_chunks(n, move |start, end| combat_intent_chunk(&input, start, end))
-            }
-        };
+        // T015 快路径分发（同 move_units_with；O(n) 扫掠 + O(1) 邻域查询，等价性
+        // 见模块注释「T015 扩展」节与 spatial.rs 模块注释 D5）。
+        let so = crate::spatial::SortedOrder::build(&input.x, pool);
+        let intents: Vec<CombatIntent> =
+            if so.x_strictly_increasing(&input.x) && input.alive.iter().all(|&a| a) {
+                crate::spatial::combat_targets_fast(
+                    &input.x, &input.side, &input.kind, &so, pool,
+                )
+                .into_iter()
+                .map(|(target, in_range)| CombatIntent { target, in_range })
+                .collect()
+            } else {
+                match pool {
+                    None => combat_intent_chunk(&input, 0, n),
+                    Some(p) => {
+                        let input = Arc::new(input);
+                        p.map_chunks(n, move |start, end| combat_intent_chunk(&input, start, end))
+                    }
+                }
+            };
         // (1) cd 推进：先于个体判定，对全部存活单位统一 -1（饱和减，0 不下穿；
         //     原样放串行侧）。
         for u in self.units.iter_mut() {
@@ -1820,6 +1858,242 @@ mod tests {
             w.units[3].hp,
             50 - 2 * 18,
             "剑士→民兵 = 12×98304/65536 = 18/击，击点 t=1,26"
+        );
+    }
+
+    // ---- T015 排序序快路径（WP-A）：differential + 回退触发 + 世界级线程对拍 ----
+    // 新增测试（既有 35 测试逐字节零改动）；快路径参照实现 = 本文件既有
+    // move_intent_chunk / combat_intent_chunk（逐字保留的回退路径 + 语义参照）。
+
+    use crate::spatial::{combat_targets_fast, move_fronts_fast, SortedOrder};
+
+    /// differential 构造（S5-2，全整数算式，25 种子 × n∈{1,2,3,5,17,60}）：
+    /// 位置严格递增（相邻差 = 7 + [−4,4] 抖动 ≥ 3 ·ONE ⇒ 互异）后按确定性置换
+    /// 打乱索引序（s 为奇数先 reverse、再 rotate_left((s*3) % n)）；
+    /// side[i] = ((i+s)%3==0) ? Blue : Red；kind[i] = (i+s)%6（六兵种循环）。
+    fn spatial_diff_inputs(s: usize) -> (Vec<i64>, Vec<u8>, Vec<u8>) {
+        let n = [1usize, 2, 3, 5, 17, 60][s % 6];
+        let mut x: Vec<i64> = (0..n)
+            .map(|i| (7 * i + ((i * i + s) % 5)) as i64 * ONE_Q32_32)
+            .collect();
+        let mut side: Vec<u8> = (0..n)
+            .map(|i| if (i + s) % 3 == 0 { 1u8 } else { 0u8 })
+            .collect();
+        let mut kind: Vec<u8> = (0..n).map(|i| ((i + s) % 6) as u8).collect();
+        if s % 2 == 1 {
+            x.reverse();
+            side.reverse();
+            kind.reverse();
+        }
+        let k = (s * 3) % n; // n ≥ 1
+        x.rotate_left(k);
+        side.rotate_left(k);
+        kind.rotate_left(k);
+        (x, side, kind)
+    }
+
+    /// T015 测 1（S5-2）：differential·move——25 种子手构世界（位置互异 + 全存活
+    /// ⇒ eligibility 必真），快路径逐单位 vs 朴素 move_intent_chunk 的 front
+    /// 逐 Option 相等；并附并行档（建序 + 查询 threads=3）与串行一致断言。
+    #[test]
+    fn spatial_differential_move_fast_matches_naive_25_seeds() {
+        for s in 0..25usize {
+            let n = [1usize, 2, 3, 5, 17, 60][s % 6];
+            let (x, side, kind) = spatial_diff_inputs(s);
+            // 测试内自检：位置互异（排序去重后长度不变）。
+            let mut sorted = x.clone();
+            sorted.sort_unstable();
+            sorted.dedup();
+            assert_eq!(sorted.len(), n, "s={s}: 构造应互异");
+            let alive = vec![true; n];
+            let so = SortedOrder::build(&x, None);
+            assert!(
+                so.x_strictly_increasing(&x) && alive.iter().all(|&a| a),
+                "s={s}: eligibility 必须成立"
+            );
+            let fast = move_fronts_fast(&x, &side, &so, None);
+            let input = ScanInput {
+                x: x.clone(),
+                alive: alive.clone(),
+                side: side.clone(),
+                kind: kind.clone(),
+            };
+            let naive = move_intent_chunk(&input, 0, n);
+            for i in 0..n {
+                assert_eq!(
+                    fast[i], naive[i].front,
+                    "s={s} n={n} i={i}: move front 快慢路径不一致"
+                );
+            }
+            // 并行档对拍（全序 ⇒ 唯一结果，与线程数无关）。
+            let pool = ThreadPool::new(3);
+            let so_p = SortedOrder::build(&x, Some(&pool));
+            assert_eq!(so_p.order(), so.order(), "s={s}: 建序应与线程数无关");
+            assert_eq!(
+                move_fronts_fast(&x, &side, &so_p, Some(&pool)),
+                fast,
+                "s={s}: move 快路径应与线程数无关"
+            );
+        }
+    }
+
+    /// T015 测 2（S5-3 前半）：differential·combat——同 25 世界，(target, in_range)
+    /// 逐单位 vs 朴素 combat_intent_chunk 相等；附并行档一致断言。
+    #[test]
+    fn spatial_differential_combat_fast_matches_naive_25_seeds() {
+        for s in 0..25usize {
+            let n = [1usize, 2, 3, 5, 17, 60][s % 6];
+            let (x, side, kind) = spatial_diff_inputs(s);
+            let alive = vec![true; n];
+            let so = SortedOrder::build(&x, None);
+            let fast = combat_targets_fast(&x, &side, &kind, &so, None);
+            let input = ScanInput {
+                x: x.clone(),
+                alive: alive.clone(),
+                side: side.clone(),
+                kind: kind.clone(),
+            };
+            let naive = combat_intent_chunk(&input, 0, n);
+            for i in 0..n {
+                assert_eq!(
+                    fast[i],
+                    (naive[i].target, naive[i].in_range),
+                    "s={s} n={n} i={i}: combat (target,in_range) 快慢路径不一致"
+                );
+            }
+            let pool = ThreadPool::new(3);
+            assert_eq!(
+                combat_targets_fast(&x, &side, &kind, &so, Some(&pool)),
+                fast,
+                "s={s}: combat 快路径应与线程数无关"
+            );
+        }
+    }
+
+    /// T015 测 3（S5-3 后半）：真等距决胜局——五民兵链（复用既有单测 C2 构造：
+    /// 位置 0, +0.8, −0.8, −1.6, −2.4 m = k·4·ONE/5，side 红/蓝/蓝/蓝/红）。
+    /// i=0 两侧实现都给 target=Some(1)：左右敌 0.8m/0.8m 真等距 → 平局取最小
+    /// 单位索引（与朴素「索引升序扫描 + 严格小于才更新」决胜一致）。
+    #[test]
+    fn spatial_combat_true_equal_distance_tiebreak_five_militia_chain() {
+        let q = 4 * ONE_Q32_32 / 5; // 0.8 m
+        let x = vec![0, q, -q, -2 * q, -3 * q];
+        let side = vec![0u8, 1, 1, 1, 0];
+        let kind = vec![5u8; 5]; // 全民兵（Militia 判别 5）
+        let alive = vec![true; 5];
+        let so = SortedOrder::build(&x, None);
+        assert!(
+            so.x_strictly_increasing(&x),
+            "链式贴身位置互异 ⇒ eligibility 成立"
+        );
+        let fast = combat_targets_fast(&x, &side, &kind, &so, None);
+        let input = ScanInput {
+            x: x.clone(),
+            alive,
+            side: side.clone(),
+            kind: kind.clone(),
+        };
+        let naive = combat_intent_chunk(&input, 0, 5);
+        for i in 0..5 {
+            assert_eq!(
+                fast[i],
+                (naive[i].target, naive[i].in_range),
+                "i={i}: 五民兵链 (target,in_range) 快慢路径不一致"
+            );
+        }
+        assert_eq!(fast[0].0, Some(1), "等距平局最小索引：i=0 target=A(idx1)");
+    }
+
+    /// T015 测 4（S5-4）：回退触发——含同 x 对（异 side）⇒ x_strictly_increasing
+    /// false ⇒ eligibility false（文档化回退，行为与优化前逐位一致）；n=0/1
+    /// 平凡 eligible；x 互异但快照含墓碑同样不 eligible（eligibility 要求全存活）。
+    #[test]
+    fn spatial_fallback_eligibility_degenerate_domains() {
+        // 同 x 对（两单位同 x 异 side——World::new 裸路径同款退化域）。
+        let x = vec![0, 5 * ONE_Q32_32, 0];
+        let so = SortedOrder::build(&x, None);
+        assert!(!so.x_strictly_increasing(&x), "重合 x 对必须破坏严格递增");
+        let alive = vec![true; 3];
+        assert!(
+            !(so.x_strictly_increasing(&x) && alive.iter().all(|&a| a)),
+            "退化域（重合 x）必须回退旧路径（行为与优化前逐位一致）"
+        );
+        // n=0 / n=1 平凡 eligible。
+        let s0 = SortedOrder::build(&[], None);
+        assert!(s0.x_strictly_increasing(&[]), "n=0 平凡成立");
+        let x1 = [42 * ONE_Q32_32];
+        let s1 = SortedOrder::build(&x1, None);
+        assert!(s1.x_strictly_increasing(&x1), "n=1 平凡成立");
+        // x 互异但快照含墓碑（alive 不全真）→ 不 eligible（防御性回退）。
+        let x2 = vec![ONE_Q32_32, 2 * ONE_Q32_32];
+        let alive2 = vec![true, false];
+        let so2 = SortedOrder::build(&x2, None);
+        assert!(so2.x_strictly_increasing(&x2));
+        assert!(
+            !(so2.x_strictly_increasing(&x2) && alive2.iter().all(|&a| a)),
+            "含墓碑快照必须回退（eligibility 要求全存活）"
+        );
+    }
+
+    /// T015 测 5（S5-5）：世界级线程对拍（快路径 + 战斗段）——近距接敌局：
+    /// 红 12 盾兵队列（队首 x=10 m，向 -x 排队，相邻间距 1.5 m = r+r+ONE/2，
+    /// deploy 式）、蓝 12 民兵镜像于 x=13 m（blue_k = 23 m − red_k，相邻间距同
+    /// 1.5 m）。接敌可达性算式（附录 B.2-②）：初距 3 m，合闭合 ≥ 0.05+0.05 =
+    /// 0.10 m/tick（盾兵 0.05 + 民兵 0.09 取下界），射程阈值 ≥ 0.5+0.4+0.2 =
+    /// 1.1 m ⇒ 接敌 ≤ (3−1.1)/0.10 = 19 ticks ≪ 600。跑 600 ticks：三个 World
+    /// （pool None / threads=3 / threads=12）在检查点 {0, 100, 350, 600} 的
+    /// state_hash 两两相等（模式照抄既有 T006 对拍测试）；终局存活 < 24
+    /// （战斗发生——死亡触发 retain 压缩 + 快路径逐 tick 重建）。
+    #[test]
+    fn spatial_world_thread_parity_near_contact_checkpoints() {
+        let build = || {
+            let gap = ONE_Q32_32 / 2;
+            let r_shield = spec(UnitKind::Shieldman).radius_q32; // 0.5 m
+            let spacing = r_shield + r_shield + gap; // 1.5 m（盾兵 r+r+GAP）
+            let mut units: Vec<Unit> = Vec::with_capacity(24);
+            for k in 0..12usize {
+                units.push(unit(
+                    UnitKind::Shieldman,
+                    Side::Red,
+                    10 * ONE_Q32_32 - k as i64 * spacing,
+                ));
+            }
+            for k in 0..12usize {
+                units.push(unit(
+                    UnitKind::Militia,
+                    Side::Blue,
+                    13 * ONE_Q32_32 + k as i64 * spacing,
+                ));
+            }
+            manual_world(units, 7)
+        };
+        let mut worlds = vec![build(), build(), build()];
+        let h0 = worlds[0].state_hash();
+        for w in &worlds {
+            assert_eq!(w.state_hash(), h0, "tick0 三档构型必须逐位一致");
+        }
+        let p3 = ThreadPool::new(3);
+        let p12 = ThreadPool::new(12);
+        let pools: [Option<&ThreadPool>; 3] = [None, Some(&p3), Some(&p12)];
+        let mut last = 0u64;
+        for cp in [100u64, 350, 600] {
+            for (tier, w) in worlds.iter_mut().enumerate() {
+                w.run_with(cp - last, pools[tier]);
+            }
+            last = cp;
+            let h = worlds[0].state_hash();
+            for (tier, w) in worlds.iter().enumerate() {
+                assert_eq!(
+                    w.state_hash(),
+                    h,
+                    "检查点 t={cp} threads 档 {tier} 哈希分歧"
+                );
+            }
+        }
+        assert!(
+            worlds[0].unit_count() < 24,
+            "终局存活 {} 应 < 24（接敌可达性算式保证战斗发生）",
+            worlds[0].unit_count()
         );
     }
 }

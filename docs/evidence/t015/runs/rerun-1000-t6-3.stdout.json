@@ -1,0 +1,1 @@
+{"config":{"units":1000,"per_side":500,"threads":6,"ticks":600,"warmup":1,"repeats":3,"seed":42},"samples_ns":[74513600,72854500,72778800],"min_ns":72778800,"median_ns":72854500,"mean_ns":73382300,"max_ns":74513600,"cv_pct":1.3361061108684957,"ns_per_tick_median":121424.16666666667,"us_per_unit_tick":0.12142416666666667,"final_hash":"0x88b33d3124562844","hash_consistent":true}

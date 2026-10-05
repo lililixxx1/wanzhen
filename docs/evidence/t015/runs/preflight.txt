@@ -1,0 +1,5 @@
+preflight OK: 2026-10-05 21:15:06
+bench: target/release/bench.exe
+tasklist snapshot (no cargo/rustc detected): runs/preflight_tasklist.csv
+declaration: no cargo/compilation/download is started between this point and batch end;
+             measurement window is otherwise idle (AGENTS.md discipline).

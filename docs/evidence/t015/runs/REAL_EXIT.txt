@@ -1,0 +1,24 @@
+1000-t1 units=1000 threads=1 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=298
+1000-t3 units=1000 threads=3 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=457
+1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=519
+1000-t12 units=1000 threads=12 ticks=600 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=618
+5000-t1 units=5000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=829
+5000-t3 units=5000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=822
+5000-t6 units=5000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=836
+5000-t12 units=5000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=835
+10000-t1 units=10000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1585
+10000-t3 units=10000 threads=3 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1396
+10000-t6 units=10000 threads=6 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1355
+10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1470
+50000-t1 units=50000 threads=1 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1082
+50000-t3 units=50000 threads=3 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1251
+50000-t6 units=50000 threads=6 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1139
+50000-t12 units=50000 threads=12 ticks=30 seed=42 warmup=1 repeats=5 REAL_EXIT=0 wall_ms=1152
+rerun-10000-t1 units=10000 threads=1 ticks=300 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+rerun-10000-t12 units=10000 threads=12 ticks=300 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+rerun-1000-t6 units=1000 threads=6 ticks=600 seed=42 warmup=1 repeats=3 REAL_EXIT=0
+summarize REAL_EXIT=0
+rerun-10000-t1-2 REAL_EXIT=0
+rerun-1000-t6-2 REAL_EXIT=0
+rerun-10000-t1-3 REAL_EXIT=0
+rerun-1000-t6-3 REAL_EXIT=0

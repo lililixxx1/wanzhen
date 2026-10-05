@@ -1,0 +1,58 @@
+# T015 Lead G1 主仓复验（收获后；tree-a 证据的独立复跑）
+# 时间: 2026-10-05 21:11:51
+
+==== cargo check --workspace -j 3 ====
+REAL_EXIT=0（0 警告，Finished dev profile）
+
+==== cargo test -p sim -j 3 ====
+running 43 tests / test result: ok. 43 passed; 0 failed
+REAL_EXIT=0
+
+==== cargo build -p sim --release -j 3 + --bin bench ====
+REAL_EXIT=0（Finished release profile）
+
+==== A1: ./target/release/sim.exe --seed 42 --ticks 1800 ====
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+threads=1
+elapsed_ms=7
+[A1_REAL_EXIT=0]
+
+==== A2: ./target/release/sim.exe --seed 43 --ticks 1800 ====
+seed=43
+ticks=1800
+units=60
+final_tick=1800
+hash=0x54611ed6ded02540
+threads=1
+elapsed_ms=8
+[A2_REAL_EXIT=0]
+
+==== A3: ./target/release/sim.exe --battle --threads 12 ====
+seed=42
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x958c5938c8682529
+[A3_REAL_EXIT=0]
+
+==== A4: ./target/release/sim.exe --units 500 --ticks 300 --threads 12（回退路径档）====
+seed=42
+ticks=300
+units=500
+final_tick=300
+hash=0x0cb0a5adf0f28dea
+threads=12
+elapsed_ms=86
+[A4_REAL_EXIT=0]
+
+==== A5: ./target/release/bench.exe --units 10000 --threads 1 --ticks 300 --seed 42 ====
+{"config":{"units":10000,"per_side":5000,"threads":1,"ticks":300,"warmup":1,"repeats":5,"seed":42},"samples_ns":[367432700,292297000,227633700,215084400,220984100],"min_ns":215084400,"median_ns":227633700,"mean_ns":264686380,"max_ns":367432700,"cv_pct":24.675001586453856,"ns_per_tick_median":758779,"us_per_unit_tick":0.0758779,"final_hash":"0xc5915d042208e267","hash_consistent":true}
+bench: units=10000 per_side=5000 threads=1 ticks=300 seed=42 warmup=1 repeats=5 median_ms=227.634 ns_per_tick=758779.0 us_per_unit_tick=0.075878 final_hash=0xc5915d042208e267 hash_consistent=true
+[A5_REAL_EXIT=0]

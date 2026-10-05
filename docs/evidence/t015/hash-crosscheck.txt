@@ -1,0 +1,17 @@
+units=1000 t=1 final_hash=0x88b33d3124562844 MATCH
+units=1000 t=3 final_hash=0x88b33d3124562844 MATCH
+units=1000 t=6 final_hash=0x88b33d3124562844 MATCH
+units=1000 t=12 final_hash=0x88b33d3124562844 MATCH
+units=5000 t=1 final_hash=0x8c284cbd5c81a033 MATCH
+units=5000 t=3 final_hash=0x8c284cbd5c81a033 MATCH
+units=5000 t=6 final_hash=0x8c284cbd5c81a033 MATCH
+units=5000 t=12 final_hash=0x8c284cbd5c81a033 MATCH
+units=10000 t=1 final_hash=0xc5915d042208e267 MATCH
+units=10000 t=3 final_hash=0xc5915d042208e267 MATCH
+units=10000 t=6 final_hash=0xc5915d042208e267 MATCH
+units=10000 t=12 final_hash=0xc5915d042208e267 MATCH
+units=50000 t=1 final_hash=0x022c5abdfae119dc MATCH
+units=50000 t=3 final_hash=0x022c5abdfae119dc MATCH
+units=50000 t=6 final_hash=0x022c5abdfae119dc MATCH
+units=50000 t=12 final_hash=0x022c5abdfae119dc MATCH
+hash crosscheck: fail=0 (16 configs vs t007 archive)

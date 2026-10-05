@@ -1,0 +1,79 @@
+# T015 WP-A 锚点取证（tree-a-anchors.txt）
+# 树内隔离执行；内容一律相对路径写法（可公开态）
+# 负载预检（开跑前快照）：CPU LoadPercentage=1；Top5 CPU 进程为常驻系统/宿主进程（ZCode/explorer/System/dwm/HipsDaemon），无并发构建或量测负载
+
+==== G4: ./target/release/sim.exe --seed 42 --ticks 1800
+[REAL_EXIT 见行尾标记]
+seed=42
+ticks=1800
+units=60
+final_tick=1800
+hash=0x958c5938c8682529
+threads=1
+elapsed_ms=7
+[G4_REAL_EXIT=0]
+
+==== G5: ./target/release/sim.exe --seed 43 --ticks 1800
+seed=43
+ticks=1800
+units=60
+final_tick=1800
+hash=0x54611ed6ded02540
+threads=1
+elapsed_ms=7
+[G5_REAL_EXIT=0]
+
+==== G6: ./target/release/sim.exe --battle --threads 12
+seed=42
+comp_red=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+comp_blue=shieldman:5,heavyknight:5,pikeman:5,swordsman:5,archer:5,militia:5
+winner=draw
+end_tick=1800
+alive_red=30
+alive_blue=30
+final_hash=0x958c5938c8682529
+threads=12
+elapsed_ms=127
+[G6_REAL_EXIT=0]
+
+==== G7: ./target/release/sim.exe --units 500 --ticks 300 --threads {1,12}（全体同 x=0 全红 → eligibility 不成立 → 回退路径）
+--- threads=1:
+seed=42
+ticks=300
+units=500
+final_tick=300
+hash=0x0cb0a5adf0f28dea
+threads=1
+elapsed_ms=267
+[G7a_REAL_EXIT=0]
+--- threads=12:
+seed=42
+ticks=300
+units=500
+final_tick=300
+hash=0x0cb0a5adf0f28dea
+threads=12
+elapsed_ms=79
+[G7b_REAL_EXIT=0]
+
+==== G7（重取证：stdout/stderr 分离，stdout 五行逐字节比对）
+--- threads=1 stdout:
+seed=42
+ticks=300
+units=500
+final_tick=300
+hash=0x0cb0a5adf0f28dea
+[G7a_REAL_EXIT=0]
+--- threads=12 stdout:
+seed=42
+ticks=300
+units=500
+final_tick=300
+hash=0x0cb0a5adf0f28dea
+[G7b_REAL_EXIT=0]
+--- diff stdout: IDENTICAL（首次 diff 差异仅为混入的 stderr 行 threads=/elapsed_ms，已按门禁口径改 stdout 分离比对）
+
+==== G8: ./target/release/bench.exe --units 10000 --threads 1 --ticks 300 --seed 42（S6 烟测：final_hash 门禁 + median 只记录）
+{"config":{"units":10000,"per_side":5000,"threads":1,"ticks":300,"warmup":1,"repeats":5,"seed":42},"samples_ns":[341326300,250802800,224076600,203224400,201538900],"min_ns":201538900,"median_ns":224076600,"mean_ns":244193800,"max_ns":341326300,"cv_pct":23.685373142934324,"ns_per_tick_median":746922,"us_per_unit_tick":0.0746922,"final_hash":"0xc5915d042208e267","hash_consistent":true}
+[G8_REAL_EXIT=0]
+[median_ns=224076600 记录行：非空闲共享窗口、仅记录不设阈值；T007 基线同配置 median_ns=123030308400、us_per_unit_tick 41.010103 → 本轮 0.0746922（约 550 倍），正式量测留主会话收获后空闲窗口]
