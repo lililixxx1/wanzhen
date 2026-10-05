@@ -1,0 +1,8 @@
+== T010 跑批前机器空闲预检 ==
+time: 2026-10-06 00:34:28
+-- CPU 负载 (Win32_Processor.LoadPercentage 平均) --
+11
+-- 相关进程（cargo/rustc/render-spike/bench/sim） --
+(none)
+-- commit 余量 --
+CommitFree_G=14.5 CommitLimit_G=49.8

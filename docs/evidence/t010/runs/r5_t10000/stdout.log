@@ -1,0 +1,2 @@
+render-spike: start units=10000 seed=42 res=1920x1080 warmup_s=5 capture_s=65 out=docs/evidence/t010/runs/r5_t10000/out
+render-spike: capture complete units=10000 frames=21656 dir=docs/evidence/t010/runs/r5_t10000/out\t10000

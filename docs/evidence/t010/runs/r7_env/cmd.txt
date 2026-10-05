@@ -1,0 +1,1 @@
+powershell -NoProfile -ExecutionPolicy Bypass -File docs/evidence/t010/collect_environment.ps1

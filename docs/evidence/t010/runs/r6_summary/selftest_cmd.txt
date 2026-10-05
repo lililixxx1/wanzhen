@@ -1,0 +1,1 @@
+python docs/evidence/t010/summarize.py --selftest

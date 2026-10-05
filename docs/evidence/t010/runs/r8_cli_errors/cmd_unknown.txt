@@ -1,0 +1,1 @@
+target/release/render-spike.exe --bogus

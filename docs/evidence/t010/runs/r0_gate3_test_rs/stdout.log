@@ -1,0 +1,15 @@
+
+running 10 tests
+test grid::tests::w2_edge_99_and_row_start_100 ... ok
+test grid::tests::w2_min_spacing_exceeds_capsule_diameter ... ok
+test grid::tests::w2_jitter_strictly_inside_open_interval ... ok
+test ring::tests::w3_capacity_semantics ... ok
+test grid::tests::w2_unit_zero_at_min_corner ... ok
+test ring::tests::w3_capacity_one ... ok
+test stats::tests::w4_sample_metrics_match_hand_calc ... ok
+test ring::tests::w3_overflow_panics - should panic ... ok
+test rng::tests::golden_sequence_seed42_first8 ... ok
+test rng::tests::same_seed_same_sequence ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

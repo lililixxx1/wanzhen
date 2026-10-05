@@ -1,0 +1,41 @@
+# T010 G1 · 主会话独立复验（Lead，2026-10-05 深夜）
+
+不信任 worker 汇报、全部独立复跑；仓库根 = 隔离树根。
+
+## 1. 边界核验（diff 级）
+
+- `sim/**` 与主仓（5ab440b）`diff -rq` → **零差异**（sim 侧零改动红线实证）
+- 根 `Cargo.toml` diff → 恰两行新增（members +render-spike；bevy_full 别名）✓
+- `taskset/**` 零差异 ✓
+
+## 2. 门禁复跑（独立）
+
+- `cargo test -p sim -j 2` → REAL_EXIT=0：44 lib + 3 arena = **47/47**
+- `cargo test -p render-spike -j 2` → REAL_EXIT=0：**10/10**
+- （check/build 已在树内全绿档 runs/r0_gate*；本 G1 复跑测试双仓覆盖行为面）
+
+## 3. 判定档独立复跑（t10000 fresh 采集）
+
+- `./target/release/render-spike.exe --units 10000 --warmup-sec 5 --capture-sec 65 --out <tmp>` → REAL_EXIT=0、frames=21407
+- python 独立重算（预注册公式同式）：avg_fps=**329.33**、1% low=**177.95**、0.1% low=122.51、max 15.9ms → **PASS**（与归档值 333.15/202.48 同球区，判定稳健）
+
+## 4. 归档四档独立重算（原始 frames.csv → 公式重算）
+
+| 档 | 帧数 | avg（重算=档值） | 1% low（重算=档值） | 判定 |
+|---|---|---|---|---|
+| t1000 | 34843 | 536.03 ✓ | 260.07 ✓ | — |
+| t2000 | 33933 | 522.03 ✓ | 268.28 ✓ | — |
+| t5000 | 32936 | 506.70 ✓ | 242.93 ✓ | — |
+| t10000 | 21656 | 333.15 ✓ | 202.48 ✓ | **PASS** |
+
+summary.md 全表与重算逐位一致（含 p50/p95/p99/max 由档内表核对形态一致）。
+
+## 5. 披露项核验
+
+- meta.json t10000：resolution 请求 1920x1080、`window_resolution_actual: 2400x1350`（125% DPI 逻辑尺寸语义）——**保守方向**（物理画布 1.56× 像素量，负载更高仍 PASS ⇒ 1080p 口径结论安全），如实披露不复查（T013 若需精确 1080p 物理口径可低成本补测）
+- Cargo.lock 135→554 包（+419/-0、同名多版本消歧重写非删除）：与「sim 走 minimal、bevy 全图原不在锁内」的实况一致；**派工单预期「仅 +render-spike 条目」为设计侧预期错误**（Lead 归因派工单，非 worker 失误）
+- 证据档机器路径 grep 零命中 ✓；runs/ 含 r0~r8 + w1 双盲 + lock 三件套 + scrub_note
+
+## 6. G1 结论
+
+验收⑤判定 PASS 独立复现（fresh 复跑 + 归档重算双路）；边界红线（sim 零 diff / 根 manifest 两行）实证。上报披露 5 项全部核实属实，无阻塞。进 G2 完整轮。

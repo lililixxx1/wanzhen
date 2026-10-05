@@ -1,0 +1,1 @@
+target/release/render-spike.exe --units 100 --warmup-sec 2 --capture-sec 3 --out docs/evidence/t010/runs/r1_smoke/out

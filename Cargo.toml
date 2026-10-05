@@ -3,12 +3,13 @@
 # Cargo.lock 入库。成员统一经 workspace.dependencies 继承版本。
 [workspace]
 resolver = "2"
-members = ["sim"]
+members = ["sim", "render-spike"]
 
 [workspace.dependencies]
 # default-features 声明在 workspace 级：成员层的 default-features 若 workspace 级未声明会被静默忽略
 # （cargo 警告，未来将变硬错误）——sim 为 headless 最小面，渲染栈由独立 crate render-spike 按需全量引入。
 bevy = { version = "0.19", default-features = false }
+bevy_full = { package = "bevy", version = "0.19", default-features = true }
 
 # M0 验收量测一律 release 构建（表 6-0 口径）。
 [profile.release]

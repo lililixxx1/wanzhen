@@ -1,0 +1,38 @@
+T010 环境档（M0-09 渲染 spike；基准机 A = 开发机本机，报告 V0.9.1 表 6-0）
+生成时间: 2026-10-06 00:42:16 +08:00
+
+== CPU (Win32_Processor) ==
+  Name: 12th Gen Intel(R) Core(TM) i5-12490F
+  Cores: 6  LogicalProcessors: 12  MaxClockMHz: 3000
+
+== GPU + 驱动 ==
+  nvidia-smi: NVIDIA GeForce RTX 3050, 537.58
+  Name: GameViewer Virtual Display Adapter
+  DriverVersion: 15.6.5.199  DriverDate: 02/28/2026 08:00:00
+  Name: NVIDIA GeForce RTX 3050
+  DriverVersion: 31.0.15.3758  DriverDate: 10/04/2023 08:00:00
+
+== RAM (Win32_ComputerSystem / Win32_PhysicalMemory) ==
+  TotalPhysicalMemory: 34187943936 bytes
+  Module: 32 GiB  SpeedMHz: 3600  Manufacturer: Kingston
+
+== OS (Win32_OperatingSystem) ==
+  Caption: Microsoft Windows 10 IoT 企业版 LTSC
+  Version: 10.0.19044  BuildNumber: 19044  Arch: 64 位
+
+== 工具链 ==
+  rustc: rustc 1.98.1 (48a229cea 2026-09-01)
+  cargo: cargo 1.98.1 (797e8a9bc 2026-08-05)
+  rust-toolchain.toml: channel = "1.98.1"
+
+== 依赖版本（Cargo.lock） ==
+  name = "bevy"  version = "0.19.1"
+  注: sim 经 'bevy'(default-features=false) 最小面、render-spike 经别名 bevy_full(默认特性全量) 同锁 0.19.1。
+
+== 窗口 / 呈现口径 ==
+  请求：窗口化 1920x1080（--res 默认）、PresentMode::AutoNoVsync、warmup 5s / capture 65s。
+  实际物理窗口尺寸与 present_mode 见各档 out/t*/meta.json（window_resolution_actual / present_mode）。
+
+== 量测产物（render-spike.exe） ==
+  path: target/release/render-spike.exe  size: 85301760 bytes  mtime: 2026-10-06 00:31:43
+  sha256: 264A95931B74D81932DBC2B5B115BC08CF13FF74A0B97FF9AA1278FEC4605272

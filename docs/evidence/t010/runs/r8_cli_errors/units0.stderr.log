@@ -1,0 +1,2 @@
+render-spike: --units must be >= 1
+usage: render-spike.exe [--units <N>=10000] [--seed <u64>=42] [--warmup-sec <u64>=5] [--capture-sec <u64>=65] [--res <WxH>=1920x1080] --out <dir> (--flag value or --flag=value; parse errors exit 2)

@@ -1,0 +1,1 @@
+cargo test -p render-spike -j 2

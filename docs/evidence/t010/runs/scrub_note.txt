@@ -1,0 +1,6 @@
+== 证据日志机器路径前缀清理记录（T003/T007 先例：只改前缀，行号与内容原样） ==
+docs/evidence/t010/runs/r0_gate1_check/stderr.log : t010-a-><TREE> x2
+docs/evidence/t010/runs/r0_gate2_test_sim/stderr.log : t010-a-><TREE> x1
+docs/evidence/t010/runs/r0_gate3_test_rs/stderr.log : t010-a-><TREE> x1
+docs/evidence/t010/runs/r0_gate4_build_rs/stderr.log : t010-a-><TREE> x1
+docs/evidence/t010/runs/w1_rust_first8/attempt_failing/stderr.log : t010-a-><TREE> x1

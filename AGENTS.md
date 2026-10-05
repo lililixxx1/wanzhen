@@ -6,11 +6,11 @@
 
 **最高上下文：[`docs/万阵-游戏前期策划报告.html`](./docs/万阵-游戏前期策划报告.html)（V0.9.1，2026-09-30 复核裁决「通过——可作为 M0 唯一输入」）**。改动范围、里程碑、验收阈值、确定性纪律前必须先读对应章节（尤其表 6-0 口径定义、5.2 确定性纪律、6.1 止损换算、7.2 Q5 身份决策）；与其冲突时以该文档为准；M0 实测数据回写与初值替换留待 V1.0（收官修订）。
 
-## 当前状态（2026-10-05 更新）
+## 当前状态（2026-10-06 凌晨更新，W1 D1~D2）
 
 - **预备周** 2026-09-30 ~ 10-04：仓库骨架、M0 全量 taskset 拆卡——不计入首周投入观测。
 - **M0 三周正计时自 2026-10-05（周一）起**。硬规则（报告 06/R7）：首周（10-05 ~ 10-11）实测投入 <30h → 降档 20h/周、周期拉长一倍，验收阈值不变只改日历；20h/周仍不可达 → M0 无限期挂起、回归工作流主线。投入数据源 = 任务台账逐任务实测耗时。**投入口径（2026-10-05 grill 定案）**：严格字面——台账挂钟全计（主会话+worker+审核轮，含等待）、按日历窗口切分（预备周内完成的任务不计 W1，跨窗口任务按实际执行日期分摊）；降档若触发即如实接受；推进按依赖链自然节奏，不为凑时数灌水。
-- **进度（2026-10-05，W1 D1）**：T002~T009、T015 已交付（T007 ★审核节点 1 通过；T008 验收④闭环；T009 验收③吞吐 1,099,639 场/h@12t PASS ≈110× 裕度——镜像 sanity = H2 结构性红偏（apply 索引序先手语义，预注册形态如实判定）移交 T013 口径仲裁）。**T015 R2 优化轮一（10-05 晚收口，审核完整轮通过）**：sim 意图阶段排序序快路径（spatial.rs，O(N²)→O(N log N)，等价性 = T008 矩阵 29/29 局逐字节 + T007 bench 16 配置哈希跨版本一致）——**① 四点单线程 µs 全 PASS**（0.061/0.072/0.071/0.109，降幅 66×~1846×，全达承诺线）；**② @10k 加速比 1.00× TRIPPED（结构性）**：可并行 O(N²) 删除后串行 FNV 哈希链 + 必串行 apply 主导、池开销吃掉残余并行收益，理论上限 ≈3.9×<4× ⇒ **轮二无法诚实闭合，owner 裁决点（② 口径 vs 意图 + t016 去留，建议 T013 报告级仲裁）**；**③ 极限十万翻转为保留**（C(100k) 单线程外推 15.5ms ≤22ms，O(N²) 项已消）。**执行序现状**：T015 已收口 → 轮二 t016 去留待 owner 裁决（数据已备 docs/evidence/t015/）→ T009 已收口（10-05 深夜，含 T010 任务卡裁决冻结）→ T010 渲染 spike 推进中 → 按依赖链（T011 数据成档 → T012 ★独立复算）。
+- **进度（2026-10-06 凌晨，W1 D1~D2）**：T002~T010、T015 已交付（T007 ★审核节点 1 通过；T008 验收④闭环；**T009 验收③吞吐 1,099,639 场/h@12t PASS ≈110× 裕度**——镜像 sanity = H2 结构性红偏（apply 索引序先手语义，预注册形态如实判定）移交 T013 口径仲裁；**T010 验收⑤渲染 PASS**——10k 胶囊体 avg 333.15fps / 1% low 202.48（裕度 5.55×/4.5×），渲染腿不触发 6.1 后果路径；窗口物理 2400×1350@125% DPI 保守方向披露）。**T015 R2 优化轮一（10-05 晚收口，审核完整轮通过）**：sim 意图阶段排序序快路径（spatial.rs，O(N²)→O(N log N)，等价性 = T008 矩阵 29/29 局逐字节 + T007 bench 16 配置哈希跨版本一致）——**① 四点单线程 µs 全 PASS**（0.061/0.072/0.071/0.109，降幅 66×~1846×，全达承诺线）；**② @10k 加速比 1.00× TRIPPED（结构性）**：可并行 O(N²) 删除后串行 FNV 哈希链 + 必串行 apply 主导、池开销吃掉残余并行收益，理论上限 ≈3.9×<4× ⇒ **轮二无法诚实闭合，owner 裁决点（② 口径 vs 意图 + t016 去留，建议 T013 报告级仲裁）**；**③ 极限十万翻转为保留**（C(100k) 单线程外推 15.5ms ≤22ms，O(N²) 项已消）。**执行序现状**：T015 已收口 → 轮二 t016 去留待 owner 裁决（数据已备 docs/evidence/t015/）→ T009/T010 已收口（10-06 凌晨，M0 六验收①~⑥全有实测判定行）→ **下一卡 T011 数据自含成档 → T012 ★独立复算**。
 - **三层架构工作方式（2026-10-05 grill 修订）**：主会话（GLM-5.3）规划 + 监管（拆解 / 派工 / 把关方向 / 处理上报）；worker-1/2（flash 级，模型 owner 侧配置）只按派工单执行、范围外上报不拍板；**worker-2 可并发 1~3 个**（独立卡并行；量测窗口仍机器空闲独占）；执行中断（配额/用户消息）→ 主会话接管 + 台账如实记（连续四卡先例）。**每卡过审、分轻重**（取代原两节点分级；T007 节点轮已过）：代码卡轻量轮（plan-code-reviewer：diff + 门禁三断言核对 + 抽查复跑）；节点卡 / 量测卡 / 主会话接管的卡完整轮；T012 收官独立复算轮不变。
 - 仓库卫生：私有起步、**保持可公开态**（零密钥 / 机器路径 / 个人信息；git 统一 bot 身份 `wanzhen <bot@wanzhen.invalid>`）。
 
@@ -30,6 +30,8 @@
 - `cargo run -p sim --release -- [--comp <kind:count,...> | --units <N>] [--ticks <N>] [--seed <u64>] [--threads <1..=1024>] [--hash-samples <t1,t2,...>] [--battle]` — 对局入口（T006 起）：`--threads` 线程档位（默认 1=串行，stdout 与线程数逐字节无关，`threads=N` 与耗时同打 stderr）；`--hash-samples` 严格升序采样 tick 列表（0=布阵快照哈希；仅 run 路径，×`--battle` 互斥、超 `--ticks` 均 exit 2）
 - `cargo build -p sim --bin bench --release -j 3` — M0 量测套件构建（T007：`sim` 第二 bin，零新依赖、lib 零改动）
 - `./target/release/bench.exe --units <N> --threads <T> --ticks <K> [--warmup <W>=1] [--repeats <R>=5] [--seed <S>=42]` — M0 量测入口（T007，验收①②⑥）：stdout 单行 JSON（samples_ns 全量/median/CV/us_per_unit_tick/final_hash；同配置多局哈希不一致 exit 4）；`--summarize <matrix.jsonl> [--memory-csv <mem.csv>] [--out <summary.md>]` = 判定汇总（①②③④⑥ 全判定行代码计算，防手算漂移；口径常量逐字取自报告表 6-0/6.1）。全矩阵/复测/⑥ 长跑可复现跑批与两窗口空闲预检声明见 docs/evidence/t007/（run_matrix.sh / finish_takeover.sh / run_longrun.ps1）；量测窗口机器空闲独占纪律同前
+- `cargo build -p sim --bin arena --release -j 3` / `./target/release/arena.exe --matrix|--throughput|--sampling … --out <dir>` — M0 实验场入口（T009，验收③：`--matrix [--per-side 100|10] [--per-cell K]` 两层胜率矩阵 / `--throughput [--games 512] [--threads T] [--repeats 3]` 吞吐 / `--sampling [--games 100]` 全规模抽样；模式互斥 exit 2、stdout 单行 JSON；判定汇总 `python docs/evidence/t009/summarize.py --out <dir>`）
+- `cargo build -p render-spike --release -j 2` / `./target/release/render-spike.exe --units <N> [--seed 42] [--warmup-sec 5] [--capture-sec 65] [--res 1920x1080] --out <dir>` — M0 渲染 spike（T010，验收⑤：窗口化帧采集 frames.csv 逐帧原始档；判定汇总 `python docs/evidence/t010/summarize.py`）。涉 render-spike 的 cargo 一律 **-j 2 从严 + 前置 commit 预检（check/test ≥10G、release ≥12G）**——bevy full 冷编属依赖重型足迹（T010 实测冷编 19m45s）
 
 ## 知识资产纪律
 

@@ -1,0 +1,11 @@
+# T010 渲染 spike：胶囊体灰盒万单位同屏帧率验证（M0-09，验收⑤）。
+# 与 sim 的 headless 最小面隔离：经 workspace 别名 bevy_full 继承 bevy 0.19 默认特性全量
+# （D1 裁决）；零其他第三方依赖；不依赖 sim（任务卡红线）。
+[package]
+name = "render-spike"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bevy_full = { workspace = true }

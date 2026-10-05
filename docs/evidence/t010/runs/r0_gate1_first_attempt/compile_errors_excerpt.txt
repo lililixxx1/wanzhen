@@ -1,0 +1,116 @@
+== T010 门禁 1 首次尝试（失败）· 编译错误摘录 ==
+清理声明：仅替换机器路径前缀为 <TREE> / <CARGO_REGISTRY>（T003/T007 证据规范先例），行号与内容原样。
+首败原因：(a) run_t010.sh 树根路径 off-by-one（上溯两级，应为三级）致档案落到 docs/docs/；已修复。
+(b) 真实编译错误：别名依赖 bevy_full 下 Resource derive 展开为 bevy_ecs:: 绝对路径无法解析 → 按 bevy_macro_utils 内置说明补 `use bevy_full::ecs as bevy_ecs;`（见 api-notes.md）。
+REAL_EXIT=101
+
+    Checking bevy_internal v0.19.1
+    Checking bevy v0.19.1
+    Checking sim v0.1.0 (<TREE>\sim)
+    Checking render-spike v0.1.0 (<TREE>\render-spike)
+error[E0433]: cannot find module or crate `bevy_ecs` in this scope
+  --> render-spike\src\capture.rs:25:10
+   |
+25 | #[derive(Resource)]
+   |          ^^^^^^^^ use of unresolved module or unlinked crate `bevy_ecs`
+   |
+   = help: if you wanted to use a crate named `bevy_ecs`, use `cargo add bevy_ecs` to add it to your `Cargo.toml`
+   = note: this error originates in the derive macro `Resource` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0433]: cannot find module or crate `bevy_ecs` in this scope
+  --> render-spike\src\main.rs:43:10
+   |
+43 | #[derive(Resource, Clone, Debug)]
+   |          ^^^^^^^^ use of unresolved module or unlinked crate `bevy_ecs`
+   |
+   = help: if you wanted to use a crate named `bevy_ecs`, use `cargo add bevy_ecs` to add it to your `Cargo.toml`
+   = note: this error originates in the derive macro `Resource` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `RunArgs` is not a `Resource`
+   --> render-spike\src\capture.rs:78:11
+    |
+ 78 |     args: Res<RunArgs>,
+    |           ^^^^^^^^^^^^ invalid `Resource`
+    |
+help: the trait `bevy::bevy_ecs::resource::Resource` is not implemented for `RunArgs`
+   --> render-spike\src\main.rs:44:1
+    |
+ 44 | pub struct RunArgs {
+    | ^^^^^^^^^^^^^^^^^^
+    = note: consider annotating `RunArgs` with `#[derive(Resource)]`
+    = help: the following other types implement trait `bevy::bevy_ecs::resource::Resource`:
+              AccessibilityRequested
+              AccumulatedMouseMotion
+              AccumulatedMouseScroll
+              AppTypeRegistry
+              AreaLightLuts
+              AssetProcessor
+              AssetServer
+              AssetSourceBuilders
+            and 293 others
+note: required by a bound in `bevy::bevy_ecs::change_detection::Res`
+   --> <CARGO_REGISTRY>\bevy_ecs-0.19.1\src\change_detection\params.rs:462:32
+    |
+462 | pub struct Res<'w, T: ?Sized + Resource> {
+    |                                ^^^^^^^^ required by this bound in `Res`
+
+error[E0277]: `CaptureState` is not a `Resource`
+   --> render-spike\src\capture.rs:80:16
+    |
+ 80 |     mut state: ResMut<CaptureState>,
+    |                ^^^^^^^^^^^^^^^^^^^^ invalid `Resource`
+    |
+help: the trait `bevy::bevy_ecs::resource::Resource` is not implemented for `CaptureState`
+   --> render-spike\src\capture.rs:26:1
+    |
+ 26 | pub struct CaptureState {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    = note: consider annotating `CaptureState` with `#[derive(Resource)]`
+    = help: the following other types implement trait `bevy::bevy_ecs::resource::Resource`:
+              AccessibilityRequested
+              AccumulatedMouseMotion
+              AccumulatedMouseScroll
+              AppTypeRegistry
+              AreaLightLuts
+              AssetProcessor
+              AssetServer
+              AssetSourceBuilders
+            and 293 others
+note: required by a bound in `bevy::bevy_ecs::change_detection::ResMut`
+   --> <CARGO_REGISTRY>\bevy_ecs-0.19.1\src\change_detection\params.rs:535:35
+    |
+535 | pub struct ResMut<'w, T: ?Sized + Resource<Mutability = Mutable>> {
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ResMut`
+
+error[E0277]: `RunArgs` is not a `Resource`
+   --> render-spike\src\scene.rs:27:11
+    |
+ 27 |     args: Res<RunArgs>,
+    |           ^^^^^^^^^^^^ invalid `Resource`
+    |
+help: the trait `bevy::bevy_ecs::resource::Resource` is not implemented for `RunArgs`
+   --> render-spike\src\main.rs:44:1
+    |
+ 44 | pub struct RunArgs {
+    | ^^^^^^^^^^^^^^^^^^
+    = note: consider annotating `RunArgs` with `#[derive(Resource)]`
+    = help: the following other types implement trait `bevy::bevy_ecs::resource::Resource`:
+              AccessibilityRequested
+              AccumulatedMouseMotion
+              AccumulatedMouseScroll
+              AppTypeRegistry
+              AreaLightLuts
+              AssetProcessor
+              AssetServer
+              AssetSourceBuilders
+            and 293 others
+note: required by a bound in `bevy::bevy_ecs::change_detection::Res`
+   --> <CARGO_REGISTRY>\bevy_ecs-0.19.1\src\change_detection\params.rs:462:32
+    |
+462 | pub struct Res<'w, T: ?Sized + Resource> {
+    |                                ^^^^^^^^ required by this bound in `Res`
+
+Some errors have detailed explanations: E0277, E0433.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `render-spike` (bin "render-spike") due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...

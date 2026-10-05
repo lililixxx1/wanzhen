@@ -1,0 +1,2 @@
+render-spike: start units=100 seed=42 res=1920x1080 warmup_s=2 capture_s=3 out=docs/evidence/t010/runs/r1_smoke/out
+render-spike: capture complete units=100 frames=1423 dir=docs/evidence/t010/runs/r1_smoke/out\t100

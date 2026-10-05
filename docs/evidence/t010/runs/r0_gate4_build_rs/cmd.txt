@@ -1,0 +1,1 @@
+cargo build -p render-spike --release -j 2

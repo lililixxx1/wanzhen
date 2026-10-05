@@ -1,0 +1,1 @@
+python docs/evidence/t010/summarize.py --root docs/evidence/t010/runs --out docs/evidence/t010/summary.md
