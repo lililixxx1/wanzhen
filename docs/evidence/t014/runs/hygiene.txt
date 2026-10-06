@@ -1,0 +1,47 @@
+# T014 · 卫生检查留痕（runs/hygiene.txt）
+
+- 生成：worker-1，2026-10-06（T014 收尾自查 §4 留痕）
+- 扫描模式说明：Windows 用户目录前缀固定串 = 盘符冒号紧跟反斜杠 Users（本档以拼接描述，不嵌入连续字面量；bash 等价命令见下）
+
+## 1) 机器绝对路径扫描（预期零命中）
+
+命令（仓库根执行；模式字面量以拼接写法表达，等价于派工单 §5 所记扫描命令）：
+
+```
+grep -rn -F 'C:'"\Users" docs/m0-identity-review.md docs/evidence/t014/
+```
+
+扫描范围 = 上列 9 个交付物文件全文。
+机器路径命中：零命中（0 处）
+用户名（Administrator）命中：零命中（0 处）
+机器绝对路径扫描结果行: PASS（零命中）
+
+## 2) 编码与行尾（预期全部：UTF-8 无 BOM + LF）
+
+| 文件 | BOM | CRLF | 结果 |
+|---|---|---|---|
+| docs/m0-identity-review.md | 无 | 无 | PASS |
+| docs/evidence/t014/verify_t014.py | 无 | 无 | PASS |
+| docs/evidence/t014/run_anchor_crossrepo.sh | 无 | 无 | PASS |
+| docs/evidence/t014/runs/verify.txt | 无 | 无 | PASS |
+| docs/evidence/t014/runs/verify.stdout.txt | 无 | 无 | PASS |
+| docs/evidence/t014/runs/selfcheck.md | 无 | 无 | PASS |
+| docs/evidence/t014/README.md | 无 | 无 | PASS |
+| docs/evidence/t014/dispatches/wp-a.md | 无 | 无 | PASS |
+
+编码与行尾结果行: PASS（全 UTF-8 无 BOM + LF）
+
+## 3) 范围核对（仅新建交付物路径，树内既有文件零改动）
+
+- docs/m0-identity-review.md
+- docs/evidence/t014/verify_t014.py
+- docs/evidence/t014/run_anchor_crossrepo.sh
+- docs/evidence/t014/runs/verify.txt
+- docs/evidence/t014/runs/verify.stdout.txt
+- docs/evidence/t014/runs/selfcheck.md
+- docs/evidence/t014/README.md
+- docs/evidence/t014/dispatches/wp-a.md
+- docs/evidence/t014/runs/hygiene.txt
+
+注：wp-a.md 原文的 6 处机器路径字面量已按附录 G「只改前缀」规则替换（`<桌面>` ×5 + `<C盘Users前缀>` ×1，映射见 wp-a.md 存档说明）；本扫描在该替换后执行。
+

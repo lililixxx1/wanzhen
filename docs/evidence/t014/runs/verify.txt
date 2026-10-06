@@ -1,0 +1,106 @@
+# T014 · verify_t014.py 运行留痕（runs/verify.txt）
+
+- 任务卡：taskset/t014-identity-review.md（派工单 WP-A）
+- 被核对档：docs/m0-identity-review.md（本档双向核对对象）
+- 预注册预期（派工单 §3）：全部 PASS（0 FAIL）、REAL_EXIT=0——实测未偏离
+- 自含：命令全文 + 原始输出 + REAL_EXIT 行同档；只看本档即可独立复跑
+
+## 命令全文（仓库根执行）
+
+```
+python docs/evidence/t014/verify_t014.py > docs/evidence/t014/runs/verify.stdout.txt 2>&1
+```
+
+## 原始输出（verify.stdout.txt 全文）
+
+```
+a1 | PASS
+a2 | PASS
+a3 | PASS
+a4 | PASS
+a5 | PASS
+a6 | PASS
+a7 | PASS
+a8 | PASS
+a9 | PASS
+a10 | PASS
+a11 | PASS
+a12 | PASS
+a13 | PASS
+a14 | PASS
+a15 | PASS
+a16 | PASS
+a17 | PASS
+a18 | PASS
+a19 | PASS
+a20 | PASS
+a21 | PASS
+a22 | PASS
+a23 | PASS
+a24 | PASS
+a25 | PASS
+a26 | PASS
+a27 | PASS
+a28 | PASS
+a29 | PASS
+a30 | PASS
+a31 | PASS
+a32 | PASS
+a33 | PASS
+a34 | PASS
+a35 | PASS
+a36 | PASS
+a37 | PASS
+a38 | PASS
+a39 | PASS
+a40 | PASS
+a41 | PASS
+a42 | PASS
+a43 | PASS
+a44 | PASS
+a45 | PASS
+a46 | PASS
+a47 | PASS
+a48 | PASS
+a49 | PASS
+a50a | PASS
+a50b | PASS
+a50c | PASS
+a50d | PASS
+a52 | PASS
+b1 | PASS
+b2 | PASS
+b3 | PASS
+b4 | PASS
+b5 | PASS
+b6 | PASS
+b7 | PASS
+b8 | PASS
+b9a | PASS
+b9b | PASS
+b10a | PASS
+b10b | PASS
+b11 | PASS
+b12 | PASS
+b13 | PASS
+b14 | PASS
+b15 | PASS
+b17 | PASS
+c1 | PASS
+c2 | PASS
+c3 | PASS
+c4 | PASS
+c5 | PASS
+c6 | PASS
+d1 | PASS
+d2 | PASS
+e1 | PASS
+e2 | PASS
+e3 | PASS
+f1 | PASS
+汇总: 84 条 | PASS 84 | FAIL 0
+```
+
+## REAL_EXIT
+
+REAL_EXIT=0

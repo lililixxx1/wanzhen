@@ -1,0 +1,17 @@
+# T014 · 跨仓锚核对留痕（runs/anchor-crossrepo.txt）——主仓根执行（Lead G1 收获批次）
+
+# CMD（主仓根执行；前置 = bevy-ai-workflow 与本仓同级 checkout，相对路径 ../bevy-ai-workflow/）
+# bash docs/evidence/t014/run_anchor_crossrepo.sh
+
+g1 | PASS
+g2 | PASS
+g3 | PASS
+g4 | PASS
+g5 | PASS
+h1 | PASS
+i1 | PASS
+j1 | PASS
+j2 | PASS
+汇总: 9 条 | PASS 9 | FAIL 0
+
+# REAL_EXIT=0
