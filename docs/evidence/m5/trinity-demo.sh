@@ -118,9 +118,15 @@ else
   check CHK-07-screenshot-png-magic 1; check CHK-08-screenshot-nontrivial-size 1
 fi
 
-# ── 战报（幂等四元组）──
+# ── 战报（幂等四元组 + final_hash——T025 完整轮 P1-1 整改：五字段全断言且钉值；
+# melee-brawl seed7 上限收束 = red/1800/23/23，final_hash == H_C 跨卡锚 0xb82a248ff23515e2
+# （T020 C/D 配置 1800t 态哈希同值——outcome.final_hash 与态哈希同源的三卡交叉））──
 R=$(brp game.outcome '{}' "$P_SPEC")
-echo "$R" | grep -qF '"winner"'; check CHK-05-spectate-outcome-report $?
+{ echo "$R" | grep -qF '"winner":"red"' \
+  && echo "$R" | grep -qF '"end_tick":1800' \
+  && echo "$R" | grep -qF '"alive_red":23' \
+  && echo "$R" | grep -qF '"alive_blue":23' \
+  && echo "$R" | grep -qF '"final_hash":"0xb82a248ff23515e2"'; }; check CHK-05-spectate-outcome-4tuple $?
 
 # ── 再来（核心循环第 4 步）：观战实例重新部署新对局并再战报（last-stand 15/56 实锚）──
 R=$(brp game.deploy '{"preset":"last-stand","seed":42}' "$P_SPEC")
@@ -137,7 +143,11 @@ R=$(brp game.run_tests '{"suite":"challenges"}' "$P_HEAD")
 
 # ── 统计面（一等玩法：批量采样 + 胜率；同参批内重放 outcomes 逐位一致）──
 R=$(brp game.sample_outcomes '{"red":[{"kind":"swordsman","count":100}],"blue":[{"kind":"militia","count":100}],"seed_base":42,"games":100}' "$P_HEAD")
-{ echo "$R" | grep -qF '"games":100' && echo "$R" | grep -qF '"win_rate_red_pp"'; }; check CHK-13-stats-sample-100 $?
+{ echo "$R" | grep -qF '"games":100' \
+  && echo "$R" | grep -qF '"red_wins":100' \
+  && echo "$R" | grep -qF '"blue_wins":0' \
+  && echo "$R" | grep -qF '"draws":0' \
+  && echo "$R" | grep -qF '"win_rate_red_pp":10000'; }; check CHK-13-stats-sample-100 $?
 R2=$(brp game.sample_outcomes '{"red":[{"kind":"swordsman","count":100}],"blue":[{"kind":"militia","count":100}],"seed_base":42,"games":100}' "$P_HEAD")
 ARR_A=$(echo "$R"  | grep -o '"outcomes":\[.*\]')
 ARR_B=$(echo "$R2" | grep -o '"outcomes":\[.*\]')

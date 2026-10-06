@@ -31,11 +31,11 @@
 | 重放红线 | 同参序列两遍 == 锚② `0x958c5938c8682529`（T004 黄金） | CHK-03 |
 | 观战自走 | autorun 推进活性（tick 递增双读数）+ 入队语义（queued:300 立即返回） | CHK-04/04b |
 | 跨模式 300t | spectate 轮询至 300t `0x6d3d3716633a2efa` == headless 直推同参**逐位一致** | CHK-04c（两值原文在档） |
-| 截屏 | live 两段式 captured + PNG 魔数 + 103,973B + sha256（`shot-trinity-spectate.png`） | CHK-06~08 |
-| 战报 | outcome 四元组（winner 字段） | CHK-05 |
+| 截屏 | live 两段式 captured + PNG 魔数 + 76,681B + sha256 f9993c2c…64b5（`shot-trinity-spectate.png` + sidecar） | CHK-06~08 |
+| 战报 | outcome 四元组钉值：melee-brawl seed7 上限收束 = **red/1800/23/23** + final_hash **0xb82a248ff23515e2** == H_C 跨卡锚（T020 C/D 配置 1800t 态哈希同值——outcome.final_hash 与态哈希同源三卡交叉） | CHK-05（五字段全断言） |
 | 再来 | last-stand 重部署 `0x9a926533cbf1d445` → 1800t → blue **15/56**（T021/T022 同锚三源一致） | CHK-09/10 |
 | 挑战 | `m5-all` **12/12**（m5-core 9 + challenges 3）+ `challenges` 3/3（few-elite red/2474/7/0 灭绝 / counter-militia blue/1800/6/24 / iron-wall blue/1800/15/56） | CHK-11/12（detail 原文在档） |
-| 统计 | swordsman100 vs militia100 ×100 局 → red_wins=100（win_rate_red_pp=10000）+ 同参批内重放 outcomes 数组**逐字节一致** | CHK-13/14 |
+| 统计 | swordsman100 vs militia100 ×100 局 → **red_wins=100 / blue_wins=0 / draws=0 / win_rate_red_pp=10000**（四值全断言）+ 同参批内重放 outcomes 数组**逐字节一致** | CHK-13/14 |
 | 质量红线 | 双实例全程存活 + stderr 零 panic | CHK-15~17 |
 
 > 统计注（残余账 #12 口径）：本示例 100 局 <400 场——「趋势指示、非基准」（±10pp / ≥400 场/周判据，R5 功效注）；降规模口径 200 单位/局 ≤1800t 不与全规模混用（#11）。
@@ -114,7 +114,7 @@
 
 - T017~T024 已交付（本档 = T025 收官）；task-ledger.md 逐行（M5 八卡合计 ≈1474 min ≈24.6h，全计 W1——含审核/整改/接管全链）；taskset/README M5 节状态列全「完成」。
 - 质量链：轻量轮 ×3（T018/T021/T022——零 P 或整改闭环）+ 完整轮 ×3（T020 整改闭环转通过 / T024 整改闭环转通过 / T019 修后复审+终处置通过）+ 本卡完整轮（收官复核）。
-- 跨仓：工作流仓 AGENTS.md 状态行「M5 收官」回写（引用本档，不复制正文——跨仓纪律）。
+- 跨仓：工作流仓 AGENTS.md 状态行「M5 收官」已回写（commits 2ffa372 + 数字勘误 f34bfde；引用本档路径，不复制正文——跨仓纪律）。
 - W1 终判行（10-11）= 既有例行动作，不在本卡范围（任务卡范围外注）。
 
 ## §9 复跑入口

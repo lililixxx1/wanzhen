@@ -1,4 +1,4 @@
-== T025 trinity demo v2 2026-10-07 07:10:46 ==
+== T025 trinity demo v2 2026-10-07 07:27:34 ==
 == leg1 headless 15718 (配置+挑战+统计+重放红线) / leg2 spectate 15719 (观战+战报+截屏+再来) ==
 [CHK-00-ports-ready] PASS
 --- REQ (port 15718): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42}}
@@ -34,17 +34,17 @@
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe9ae167834db2093","tick":75}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x245cc8fc0c753246","tick":110}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xdbf19d5c739612e1","tick":111}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x51f8921a271cc26d","tick":146}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf6a4cfbeea3456fe","tick":147}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x7a61bb4e2193c089","tick":182}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x68528c28556527d7","tick":183}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3f30b69858379355","tick":218}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xedf8b25692443de3","tick":219}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x90d9b9bceeb230f6","tick":254}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x0825402744f5ef45","tick":255}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x158de3231c486d8b","tick":290}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xc19146f8726103de","tick":291}}
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6d3d3716633a2efa","tick":300}}
 spectate 300t: hash=0x6d3d3716633a2efa (9s)
@@ -58,14 +58,14 @@ headless 300t: hash=0x6d3d3716633a2efa
 --- RESP: {"jsonrpc":"2.0","id":1,"result":{"id":0,"status":"requested"}}
 screenshot entry id=0
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{"id":0}}
---- RESP: {"jsonrpc":"2.0","id":1,"result":{"bytes":76681,"path":"screenshot-10316-1791328251420-0.png","status":"captured"}}
+--- RESP: {"jsonrpc":"2.0","id":1,"result":{"bytes":76681,"path":"screenshot-24028-1791329259425-0.png","status":"captured"}}
 [CHK-06-spectate-screenshot-captured] PASS
 [CHK-07-screenshot-png-magic] PASS
 [CHK-08-screenshot-nontrivial-size] PASS
-f9993c2c904df96f8a7f433032f2975ad5f9c797b4c65ed662b0798e36ba64b5 *screenshot-10316-1791328251420-0.png
+f9993c2c904df96f8a7f433032f2975ad5f9c797b4c65ed662b0798e36ba64b5 *screenshot-24028-1791329259425-0.png
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
 --- RESP: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":23,"alive_red":23,"end_tick":1800,"final_hash":"0xb82a248ff23515e2","winner":"red"}}
-[CHK-05-spectate-outcome-report] PASS
+[CHK-05-spectate-outcome-4tuple] PASS
 --- REQ (port 15719): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"last-stand","seed":42}}
 --- RESP: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":60,"alive_red":20,"deploy_hash":"0x9a926533cbf1d445","tick":0,"units":80}}
 [CHK-09-again-redeploy-laststand] PASS
