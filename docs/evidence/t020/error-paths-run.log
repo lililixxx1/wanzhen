@@ -1,0 +1,57 @@
+== T020 error paths 2026-10-06 23:58:04 ==
+== host exe: ../../../target/release/host.exe ==
+== host pid 2927 ==
+[CHK-00-port-ready] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
+[CHK-01-undeployed-state-hash-4001] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":"42","red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"missing/invalid seed (u64 required)"}}
+[CHK-02-seed-string-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"laser","count":5}],"blue":[]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown kind \"laser\" (valid: shieldman, heavyknight, pikeman, swordsman, archer, militia)"}}
+[CHK-03-unknown-kind-32602] PASS
+[CHK-03b-unknown-kind-msg] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":-1}],"blue":[]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"red item \"militia\" count must be a non-negative integer"}}
+[CHK-04-count-negative-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":100001}],"blue":[]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"red totals 100001 units, exceeding per-side cap 100000"}}
+[CHK-05-per-side-cap-32602] PASS
+[CHK-05b-per-side-cap-msg] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}],"threads":0}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid threads (1..=1024 required)"}}
+[CHK-06-threads0-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}],"threads":1025}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid threads (1..=1024 required)"}}
+[CHK-07-threads1025-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}],"lane_len_m":0}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid lane_len_m (integer >= 1 required)"}}
+[CHK-08-lane0-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}],"max_ticks":0}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid max_ticks (1..=14400 required)"}}
+[CHK-09-maxticks0-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"militia","count":1}],"blue":[{"kind":"militia","count":1}],"max_ticks":14401}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid max_ticks (1..=14400 required)"}}
+[CHK-10-maxticks14401-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"missing/invalid ticks (u64 required)"}}
+[CHK-11-missing-ticks-32602] PASS
+[CHK-11b-missing-ticks-msg] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"nope","seed":42}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown preset \"nope\" (available: default, melee-brawl, last-stand)"}}
+[CHK-12-unknown-preset-32602] PASS
+[CHK-12b-unknown-preset-msg] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"no-such-suite"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core)"}}
+[CHK-13-unknown-suite-32602] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4101,"message":"spectate mode not enabled (headless host, T018); arrives with T019","data":{"mode":"headless","planned_task":"T019"}}}
+[CHK-14-screenshot-stub-4101] PASS
+[CHK-14b-screenshot-data] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
+[CHK-15-still-undeployed-4001] PASS
+[CHK-16-process-alive] PASS
+== SUMMARY: PASS=22 FAIL=0 ==
+== SCRIPT_EXIT=0 ==

@@ -1,0 +1,26 @@
+== T020 m5-core suite check 2026-10-06 23:58:09 ==
+== host exe: ../../../target/release/host.exe ==
+== host pid 3008 ==
+[CHK-00-port-ready] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"m5-core"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"failed":0,"passed":9,"results":[{"detail":"last_hash 0xd3b6408fd46c2008 == golden","name":"golden_units0_seed42_1800","pass":true},{"detail":"last_hash 0x958c5938c8682529 == golden","name":"golden_default_comp_seed42_1800","pass":true},{"detail":"tick 0/900/1800 pairwise identical; final 0x958c5938c8682529","name":"replay_pairwise_checkpoints","pass":true},{"detail":"tick 0 last_hash identical: 0xe2706f0b91a2be8e","name":"deploy_versus_mirror_equivalence","pass":true},{"detail":"t12 pool vs serial identical @tick 900; last_hash 0x7fbb5bd7e46ef448","name":"cross_thread_pool_equivalence_900t","pass":true},{"detail":"red/878/1/0 final_hash 0xfdbc4995554ee691 == golden","name":"battle_golden_shortlane_seed42","pass":true},{"detail":"seed42 0x958c5938c8682529 != seed43 0x54611ed6ded02540; seed43 == T004 golden","name":"seed_sensitivity_42_43","pass":true},{"detail":"freeze: run_battle_with x3 identical (end_tick 878 hash 0xfdbc4995554ee691), tick stays 878; after run(100): world.tick 878 -> 978 (run/step 纯原语语义), frozen cache unchanged (end_tick 878)","name":"outcome_freeze_idempotence_shortlane","pass":true},{"detail":"draw@2000 final_hash 0xa63d948723f692d1 == run(2000) last_hash; alive 30/30","name":"outcome_overrun_semantics","pass":true}],"suite":"m5-core","total":9}}
+[CHK-01-suite-name] PASS
+[CHK-02-total9] PASS
+[CHK-03-passed9] PASS
+[CHK-04-failed0] PASS
+[CHK-05-pass-golden_units0_seed42_1800] PASS
+[CHK-05-pass-golden_default_comp_seed42_1800] PASS
+[CHK-05-pass-replay_pairwise_checkpoints] PASS
+[CHK-05-pass-deploy_versus_mirror_equivalence] PASS
+[CHK-05-pass-cross_thread_pool_equivalence_900t] PASS
+[CHK-05-pass-battle_golden_shortlane_seed42] PASS
+[CHK-05-pass-seed_sensitivity_42_43] PASS
+[CHK-05-pass-outcome_freeze_idempotence_shortlane] PASS
+[CHK-05-pass-outcome_overrun_semantics] PASS
+[CHK-06-anchor1-detail] PASS
+[CHK-07-anchor2-detail] PASS
+[CHK-08-shortlane-detail] PASS
+[CHK-09-seed43-detail] PASS
+[CHK-10-process-alive] PASS
+== SUMMARY: PASS=19 FAIL=0 ==
+== SCRIPT_EXIT=0 ==

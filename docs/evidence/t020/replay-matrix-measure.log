@@ -1,0 +1,100 @@
+== T020 replay matrix 2026-10-06 23:29:56 ==
+== host exe: ../../../target/release/host.exe ==
+== host pid 2203 ==
+[CHK-00-port-ready] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+A: run1=0x958c5938c8682529 run2=0x958c5938c8682529
+[CHK-A-replay-bitexact] PASS
+[CHK-A-anchor2-hit] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":12}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":12}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+B: run1=0x958c5938c8682529 run2=0x958c5938c8682529
+[CHK-B-replay-bitexact] PASS
+[CHK-B-cross-thread-anchor2] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+C: run1=0xb82a248ff23515e2 run2=0xb82a248ff23515e2 (expected H_C=0x0000000000000000)
+[CHK-C-replay-bitexact] PASS
+[CHK-C-recorded-anchor-hit] FAIL
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7,"threads":12}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7,"threads":12}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+D: run1=0xb82a248ff23515e2 run2=0xb82a248ff23515e2
+[CHK-D-replay-bitexact] PASS
+[CHK-D-cross-thread-HC] FAIL
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"militia","count":5}],"blue":[{"kind":"militia","count":5}],"lane_len_m":10,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":5,"deploy_hash":"0x29fee617bafe37e3","tick":0,"units":10}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfdbc4995554ee691","tick":878}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":1,"end_tick":878,"final_hash":"0xfdbc4995554ee691","winner":"red"}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"militia","count":5}],"blue":[{"kind":"militia","count":5}],"lane_len_m":10,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":5,"deploy_hash":"0x29fee617bafe37e3","tick":0,"units":10}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfdbc4995554ee691","tick":878}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":1,"end_tick":878,"final_hash":"0xfdbc4995554ee691","winner":"red"}}
+E: run1 tick=878 hash=0xfdbc4995554ee691 outcome=winner:red end:878 alive:1/0 final:0xfdbc4995554ee691
+[CHK-E-replay-bitexact] PASS
+[CHK-E-frozen-tick878] PASS
+[CHK-E-shortlane-hash] PASS
+[CHK-E-outcome-red] PASS
+[CHK-E-outcome-endtick878] PASS
+[CHK-E-outcome-alive-1-0] PASS
+[CHK-E-outcome-finalhash-anchor] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":2026,"red":[{"kind":"archer","count":8},{"kind":"militia","count":2}],"blue":[{"kind":"shieldman","count":6},{"kind":"pikeman","count":4}],"lane_len_m":100,"threads":3}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":10,"alive_red":10,"deploy_hash":"0x7f7031d8cf08b871","tick":0,"units":20}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x185fe8c22adeec36","tick":1800}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":2026,"red":[{"kind":"archer","count":8},{"kind":"militia","count":2}],"blue":[{"kind":"shieldman","count":6},{"kind":"pikeman","count":4}],"lane_len_m":100,"threads":3}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":10,"alive_red":10,"deploy_hash":"0x7f7031d8cf08b871","tick":0,"units":20}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x185fe8c22adeec36","tick":1800}}
+F: run1=0x185fe8c22adeec36 run2=0x185fe8c22adeec36 tick=1800 (expected H_F=0x0000000000000000)
+[CHK-F-replay-bitexact] PASS
+[CHK-F-new-anchor-hit] FAIL
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":2000}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xa63d948723f692d1","tick":2000}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"end_tick":2000,"final_hash":"0xa63d948723f692d1","winner":"draw"}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":2000}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xa63d948723f692d1","tick":2000}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"end_tick":2000,"final_hash":"0xa63d948723f692d1","winner":"draw"}}
+G: run1 tick=2000 hash=0xa63d948723f692d1 outcome=winner:draw end:2000 final:0xa63d948723f692d1
+[CHK-G-replay-bitexact] PASS
+[CHK-G-tick2000] PASS
+[CHK-G-outcome-draw] PASS
+[CHK-G-outcome-endtick2000] PASS
+[CHK-G-finalhash-eq-runhash] PASS
+[CHK-99-process-alive] PASS
+== SUMMARY: PASS=21 FAIL=3 ==
+== SCRIPT_EXIT=1 ==
