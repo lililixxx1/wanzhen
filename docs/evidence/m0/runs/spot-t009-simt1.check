@@ -1,0 +1,7 @@
+命令（来源 docs/evidence/t009/crosscheck_r5.sh 头注释 / run_t009.sh:85 / runs/r5-sim-t1.cmd 三处一致，逐字执行）:
+./target/release/sim.exe --comp shieldman:5000 --seed 3000000 --battle --ticks 14400 --threads 1
+REAL_EXIT=0
+final_hash=0x564cf46fdf191710
+expected  =0x564cf46fdf191710
+MATCH
+对照: t009/summary.md CLI 黄金交叉 arena=sim_t1=sim_t12=0x564cf46fdf191710。

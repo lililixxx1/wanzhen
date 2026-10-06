@@ -1,0 +1,7 @@
+命令（来源 AGENTS.md 常用命令节用法行 / 派工单 §5-2，与 docs/evidence/t015 附录 A 同配置）:
+./target/release/bench.exe --units 10000 --threads 1 --ticks 300 --seed 42
+REAL_EXIT=0
+final_hash=0xc5915d042208e267
+expected  =0xc5915d042208e267
+MATCH
+口径注（派工单 D4）: 只核哈希确定性，不重判计时数字（计时属量测窗口产物）。
