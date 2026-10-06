@@ -75,6 +75,6 @@
    Compiling bevy_input v0.19.1
    Compiling bevy_internal v0.19.1
    Compiling bevy v0.19.1
-   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\trees\wanzhen\t013-a\sim)
+   Compiling sim v0.1.0 (<repo-root>\sim)
     Finished `release` profile [optimized] target(s) in 1m 33s
 REAL_EXIT=0
