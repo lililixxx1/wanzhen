@@ -1,6 +1,6 @@
-== T018 BRP smoke 2026-10-06 23:57:45 ==
+== T018 BRP smoke 2026-10-07 01:25:49 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 1829 ==
+== host pid 3010 ==
 [CHK-00-port-ready] PASS
 [CHK-01-banner-loopback] PASS
 [CHK-01b-banner-constraint] PASS
@@ -57,7 +57,7 @@ deploy_hash="deploy_hash":"0xe2706f0b91a2be8e"
 --- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"failed":0,"passed":4,"results":[{"detail":"last_hash 0xd3b6408fd46c2008 == golden","name":"golden_units0_seed42_1800","pass":true},{"detail":"last_hash 0x958c5938c8682529 == golden","name":"golden_default_comp_seed42_1800","pass":true},{"detail":"tick 0/900/1800 pairwise identical; final 0x958c5938c8682529","name":"replay_pairwise_checkpoints","pass":true},{"detail":"tick 0 last_hash identical: 0xe2706f0b91a2be8e","name":"deploy_versus_mirror_equivalence","pass":true}],"suite":"t018-smoke","total":4}}
 [CHK-11d-tests-suite-name] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"no-such-suite"}}
---- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core)"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core, challenges, m5-all)"}}
 [CHK-11e-tests-unknown-suite] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4101,"message":"spectate mode not enabled (headless host, T018); arrives with T019","data":{"mode":"headless","planned_task":"T019"}}}

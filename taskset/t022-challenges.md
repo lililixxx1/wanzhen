@@ -26,4 +26,7 @@
 
 ## 执行记录
 
-- （开工后补）
+- **Lead 设计段**（10-07）：七候选构型实测（docs/evidence/t022/design/measure-candidates-run.log，BRP 直测终局四元组+双哈希）→ 三挑战定选 + seed43 敏感性补测（win/end_tick/存活数三构型与 seed42 完全同构、仅哈希不同——叙事跨种子稳健，断言锚只钉 seed42）；派工单 D1~D6（套件注册零回归设计：新增 challenges/m5-all、缺省与 m5-core 不动）。
+- **实现**（10-07，worker-2 树 t022-a，基线 0f2a977）：challenges.rs 注册表 3 条（锚值十六进制直书注 design 档行号）+ suite.rs 挑战断言（六字段比对、期望单一来源、fail detail 全字段）+ m5-all 聚合 12；**双盲对拍三挑战六字段与派工单锚全等，零改锚零停手**。门禁全绿（树内：check 0 警告/sim 44+3/release 增量 7.48s/t018 46/46/挑战冒烟 37/37；主仓复跑：check 0 警告 1.10s/release 4.85s/37/37/46/46——release 两次均按 Lead 增量授权裁决（冷建口径门 13G/12G 对共享 target 增量不适用，留痕在档））。收获 = fe0286a。
+- **轻量轮**（10-07，plan-code-reviewer）：**有条件通过→整改后转通过**——零 Critical/零代码缺陷；唯一条件 = D5 收口文档同步（AGENTS.md host 行补挑战判定套件指引——派工单本就分配给 Lead 收口段），随收口提交闭环（review-plan-code-reviewer.md Lead 处置记录节）。审核独立复跑：四套件计数全中（4/9/3/12）+ 手驱 few-elite 六字段对锚一致。
+- **终态**：通过。台账 ≈115 min（Lead 设计实测+派工单 ≈50 + worker-2 ≈31 + G1/收获/门禁 ≈20 + 审核 ≈5 + 收口 ≈9），全计 W1。偏离三处在档（mod challenges 行入树必需/allow(dead_code) 数据字段沿 GameConfig 先例/timeout 90 护栏按裁决条件）。
