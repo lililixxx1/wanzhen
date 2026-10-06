@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
-# T020 D3 错误路径集（14 发 ≥10）：非法参数（seed 形态 / 未知 kind / count 负数 /
-# 单方超上限 / threads 与 max_ticks 出域 / lane 0 / 缺 ticks）/ 未布阵先 state_hash
-# （4001）/ 未知 preset / 未知 suite / screenshot 桩（4101）——每发断言结构化错误码
-# （JSON-RPC error.code，无击穿），尾部进程存活 + 复证「无一次非法 deploy 落地」。
+# T020 D3 错误路径集（整改版 18 发 30 检查）：非法参数（seed 形态 / 未知 kind /
+# count 负数 / 单方超上限 / threads 与 max_ticks 出域 / lane 0 / 缺 ticks）/
+# 未布阵先 state_hash（4001）/ 未知 preset / 未知 suite / screenshot 桩（4101）
+# ——每发断言结构化错误码（JSON-RPC error.code，无击穿），尾部进程存活 +
+# 复证「无一次非法 deploy 落地」。
+# P1-2 整改（2026-10-07，review-plan-code-reviewer.md）：补独立空构成用例
+# CHK-17/18——实测裁决 = 空数组**合法布阵**（单侧空=立即灭绝冻结@0；双侧空=
+# draw@0；缺字段才是 -32602）——与 sim 层空局语义一致（T002 黄金锚①先例）；
+# 任务卡原措辞「空构成=非法参数」按审核 B 路径修正（t020 卡范围内节裁决注）。
+# 锚值来源 = Lead 2026-10-07 预构建 exe 实测（deploy_hash/final_hash 双留）。
 # REQ/RESP 原文走 stderr（>&2）落 error-paths-run.log（体例沿 t018 整改版）。
 # 用法：bash error_paths.sh（树根执行；端口 15714；在 replay_matrix.sh 后跑）
 set -u
@@ -115,11 +121,32 @@ R=$(brp game.screenshot '{}')
 echo "$R" | grep -qF '"code":4101'; check CHK-14-screenshot-stub-4101 $?
 echo "$R" | grep -qF '"planned_task":"T019"'; check CHK-14b-screenshot-data $?
 
-# CHK-15 全部非法 deploy 均未落地：state_hash 仍 4001（无一次静默成功）
+# CHK-15 全部非法 deploy 均未落地：state_hash 仍 4001（无一次静默成功；
+# 其后的 CHK-17/18 为合法空构成 deploy，不影响本复证）
 R=$(brp game.state_hash '{}')
 echo "$R" | grep -qF '"code":4001'; check CHK-15-still-undeployed-4001 $?
 
-# CHK-16 进程存活收尾（14 发全程无 panic / 无击穿）
+# ── P1-2 整改段（2026-10-07）：空构成独立用例（接受现实口径）──
+
+# CHK-17 单侧空构成合法：red=[] vs militia:5 → deploy 成功（alive_red 0 / units 5）
+R=$(brp game.deploy '{"seed":42,"red":[],"blue":[{"kind":"militia","count":5}],"lane_len_m":60,"max_ticks":100}')
+echo "$R" | grep -qF '"alive_red":0'; check CHK-17-empty-red-deploy-ok $?
+echo "$R" | grep -qF '"deploy_hash":"0xf5f1b5a28609daf0"'; check CHK-17b-empty-red-deploy-hash $?
+# → outcome 立即灭绝冻结：blue @ tick 0、final_hash == deploy_hash
+R=$(brp game.outcome '{}')
+{ echo "$R" | grep -qF '"winner":"blue"' && echo "$R" | grep -qF '"end_tick":0'; }; check CHK-17c-empty-red-immediate-blue $?
+echo "$R" | grep -qF '"final_hash":"0xf5f1b5a28609daf0"'; check CHK-17d-empty-red-final-eq-deploy $?
+
+# CHK-18 双侧空构成合法：red=[] blue=[] → units 0、空局哈希锚
+R=$(brp game.deploy '{"seed":42,"red":[],"blue":[],"lane_len_m":60,"max_ticks":100}')
+echo "$R" | grep -qF '"units":0'; check CHK-18-both-empty-deploy-ok $?
+echo "$R" | grep -qF '"deploy_hash":"0xa6c66902e818cd64"'; check CHK-18b-both-empty-hash $?
+# → outcome draw @ tick 0（双方存活 0 灭绝判定对称；字段序 end_tick 先于 winner）
+R=$(brp game.outcome '{}')
+{ echo "$R" | grep -qF '"winner":"draw"' && echo "$R" | grep -qF '"end_tick":0'; }; check CHK-18c-both-empty-draw $?
+echo "$R" | grep -qF '"final_hash":"0xa6c66902e818cd64"'; check CHK-18d-both-empty-final-eq-deploy $?
+
+# CHK-16 进程存活收尾（18 发全程无 panic / 无击穿）
 kill -0 "$HOST_PID" 2>/dev/null; check CHK-16-process-alive $?
 kill "$HOST_PID" 2>/dev/null; sleep 1; kill -9 "$HOST_PID" 2>/dev/null
 

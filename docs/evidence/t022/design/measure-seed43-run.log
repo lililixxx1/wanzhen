@@ -1,0 +1,20 @@
+== T022 design seed-43 sensitivity 2026-10-07 00:35:31 ==
+===== s43-ch1a-sw10-mi30 (seed=43 lane=60 max_ticks=3600) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":43,"red":[{"kind":"swordsman","count":10}],"blue":[{"kind":"militia","count":30}],"lane_len_m":60,"max_ticks":3600}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x740faffefd59eb9c","tick":0,"units":40}}
+--- REQ #2: {"jsonrpc":"2.0","id":2,"method":"game.outcome","params":{}}
+--- RESP #2: {"jsonrpc":"2.0","id":2,"result":{"alive_blue":0,"alive_red":7,"end_tick":2474,"final_hash":"0x51475d4b497f541a","winner":"red"}}
+{"jsonrpc":"2.0","id":2,"result":{"alive_blue":0,"alive_red":7,"end_tick":2474,"final_hash":"0x51475d4b497f541a","winner":"red"}}
+===== s43-ch2a-hk10-mi30 (seed=43 lane=60 max_ticks=1800) =====
+--- REQ #3: {"jsonrpc":"2.0","id":3,"method":"game.deploy","params":{"seed":43,"red":[{"kind":"heavyknight","count":10}],"blue":[{"kind":"militia","count":30}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #3: {"jsonrpc":"2.0","id":3,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x730a533ac1dff6ae","tick":0,"units":40}}
+--- REQ #4: {"jsonrpc":"2.0","id":4,"method":"game.outcome","params":{}}
+--- RESP #4: {"jsonrpc":"2.0","id":4,"result":{"alive_blue":24,"alive_red":6,"end_tick":1800,"final_hash":"0x398a2e9baf9e4d35","winner":"blue"}}
+{"jsonrpc":"2.0","id":4,"result":{"alive_blue":24,"alive_red":6,"end_tick":1800,"final_hash":"0x398a2e9baf9e4d35","winner":"blue"}}
+===== s43-ch3a-sh20-mi60 (seed=43 lane=60 max_ticks=1800) =====
+--- REQ #5: {"jsonrpc":"2.0","id":5,"method":"game.deploy","params":{"seed":43,"red":[{"kind":"shieldman","count":20}],"blue":[{"kind":"militia","count":60}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #5: {"jsonrpc":"2.0","id":5,"result":{"alive_blue":60,"alive_red":20,"deploy_hash":"0x0638f1e2c6c2f00e","tick":0,"units":80}}
+--- REQ #6: {"jsonrpc":"2.0","id":6,"method":"game.outcome","params":{}}
+--- RESP #6: {"jsonrpc":"2.0","id":6,"result":{"alive_blue":56,"alive_red":15,"end_tick":1800,"final_hash":"0x356d3b0a9bba9a09","winner":"blue"}}
+{"jsonrpc":"2.0","id":6,"result":{"alive_blue":56,"alive_red":15,"end_tick":1800,"final_hash":"0x356d3b0a9bba9a09","winner":"blue"}}
+== done ==

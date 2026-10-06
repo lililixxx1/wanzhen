@@ -265,7 +265,9 @@ fn seed_sensitivity_42_43() -> AssertionResult {
 /// （含更小 max_ticks 的重入）四元组全等且 world.tick 不推进（收束路径幂等
 /// 冻结，sim/src/world.rs:913-940 缓存分支）；随后直接 `run(100)` 属纯原语
 /// ——`resolved` 不影响 step/run（sim/src/world.rs:32-34 模块注），world.tick
-/// 前移，但冻结缓存不被重算/清除：再读 `outcome()` 仍返回原收束点四元组。
+/// 前移恰好 +100，但冻结缓存不被重算/清除：再读 `outcome()` 仍返回原收束点
+/// 四元组。tick 前移量入 pass 条件（2026-10-07 完整轮 P1-1 整改：原版 detail
+/// 宣称覆盖该语义但 pass 未校验，未推进也会误过）。
 fn outcome_freeze_idempotence_shortlane() -> AssertionResult {
     let mut world = sim::world::World::deploy_versus(
         42,
@@ -285,14 +287,22 @@ fn outcome_freeze_idempotence_shortlane() -> AssertionResult {
     let pass = o1 == o2
         && o2 == o3
         && tick_frozen == tick_reentered
-        && o4.as_ref() == Some(&o1);
+        && o4.as_ref() == Some(&o1)
+        && tick_after_run == tick_frozen + 100;
     AssertionResult {
         name: "outcome_freeze_idempotence_shortlane",
         pass,
         detail: format!(
             "freeze: run_battle_with x3 identical (end_tick {} hash 0x{:016x}), tick stays {}; \
-after run(100): world.tick {} -> {} (run/step 纯原语语义), frozen cache unchanged (end_tick {})",
-            o1.end_tick, o1.final_hash, tick_frozen, tick_frozen, tick_after_run, o1.end_tick
+after run(100): world.tick {} -> {} (expect {} = frozen+100; run/step 纯原语语义), \
+frozen cache unchanged (end_tick {})",
+            o1.end_tick,
+            o1.final_hash,
+            tick_frozen,
+            tick_frozen,
+            tick_after_run,
+            tick_frozen + 100,
+            o1.end_tick
         ),
     }
 }

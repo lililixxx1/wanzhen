@@ -4,7 +4,8 @@
 - 判定主体：`game.run_tests`（suite=`m5-core`，进程内 9 断言）+ BRP 矩阵/错误路径脚本判定行；
   **agent 只作驱动，不作判定**（判定由脚本 `check()` 对原始响应逐条计算，人工只解读——沿席位 3 口径）。
 - 本档所有「实测」列 = 2026-10-06 门禁跑（脚本原始输出在档；`replay-matrix-run.log` /
-  `error-paths-run.log` / `m5core-suite-run.log`）。
+  `error-paths-run.log` / `m5core-suite-run.log`）；**2026-10-07 完整轮整改复跑**：
+  m5-core 19/19 + 错误路径 30/30（整改后计数，见 §1/§3 整改注）。
 
 ## 0. 复跑入口（树根执行；端口 15714；机器基本空闲，非帧敏量测）
 
@@ -12,7 +13,7 @@
 |---|---|---|
 | m5-core 套件 | `bash docs/evidence/t020/m5core_suite.sh` | 9 断言（含锚①/②、短 lane 战斗锚、seed43 伴随锚） |
 | 重放矩阵 | `bash docs/evidence/t020/replay_matrix.sh` | 七配置 A~G、25 判定行 |
-| 错误路径 | `bash docs/evidence/t020/error_paths.sh` | 14 发、22 判定行 |
+| 错误路径 | `bash docs/evidence/t020/error_paths.sh` | 18 发、30 判定行（含 P1-2 空构成整改段） |
 | 缺省套件回归 | `bash docs/evidence/t018/brp_smoke.sh` | 46 判定行（T018 原绿 = 缺省套件不变锚） |
 
 套件的 BRP 直调等价复跑（单发）：
@@ -36,7 +37,7 @@ curl -s -H 'Content-Type: application/json' \
 | 5 | `cross_thread_pool_equivalence_900t` | t12 池 vs 串行 900t 逐位一致 | `t12 pool vs serial identical @tick 900; last_hash 0x7fbb5bd7e46ef448` | PASS |
 | 6 | `battle_golden_shortlane_seed42` | red/878/1/0 且 `0xfdbc4995554ee691`（T018 CHK-16 锚） | `red/878/1/0 final_hash 0xfdbc4995554ee691 == golden` | PASS |
 | 7 | `seed_sensitivity_42_43` | 42≠43 且 seed43 == `0x54611ed6ded02540`（T004） | `seed42 0x958c5938c8682529 != seed43 0x54611ed6ded02540` | PASS |
-| 8 | `outcome_freeze_idempotence_shortlane` | 收束幂等 + 冻结缓存不被直接 run 重算 | `run_battle_with x3 identical (end_tick 878 …), tick stays 878; after run(100): world.tick 878 -> 978 (纯原语), frozen cache unchanged (end_tick 878)` | PASS（语义分解见 §5） |
+| 8 | `outcome_freeze_idempotence_shortlane` | 收束幂等 + 冻结缓存不被直接 run 重算 + **run(100) tick 前移恰 +100（P1-1 整改入 pass 条件）** | `run_battle_with x3 identical (end_tick 878 …), tick stays 878; after run(100): world.tick 878 -> 978 (expect 978 = frozen+100; 纯原语), frozen cache unchanged (end_tick 878)` | PASS（语义分解见 §5） |
 | 9 | `outcome_overrun_semantics` | 越过上限：draw / end_tick 2000 / final == run(2000) 后 hash（P2-2） | `draw@2000 final_hash 0xa63d948723f692d1 == run(2000) last_hash; alive 30/30` | PASS |
 
 - 断言 1~4 = 冒烟集原函数复用（同一实现，T020/D1 字面；未复制粘贴）。
@@ -77,9 +78,10 @@ curl -s -H 'Content-Type: application/json' \
   `replay-matrix-measure.jsonl`（首测 C=`0xb82a248ff23515e2`、F=`0x185fe8c22adeec36`，
   回填后本表即复跑全绿值）。
 
-## 3. 错误路径（`error_paths.sh`，22/22 CHK PASS，SCRIPT_EXIT=0）
+## 3. 错误路径（`error_paths.sh`，30/30 CHK PASS，SCRIPT_EXIT=0——2026-10-07 整改版）
 
-14 发（≥10）：每发 = 断言结构化 `error.code` + 尾部进程存活；复跑命令见 §0。
+18 发：前 14 发 = 非法参数/状态错误（每发断言结构化 `error.code`）+ P1-2 整改段
+CHK-17/18（空构成**接受现实**用例，见下）；尾部进程存活；复跑命令见 §0。
 
 | # | 发次（params） | 期望码 | 实测码 + 消息（摘要） | 判定 |
 |---|---|---|---|---|
@@ -98,8 +100,19 @@ curl -s -H 'Content-Type: application/json' \
 | 13 | `game.run_tests {"suite":"no-such-suite"}` | -32602 | -32602 `unknown suite … (available: t018-smoke, m5-core)` | PASS |
 | 14 | `game.screenshot {}`（桩） | 4101 | 4101 + `data.planned_task:"T019"` | PASS |
 
-- 发 3/5/11/12 另核消息内容（`CHK-03b/05b/11b/12b`）；**CHK-15 复证**：14 发后
+- 发 3/5/11/12 另核消息内容（`CHK-03b/05b/11b/12b`）；**CHK-15 复证**：前 14 发后
   `state_hash` 仍 4001 ⇒ 无一次非法 deploy 静默落地；CHK-16 进程存活（无 panic / 无击穿）。
+
+**P1-2 整改段（CHK-17/18，2026-10-07）——空构成独立用例（接受现实口径）**：
+
+| # | 发次（params） | 期望（实测裁决） | 实测 | 判定 |
+|---|---|---|---|---|
+| 17 | deploy `red:[]` vs `blue:[militia×5]` lane60 mt100 | **合法布阵**：alive_red 0 / units 5 / hash `0xf5f1b5a28609daf0`；outcome 立即灭绝冻结 blue@0、final==deploy | 全部命中（`CHK-17/17b/17c/17d`） | PASS |
+| 18 | deploy `red:[] blue:[]` 同参 | **合法空局**：units 0 / hash `0xa6c66902e818cd64`；outcome draw@0、final==deploy | 全部命中（`CHK-18/18b/18c/18d`） | PASS |
+
+- 裁决依据：与 sim 层空局语义一致（T002 黄金锚① = 空局先例）；缺字段（键缺失）才是
+  -32602（发 1 同族）。任务卡口径修正披露见 `taskset/t020-assertion-suite.md` 范围内节；
+  审核出处 `review-plan-code-reviewer.md` P1-2。
 
 ## 4. 锚值清单与源指针
 
@@ -114,6 +127,8 @@ curl -s -H 'Content-Type: application/json' \
 | H_F 混编 seed2026 lane100 t3 1800t | `0x185fe8c22adeec36` | 本卡新锚（PIT-M-002 占位→实测→回填） |
 | 跨线程 900t（默认构成） | `0x7fbb5bd7e46ef448` | 本卡实测（断言 5 detail） |
 | G 越限 2000t（默认构成） | `0xa63d948723f692d1` | 本卡实测（断言 9 / 矩阵 G） |
+| 空红侧布阵 tick0（militia5 对侧） | `0xf5f1b5a28609daf0` | 本卡实测（P1-2 整改 CHK-17，== final_hash 灭绝冻结@0） |
+| 双侧空布阵 tick0 | `0xa6c66902e818cd64` | 本卡实测（P1-2 整改 CHK-18，== final_hash draw@0） |
 
 ## 5. 语义注（D1-8「冻结语义」的实证口径）
 

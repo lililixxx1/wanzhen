@@ -1,0 +1,62 @@
+== T022 design candidate measurement 2026-10-07 00:34:47 ==
+== host exe: ../../../../target/release/host.exe, BRP port 15705 ==
+== host pid 433 ==
+== port ready ==
+
+===== ch1a-sw10-vs-mi30-mt3600 (seed=42 lane=60 max_ticks=3600) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"swordsman","count":10}],"blue":[{"kind":"militia","count":30}],"lane_len_m":60,"max_ticks":3600}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x583ddfef1fc446cf","tick":0,"units":40}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x583ddfef1fc446cf","tick":0,"units":40}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":7,"end_tick":2474,"final_hash":"0xa48ce79b1e83e105","winner":"red"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":7,"end_tick":2474,"final_hash":"0xa48ce79b1e83e105","winner":"red"}}
+
+===== ch1b-sw8-vs-mi24-mt3600 (seed=42 lane=60 max_ticks=3600) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"swordsman","count":8}],"blue":[{"kind":"militia","count":24}],"lane_len_m":60,"max_ticks":3600}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":24,"alive_red":8,"deploy_hash":"0x231d378dbbbb6f52","tick":0,"units":32}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":24,"alive_red":8,"deploy_hash":"0x231d378dbbbb6f52","tick":0,"units":32}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":5,"end_tick":2024,"final_hash":"0xa3a5c9f8e1d41cd5","winner":"red"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":5,"end_tick":2024,"final_hash":"0xa3a5c9f8e1d41cd5","winner":"red"}}
+
+===== ch1c-pi10-vs-mi30-mt3600 (seed=42 lane=60 max_ticks=3600) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"pikeman","count":10}],"blue":[{"kind":"militia","count":30}],"lane_len_m":60,"max_ticks":3600}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x031ed7e1fa4955fd","tick":0,"units":40}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x031ed7e1fa4955fd","tick":0,"units":40}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":3,"alive_red":4,"end_tick":3600,"final_hash":"0xe9bfbb8b819f1645","winner":"red"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":3,"alive_red":4,"end_tick":3600,"final_hash":"0xe9bfbb8b819f1645","winner":"red"}}
+
+===== ch2a-hk10-vs-mi30-mt1800 (seed=42 lane=60 max_ticks=1800) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"heavyknight","count":10}],"blue":[{"kind":"militia","count":30}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x6a96df6f3c94e741","tick":0,"units":40}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":10,"deploy_hash":"0x6a96df6f3c94e741","tick":0,"units":40}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":24,"alive_red":6,"end_tick":1800,"final_hash":"0x3247aae383d5d5bd","winner":"blue"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":24,"alive_red":6,"end_tick":1800,"final_hash":"0x3247aae383d5d5bd","winner":"blue"}}
+
+===== ch2b-hk10-vs-mi20-mt1800 (seed=42 lane=60 max_ticks=1800) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"heavyknight","count":10}],"blue":[{"kind":"militia","count":20}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":20,"alive_red":10,"deploy_hash":"0x66d5fe23ab09e626","tick":0,"units":30}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":20,"alive_red":10,"deploy_hash":"0x66d5fe23ab09e626","tick":0,"units":30}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":14,"alive_red":6,"end_tick":1800,"final_hash":"0xb3215593b1fbcde5","winner":"red"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":14,"alive_red":6,"end_tick":1800,"final_hash":"0xb3215593b1fbcde5","winner":"red"}}
+
+===== ch2c-hk6-vs-mi18-mt1800 (seed=42 lane=60 max_ticks=1800) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"heavyknight","count":6}],"blue":[{"kind":"militia","count":18}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":18,"alive_red":6,"deploy_hash":"0xd0eaf1aabd8a9cde","tick":0,"units":24}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":18,"alive_red":6,"deploy_hash":"0xd0eaf1aabd8a9cde","tick":0,"units":24}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":12,"alive_red":2,"end_tick":1800,"final_hash":"0x73a51ebc76e8b9a7","winner":"blue"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":12,"alive_red":2,"end_tick":1800,"final_hash":"0x73a51ebc76e8b9a7","winner":"blue"}}
+
+===== ch3a-sh20-vs-mi60-mt1800 (seed=42 lane=60 max_ticks=1800) =====
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"shieldman","count":20}],"blue":[{"kind":"militia","count":60}],"lane_len_m":60,"max_ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":60,"alive_red":20,"deploy_hash":"0x9a926533cbf1d445","tick":0,"units":80}}
+DEPLOY: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":60,"alive_red":20,"deploy_hash":"0x9a926533cbf1d445","tick":0,"units":80}}
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":56,"alive_red":15,"end_tick":1800,"final_hash":"0x81166458a5437951","winner":"blue"}}
+OUTCOME: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":56,"alive_red":15,"end_tick":1800,"final_hash":"0x81166458a5437951","winner":"blue"}}
+
+== done, host stopped ==

@@ -1,6 +1,6 @@
-== T020 error paths 2026-10-06 23:58:04 ==
+== T020 error paths 2026-10-07 00:45:27 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 2927 ==
+== host pid 1582 ==
 [CHK-00-port-ready] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
@@ -52,6 +52,22 @@
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
 [CHK-15-still-undeployed-4001] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[],"blue":[{"kind":"militia","count":5}],"lane_len_m":60,"max_ticks":100}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":0,"deploy_hash":"0xf5f1b5a28609daf0","tick":0,"units":5}}
+[CHK-17-empty-red-deploy-ok] PASS
+[CHK-17b-empty-red-deploy-hash] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":0,"end_tick":0,"final_hash":"0xf5f1b5a28609daf0","winner":"blue"}}
+[CHK-17c-empty-red-immediate-blue] PASS
+[CHK-17d-empty-red-final-eq-deploy] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[],"blue":[],"lane_len_m":60,"max_ticks":100}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":0,"deploy_hash":"0xa6c66902e818cd64","tick":0,"units":0}}
+[CHK-18-both-empty-deploy-ok] PASS
+[CHK-18b-both-empty-hash] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":0,"end_tick":0,"final_hash":"0xa6c66902e818cd64","winner":"draw"}}
+[CHK-18c-both-empty-draw] PASS
+[CHK-18d-both-empty-final-eq-deploy] PASS
 [CHK-16-process-alive] PASS
-== SUMMARY: PASS=22 FAIL=0 ==
+== SUMMARY: PASS=30 FAIL=0 ==
 == SCRIPT_EXIT=0 ==
