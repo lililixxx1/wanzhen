@@ -25,7 +25,7 @@
 
 ### Important（置信度 100）
 
-**收获证据仍含机器绝对路径与本机环境路径**——window/pre-process.txt、post-process.txt、pre/post-process-supp.txt 完整进程表含 `C:\`/`D:\` 安装路径及 `C:\Users\ADMINI~1`；window/events.txt(-supp) 含隔离树绝对路径；attempt-1 留档与 T019 冒烟副本亦有。建议统一占位符 + 全提交扫描确认零残留。
+**收获证据仍含机器绝对路径与本机环境路径**——window/pre-process.txt、post-process.txt、pre/post-process-supp.txt 完整进程表含 `C:\`/`<d-drive>\` 安装路径及 `<home>`；window/events.txt(-supp) 含隔离树绝对路径；attempt-1 留档与 T019 冒烟副本亦有。建议统一占位符 + 全提交扫描确认零残留。
 
 ### Minor
 
@@ -42,6 +42,6 @@
 ## Lead 处置记录（2026-10-07，同日闭环）
 
 - 报告归档：本档（审核器最终消息逐字转录）。
-- **P1（路径残留）整改**：成因 = 首轮清洗只扫 `C:\Users\Administrator` 长名形态，漏 **`ADMINI~1` 8.3 短名**与 **`D:\` 盘进程路径**两形态（进程表快照含系统工具安装路径）。整改 = 全形态扩展扫描（六模式：长短名 × 正反斜杠 + D:\software + D:\ 根 + 树路径）+ 字节级前缀替换（ ADMINI~1/Administrator → <home>、D:\software\Sysinternals → <sysinternals>、D:\ → <d-drive>\ 等），7 档清洗（window 四快照 + attempt1 两快照 + m0 审核档历史残留），复扫六形态零残留。工具沉淀 `tools/sweep_paths.py`（Write 工具落盘执行——heredoc 传输层吃反斜杠层的坑第三次实测，记忆已升级）。**t014/dispatches/wp-a.md 的 `<桌面>\ccc\trees\...` 系 T014 审核通过的历史脱敏方案**（前缀占位 + 相对段保留，无用户名/盘符）——保留不动，此处留痕。
+- **P1（路径残留）整改**：成因 = 首轮清洗只扫 `<home>` 长名形态，漏 **`ADMINI~1` 8.3 短名**与 **`<d-drive>\` 盘进程路径**两形态（进程表快照含系统工具安装路径）。整改 = 全形态扩展扫描（六模式：长短名 × 正反斜杠 + <d-drive>\software + <d-drive>\ 根 + 树路径）+ 字节级前缀替换（ ADMINI~1/Administrator → <home>、<sysinternals> → <sysinternals>、<d-drive>\ → <d-drive>\ 等），7 档清洗（window 四快照 + attempt1 两快照 + m0 审核档历史残留），复扫六形态零残留。工具沉淀 `tools/sweep_paths.py`（Write 工具落盘执行——heredoc 传输层吃反斜杠层的坑第三次实测，记忆已升级）。**t014/dispatches/wp-a.md 的 `<桌面>\ccc\trees\...` 系 T014 审核通过的历史脱敏方案**（前缀占位 + 相对段保留，无用户名/盘符）——保留不动，此处留痕。
 - **遗漏项处置（负例证据）**：如实注记——负例语义由源码路径（main.rs 值域校验段）+ 审核者当前构建动态复跑 exit 2 双证；测量件指纹口径（env.md「档存测量件」）下，收获后主仓重建件与测量件哈希天然不同（同源构建非位级可复现已档 runs/build-reproducibility-note.txt），不构成判定证据缺口。留痕即闭环。
 - **整改闭环，T024 转通过。**
