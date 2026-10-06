@@ -1,0 +1,21 @@
+== T024 C-1 supplement start 2026-10-07 06:29:15 ==
+ff4b990f6a102639b8562571b12c9c2d077ff7637a5b1c23b6f2c21fad6767c5 */c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/../../../target/release/render-spike.exe
+window-2 pre-check OK
+sampler started pid=1714 -> window/load-samples-supp.csv
+== SUPP r2 START 06:29:21 ==
+== SUPP r2 END rc=0 wall=72s ==
+== GAP 30s ==
+== SUPP r3 START 06:31:03 ==
+== SUPP r3 END rc=0 wall=71s ==
+sampler stopped pid=1714
+sampler coverage OK: 10 lines
+post-check rustc/cargo/host/render-spike zero: OK
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/c1-supp-r2/r2/out/t10000/frames.csv (299969 bytes)
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/c1-supp-r3/r3/out/t10000/frames.csv (297449 bytes)
+== WINDOW-2 CLOSED 2026-10-07 06:32:20 ==
+== POST-WINDOW summaries (supp) ==
+summary written: <trees-root>/t024-a/docs/evidence/t024/summary-c1-supp-r2.md
+summarize r2 REAL_EXIT=3 (3 = 缺 1k/2k/5k 档预期)
+summary written: <trees-root>/t024-a/docs/evidence/t024/summary-c1-supp-r3.md
+summarize r3 REAL_EXIT=3 (3 = 缺 1k/2k/5k 档预期)
+== C-1 supplement done rc_r2=0 rc_r3=0 post_check=1 ==

@@ -156,6 +156,9 @@ impl Plugin for SpectatePlugin {
             // rebuild_on_deploy 首帧 ResMut 校验失败 panic，宿主退出；
             // PresentationAssets 由 setup_assets（Startup）经 Commands 插入）。
             .init_resource::<crate::present::PresentationRoot>()
+            // T024/D1：帧采集状态（缺省 = 未启用零开销；`--frame-capture` 时
+            // main 在插件装配后 insert_resource 覆盖为启用态）。
+            .init_resource::<crate::frame_capture::FrameCaptureState>()
             // Startup：表现层共享资产（6 mesh × 2 材质）+ HUD 三行文本。
             .add_systems(Startup, (present::setup_assets, hud::spawn_hud))
             // Update 定序（.chain()）：驱动（模拟推进）→ 表现重建（generation
@@ -169,7 +172,10 @@ impl Plugin for SpectatePlugin {
                     hud::update_hud,
                 )
                     .chain(),
-            );
+            )
+            // T024/D1：帧采集系统（独立于表现链——只读 Time/HostedGame，
+            // 未启用时立即返回零开销）。
+            .add_systems(Update, crate::frame_capture::frame_capture_system);
     }
 }
 

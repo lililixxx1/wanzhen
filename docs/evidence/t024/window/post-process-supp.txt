@@ -1,0 +1,243 @@
+== T024 window-2 process snapshot [post] 2026-10-07 06:32:15 ==
+== full process table (Id,ProcessName,CPU,WorkingSet64,Path) ==
+
+   Id ProcessName                               CPU WorkingSet64 Path                                                                                                                           
+   -- -----------                               --- ------------ ----                                                                                                                           
+ 5412 ABService                             22.3125      8859648 D:\Downloads\Archives\AOMEI_Backupper_8.4.0_Portable\ABTechPlus-8.4.0-Multi-CN-Portable\AOMEIBackupper\ABService.exe           
+ 5160 acrotray                             1.328125     12730368 D:\Program Files (x86)\Adobe\Acrobat 11.0\Acrobat\AcroTray.exe                                                                 
+11428 AdAppMgrSvc                          2.265625     11599872 C:\Program Files (x86)\Autodesk\Autodesk Desktop App\AdAppMgrSvc.exe                                                           
+ 7844 aria2-next                            20.5625     14528512 C:\Program Files\Rayburst\aria2-next.exe                                                                                       
+13700 audiodg                                2.3125     13352960 C:\Windows\system32\AUDIODG.EXE                                                                                                
+15480 AutoHotkey64                         7.296875     23408640 D:\software\AHK\v2\AutoHotkey64.exe                                                                                            
+16276 AutoHotkey64                           7.3125     10256384 D:\software\AHK\v2\AutoHotkey64.exe                                                                                            
+ 2052 bash                                 0.015625      5959680 D:\software\Git\bin\bash.exe                                                                                                   
+16728 bash                                 0.546875      9007104 D:\software\Git\usr\bin\bash.exe                                                                                               
+22848 bash                                  0.90625     10674176 D:\software\Git\bin\..\usr\bin\bash.exe                                                                                        
+25416 bash                                 0.015625      7364608 D:\software\Git\usr\bin\bash.exe                                                                                               
+ 9548 bitsumsessionagent                   0.546875       827392 C:\Program Files\Process Lasso\bitsumsessionagent.exe                                                                          
+18264 BrYNSvc                              0.515625      3637248 C:\Program Files (x86)\Browny02\BrYNSvc.exe                                                                                    
+ 3748 conhost                               0.03125     11808768 C:\Windows\system32\conhost.exe                                                                                                
+ 6944 conhost                              0.984375       929792 C:\Windows\system32\conhost.exe                                                                                                
+ 7056 conhost                                1.0625       868352 C:\Windows\system32\conhost.exe                                                                                                
+11872 conhost                              0.078125     14065664 C:\Windows\system32\conhost.exe                                                                                                
+15540 conhost                              19.84375       765952 C:\Windows\system32\conhost.exe                                                                                                
+15808 conhost                              0.015625       503808 C:\Windows\system32\conhost.exe                                                                                                
+17016 conhost                              0.015625     12017664 C:\Windows\system32\conhost.exe                                                                                                
+17460 conhost                              0.015625       319488 C:\Windows\system32\conhost.exe                                                                                                
+21012 conhost                              0.015625       319488 C:\Windows\system32\conhost.exe                                                                                                
+22432 conhost                                     0      1589248 C:\Windows\system32\conhost.exe                                                                                                
+24412 conhost                              0.015625     11812864 C:\Windows\system32\conhost.exe                                                                                                
+25556 conhost                              0.015625     12005376 C:\Windows\system32\conhost.exe                                                                                                
+ 4336 crashpad_handler                     0.015625      6049792 C:\Program Files\Ant Group\PayGuard\0.4.0.6001\crashpad_handler.exe                                                            
+ 6152 crashpad_handler                     0.015625       901120 C:\Program Files\Netease\GameViewer\crashpad_handler.exe                                                                       
+ 7188 crashpad_handler                            0      1060864 C:\Program Files\Netease\GameViewer\bin\crashpad_handler.exe                                                                   
+ 8524 crashpad_handler                            0      1040384 C:\Program Files\Netease\GameViewer\bin\crashpad_handler.exe                                                                   
+14852 crashpad_handler                      0.03125      1024000 C:\Program Files\Netease\GameViewer\bin\crashpad_handler.exe                                                                   
+  836 csrss                                 2.65625      2600960                                                                                                                                
+  936 csrss                                   849.5      4218880                                                                                                                                
+ 9780 ctfmon                                75.3125     23764992 C:\Windows\system32\ctfmon.exe                                                                                                 
+ 7540 dllhost                                0.1875      8839168 C:\Windows\system32\DllHost.exe                                                                                                
+10448 dllhost                              0.078125      7180288 C:\Windows\system32\DllHost.exe                                                                                                
+11732 dllhost                              12.03125      7462912 C:\Windows\system32\DllHost.exe                                                                                                
+12040 dopus                              1554.15625    134819840 C:\Program Files\GPSoftware\Directory Opus\dopus.exe                                                                           
+ 7440 dopusrt                                     0       233472 C:\Program Files\GPSoftware\Directory Opus\dopusrt.exe                                                                         
+15240 dopusrt                              0.109375       610304 C:\Program Files\GPSoftware\Directory Opus\dopusrt.exe                                                                         
+ 1848 dwm                                   2241.25     73248768 C:\Windows\system32\dwm.exe                                                                                                    
+ 5012 Everything                            0.03125       909312 C:\Program Files\Everything\Everything.exe                                                                                     
+10036 explorer                             2431.375    174243840 C:\Windows\Explorer.EXE                                                                                                        
+15744 flpidx                               5.265625      5046272 C:\Program Files\Mythicsoft\FileLocator Pro\flpidx.exe                                                                         
+16048 flpidx                             1602.15625    201555968 C:\Program Files\Mythicsoft\FileLocator Pro\flpidx.exe                                                                         
+ 5256 FNPLicensingService                         8      5971968 C:\Program Files (x86)\Common Files\Macrovision Shared\FlexNet Publisher\FNPLicensingService.exe                               
+ 4736 FNPLicensingService64                6.484375      6889472 C:\Program Files\Common Files\Macrovision Shared\FlexNet Publisher\FNPLicensingService64.exe                                   
+ 1068 fontdrvhost                           0.03125       143360 C:\Windows\system32\fontdrvhost.exe                                                                                            
+ 1436 fontdrvhost                          41.84375     42340352 C:\Windows\system32\fontdrvhost.exe                                                                                            
+14356 GameViewer                                4.5     36196352 C:\Program Files\Netease\GameViewer\bin\GameViewer.exe                                                                         
+ 7072 GameViewerHealthd                    1.359375      3821568 C:\Program Files\Netease\GameViewer\bin\GameViewerHealthd.exe                                                                  
+ 6860 GameViewerServer                    295.46875     58703872 C:\Program Files\Netease\GameViewer\bin\GameViewerServer.exe                                                                   
+ 5244 GameViewerService                    0.640625      3305472 C:\Program Files\Netease\GameViewer\GameViewerService.exe                                                                      
+ 5224 GigabyteUpdateService                 0.09375       819200 C:\Windows\system32\GigabyteUpdateService.exe                                                                                  
+17812 HipsDaemon                        2431.796875    216268800 C:\Program Files\Huorong\Sysdiag\bin\HipsDaemon.exe                                                                            
+ 3920 HipsTray                            73.640625     14639104 C:\Program Files\Huorong\Sysdiag\bin\HipsTray.exe                                                                              
+    0 Idle                                                  8192                                                                                                                                
+ 5108 jhi_service                                 0       819200 C:\Windows\System32\DriverStore\FileRepository\dal.inf_amd64_8ff8e67ced23ab98\jhi_service.exe                                  
+ 4132 Kingdee.BOS.DeskClient.WinService     1.09375      7581696 C:\Program Files (x86)\Kingdee\K3Cloud\DeskClient\WinService\Kingdee.BOS.DeskClient.WinService.exe                             
+ 5888 launcher-x64                         0.015625       835584 D:\Downloads\ABDM\Compressed\ardisk-setup\out\launcher-x64.exe                                                                 
+ 6852 lmgrd                                 0.03125       806912 C:\SolidWorks_Flexnet_Server\lmgrd.exe                                                                                         
+ 7148 lmgrd                                  0.1875      1822720 C:\SolidWorks_Flexnet_Server\lmgrd.exe                                                                                         
+ 1020 LsaIso                               0.109375      1585152                                                                                                                                
+  108 lsass                                100.5625     22003712                                                                                                                                
+ 4856 mDNSResponder                        0.328125      3735552 C:\Program Files\Bonjour\mDNSResponder.exe                                                                                     
+10744 MoUsoCoreWorker                      5.515625     32182272 C:\Windows\System32\mousocoreworker.exe                                                                                        
+ 1544 msedgewebview2                       0.046875      3473408 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+ 1880 msedgewebview2                      2273.4375     23740416 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+ 1972 msedgewebview2                       0.390625     21622784 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+15388 msedgewebview2                       0.546875      7086080 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+15700 msedgewebview2                         4.0625     47702016 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+15728 msedgewebview2                       0.109375      2510848 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+16128 msedgewebview2                     1185.90625     14327808 C:\Program Files (x86)\Microsoft\EdgeWebView\Application\154.0.4258.53\msedgewebview2.exe                                      
+18160 node                                 1.421875     90877952 D:\software\NodeJs\node.exe                                                                                                    
+21032 node                                   1.5625     90656768 D:\software\NodeJs\node.exe                                                                                                    
+ 3056 NVDisplay.Container                   1.03125      8069120 C:\Windows\System32\DriverStore\FileRepository\nv_dispig.inf_amd64_0905d5f86c27c241\Display.NvContainer\NVDisplay.Container.exe
+ 3724 NVDisplay.Container                 36.421875     44744704 C:\Windows\System32\DriverStore\FileRepository\nv_dispig.inf_amd64_0905d5f86c27c241\Display.NvContainer\NVDisplay.Container.exe
+ 2040 obscura                                     0      6533120 <home>\obscura\obscura.exe                                                                                     
+ 3472 obscura                              0.015625      6524928 <home>\obscura\obscura.exe                                                                                     
+ 4584 OfficeClickToRun                      2.96875     37732352 C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe                                                 
+21760 PayGuard                            43.578125     60022784 C:\Program Files\Ant Group\PayGuard\0.4.0.6001\PayGuard.exe                                                                    
+18344 powershell                            0.34375     70578176 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe                                                                      
+ 5580 ProcessGovernor                     319.28125      8855552 C:\Program Files\Process Lasso\processgovernor.exe                                                                             
+ 5348 ProcessLasso                        488.71875     30457856 C:\Program Files\Process Lasso\ProcessLasso.exe                                                                                
+ 1380 promecefpluginhost                    34.3125     71069696 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\promecefpluginhost.exe                           
+11204 promecefpluginhost                    5.09375     22020096 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\promecefpluginhost.exe                           
+18100 pythonw                            341.140625     10952704 <home>\AppData\Local\Programs\Python\Python314\pythonw.exe                                                     
+15396 rayburst                             14.96875     39555072 C:\Program Files\Rayburst\rayburst.exe                                                                                         
+  156 Registry                                 4.75     90402816                                                                                                                                
+11532 RuntimeBroker                         0.71875     22114304 C:\Windows\System32\RuntimeBroker.exe                                                                                          
+12124 RuntimeBroker                        3.046875     20729856 C:\Windows\System32\RuntimeBroker.exe                                                                                          
+12316 RuntimeBroker                          4.8125     16166912 C:\Windows\System32\RuntimeBroker.exe                                                                                          
+16436 RuntimeBroker                        2.671875     25206784 C:\Windows\System32\RuntimeBroker.exe                                                                                          
+11968 SearchApp                            8.234375    155635712 C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe                                                     
+ 7964 SearchTask                           3.484375     29470720 C:\Program Files\Mythicsoft\FileLocator Pro\SearchTask.exe                                                                     
+19684 SearchTask                           11.71875     69607424 C:\Program Files\Mythicsoft\FileLocator Pro\SearchTask.exe                                                                     
+   88 Secure System                               0     74473472                                                                                                                                
+ 1000 services                            26.609375      8626176                                                                                                                                
+16024 ShellExperienceHost                   20.9375    105771008 C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2txyewy\ShellExperienceHost.exe                                                
+ 9412 sihost                              12.609375     22106112 C:\Windows\system32\sihost.exe                                                                                                 
+  572 smss                                  0.09375        32768                                                                                                                                
+ 4028 SogouCloud                         161.546875     12840960 <home>\SogouInput\8.3.0.9617\SogouCloud.exe                                                                    
+16424 SogouImeLoader                       0.046875       884736 C:\Windows\SysWOW64\IME\SogouPY\SogouImeLoader.exe                                                                             
+ 4564 spoolsv                              7.703125     30830592 C:\Windows\System32\spoolsv.exe                                                                                                
+ 5516 sqlbrowser                           0.046875       765952 C:\Program Files (x86)\Microsoft SQL Server\90\Shared\sqlbrowser.exe                                                           
+ 5304 sqlservr                          3668.265625     70664192 C:\ProgramData\SOLIDWORKS Electrical\MSSQL16.TEW_SQLEXPRESS\MSSQL\Binn\sqlservr.exe                                            
+ 5420 sqlwriter                            0.015625      2035712 C:\Program Files\Microsoft SQL Server\90\Shared\sqlwriter.exe                                                                  
+ 5404 srvstub                                     0       737280 C:\Program Files\Process Lasso\srvstub.exe                                                                                     
+11436 StartMenuExperienceHost                6.5625     67559424 C:\Windows\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe                      
+  964 svchost                               0.09375      4542464                                                                                                                                
+ 1040 svchost                              26.90625     21880832 C:\Windows\system32\svchost.exe                                                                                                
+ 1224 svchost                             28.515625     16822272 C:\Windows\system32\svchost.exe                                                                                                
+ 1272 svchost                              7.203125      4489216 C:\Windows\system32\svchost.exe                                                                                                
+ 1552 svchost                               0.15625      1585152 C:\Windows\system32\svchost.exe                                                                                                
+ 1580 svchost                               0.03125      8847360 C:\Windows\System32\svchost.exe                                                                                                
+ 1608 svchost                             31.796875     14405632 C:\Windows\System32\svchost.exe                                                                                                
+ 1628 svchost                              0.046875      5271552 C:\Windows\System32\svchost.exe                                                                                                
+ 1636 svchost                                0.1875      4861952 C:\Windows\system32\svchost.exe                                                                                                
+ 1716 svchost                                1.4375      6512640 C:\Windows\system32\svchost.exe                                                                                                
+ 1728 svchost                              0.015625      1986560 C:\Windows\system32\svchost.exe                                                                                                
+ 1772 svchost                              0.046875      2736128 C:\Windows\system32\svchost.exe                                                                                                
+ 1784 svchost                              4.421875      4427776 C:\Windows\system32\svchost.exe                                                                                                
+ 1792 svchost                              0.046875      1933312 C:\Windows\System32\svchost.exe                                                                                                
+ 2072 svchost                              3.078125      9609216 C:\Windows\System32\svchost.exe                                                                                                
+ 2140 svchost                                     7     10362880 C:\Windows\system32\svchost.exe                                                                                                
+ 2224 svchost                              2.390625      5627904 C:\Windows\system32\svchost.exe                                                                                                
+ 2232 svchost                              0.078125      2232320 C:\Windows\system32\svchost.exe                                                                                                
+ 2280 svchost                               0.28125      6811648 C:\Windows\System32\svchost.exe                                                                                                
+ 2376 svchost                               1.59375      5824512 C:\Windows\system32\svchost.exe                                                                                                
+ 2480 svchost                                 1.375      2433024 C:\Windows\system32\svchost.exe                                                                                                
+ 2544 svchost                                2.0625      4571136 C:\Windows\system32\svchost.exe                                                                                                
+ 2624 svchost                              0.296875      3391488 C:\Windows\system32\svchost.exe                                                                                                
+ 2960 svchost                             30.734375      6336512 C:\Windows\system32\svchost.exe                                                                                                
+ 3008 svchost                              0.015625      1880064 C:\Windows\system32\svchost.exe                                                                                                
+ 3132 svchost                              3.078125     14061568 C:\Windows\system32\svchost.exe                                                                                                
+ 3156 svchost                              0.015625      1900544 C:\Windows\system32\svchost.exe                                                                                                
+ 3256 svchost                                1.8125      1736704 C:\Windows\System32\svchost.exe                                                                                                
+ 3268 svchost                              0.078125      4579328 C:\Windows\system32\svchost.exe                                                                                                
+ 3316 svchost                             10.328125     22253568 C:\Windows\system32\svchost.exe                                                                                                
+ 3348 svchost                              3.140625      5808128 C:\Windows\system32\svchost.exe                                                                                                
+ 3392 svchost                              0.046875      5365760 C:\Windows\system32\svchost.exe                                                                                                
+ 3436 svchost                              1.203125      5173248 C:\Windows\System32\svchost.exe                                                                                                
+ 3448 svchost                                   1.5      8802304 C:\Windows\system32\svchost.exe                                                                                                
+ 3488 svchost                               0.03125      2240512 C:\Windows\System32\svchost.exe                                                                                                
+ 3576 svchost                              0.015625      1617920 C:\Windows\System32\svchost.exe                                                                                                
+ 3772 svchost                             76.140625     14307328 C:\Windows\system32\svchost.exe                                                                                                
+ 4088 svchost                                3.3125     10706944 C:\Windows\System32\svchost.exe                                                                                                
+ 4268 svchost                              0.171875      4788224 C:\Windows\system32\svchost.exe                                                                                                
+ 4284 svchost                              0.015625      3244032 C:\Windows\System32\svchost.exe                                                                                                
+ 4292 svchost                                5.4375     13103104 C:\Windows\system32\svchost.exe                                                                                                
+ 4372 svchost                               0.21875      3760128 C:\Windows\System32\svchost.exe                                                                                                
+ 4460 svchost                              0.171875      6434816 C:\Windows\System32\svchost.exe                                                                                                
+ 4652 svchost                              0.265625      6774784 C:\Windows\System32\svchost.exe                                                                                                
+ 4800 svchost                             10.359375      3092480 C:\Windows\System32\svchost.exe                                                                                                
+ 4864 svchost                              0.015625      1536000 C:\Windows\system32\svchost.exe                                                                                                
+ 4872 svchost                                1.3125     10539008 C:\Windows\system32\svchost.exe                                                                                                
+ 4992 svchost                             29.703125     45215744 C:\Windows\System32\svchost.exe                                                                                                
+ 5212 svchost                                     0      1740800 C:\Windows\system32\svchost.exe                                                                                                
+ 5232 svchost                              0.078125     14770176 C:\Windows\system32\svchost.exe                                                                                                
+ 5376 svchost                                 0.125      3153920 C:\Windows\System32\svchost.exe                                                                                                
+ 5588 svchost                               0.09375      2293760 C:\Windows\system32\svchost.exe                                                                                                
+ 5704 svchost                              0.203125      4124672 C:\Windows\system32\svchost.exe                                                                                                
+ 5908 svchost                              0.046875      5120000 C:\Windows\System32\svchost.exe                                                                                                
+ 5992 svchost                                0.1875      5832704 C:\Windows\System32\svchost.exe                                                                                                
+ 7020 svchost                               3.53125     28479488 C:\Windows\system32\svchost.exe                                                                                                
+ 7356 svchost                              0.015625     12566528                                                                                                                                
+ 7832 svchost                              0.140625      4599808 C:\Windows\system32\svchost.exe                                                                                                
+ 8744 svchost                                3.5625      4415488 C:\Windows\system32\svchost.exe                                                                                                
+ 9132 svchost                               0.03125      3776512 C:\Windows\system32\svchost.exe                                                                                                
+ 9436 svchost                                0.4375     10850304 C:\Windows\system32\svchost.exe                                                                                                
+ 9472 svchost                               4.09375     28565504 C:\Windows\system32\svchost.exe                                                                                                
+ 9676 svchost                              2.109375     11743232 C:\Windows\system32\svchost.exe                                                                                                
+ 9840 svchost                              0.046875     10166272 C:\Windows\system32\svchost.exe                                                                                                
+ 9916 svchost                               0.21875      9383936 C:\Windows\system32\svchost.exe                                                                                                
+10372 svchost                              0.015625      6930432 C:\Windows\System32\svchost.exe                                                                                                
+10528 svchost                              0.078125      4755456 C:\Windows\System32\svchost.exe                                                                                                
+10676 svchost                                 0.625      8384512 C:\Windows\system32\svchost.exe                                                                                                
+10948 svchost                                0.3125      7675904 C:\Windows\System32\svchost.exe                                                                                                
+11148 svchost                            1690.09375     26284032 C:\Windows\system32\svchost.exe                                                                                                
+11220 svchost                              0.015625       913408 C:\Windows\System32\svchost.exe                                                                                                
+11360 svchost                                0.9375      6287360 C:\Windows\system32\svchost.exe                                                                                                
+11608 svchost                               0.21875     16723968 C:\Windows\System32\svchost.exe                                                                                                
+15628 svchost                                 0.375      2306048 C:\Windows\system32\svchost.exe                                                                                                
+17952 svchost                                0.0625      3436544 C:\Windows\system32\svchost.exe                                                                                                
+18860 svchost                                0.0625      8679424 C:\Windows\system32\svchost.exe                                                                                                
+21924 svchost                               0.03125      3870720 C:\Windows\system32\svchost.exe                                                                                                
+25488 svchost                               0.03125     12349440 C:\Windows\System32\svchost.exe                                                                                                
+ 7204 sw_d                                   0.9375      4091904 C:\SolidWorks_Flexnet_Server\SW_D.exe                                                                                          
+ 5792 SWVisualize.Queue.Server            10.578125     19054592 D:\Program Files\SOLIDWORKS Corp\SOLIDWORKS Visualize\SWVisualize.Queue.Server.exe                                             
+    4 System                             2959.40625       135168                                                                                                                                
+15436 SystemSettingsBroker                 0.203125      7286784 C:\Windows\System32\SystemSettingsBroker.exe                                                                                   
+ 8960 TabTip                                5.78125      8376320 C:\Program Files\Common Files\microsoft shared\ink\TabTip.exe                                                                  
+ 9580 taskhostw                            5.796875     10199040 C:\Windows\system32\taskhostw.exe                                                                                              
+21320 taskhostw                             0.15625     14200832 C:\Windows\system32\taskhostw.exe                                                                                              
+22780 taskhostw                            0.015625      8790016 C:\Windows\system32\taskhostw.exe                                                                                              
+12464 TextInputHost                       20.109375     59527168 C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\TextInputHost.exe                                              
+10336 TrafficMonitor                      599.96875     35323904 D:\Downloads\ABDM\Compressed\TrafficMonitor_V1.86_x64\TrafficMonitor.exe                                                       
+12088 TSVNCache                           22.015625      3964928 D:\software\TortoiesSVN\bin\TSVNCache.exe                                                                                      
+ 2888 uTools                                30.4375    223662080 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+ 9648 uTools                                0.78125    124481536 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+13916 uTools                                4.84375    123981824 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+21104 uTools                               0.296875     55312384 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+21916 uTools                             179.859375     76750848 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+22736 uTools                               0.171875    105914368 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+23672 uTools                                0.28125    105193472 <home>\AppData\Local\Programs\utools\uTools.exe                                                                
+  928 wininit                               0.03125      1003520                                                                                                                                
+ 1344 winlogon                             0.390625      2953216 C:\Windows\system32\winlogon.exe                                                                                               
+ 8752 WmiPrvSE                                 0.25     15560704 C:\Windows\system32\wbem\wmiprvse.exe                                                                                          
+19676 WmiPrvSE                             1.296875     42827776 C:\Windows\system32\wbem\wmiprvse.exe                                                                                          
+22964 WmiPrvSE                             0.984375     15015936 C:\Windows\system32\wbem\wmiprvse.exe                                                                                          
+ 3896 wps                                 64.578125     43085824 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\wps.exe                                          
+ 9152 wps                                 13.921875    138551296 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\wps.exe                                          
+ 9808 wps                                   223.875    115867648 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\wps.exe                                          
+11640 wps                                   0.40625     67325952 C:\Users\ADMINI~1\AppData\Local\Kingsoft\WPSOFF~1\1210~1.284\office6\wps.exe                                                   
+18948 wps                                  2.265625     93462528 C:\Users\ADMINI~1\AppData\Local\Kingsoft\WPSOFF~1\1210~1.284\office6\wps.exe                                                   
+25148 wps                                  0.265625     42233856 C:\Users\ADMINI~1\AppData\Local\Kingsoft\WPSOFF~1\1210~1.284\office6\wps.exe                                                   
+ 6752 wpscloudsvr                         27.578125      5120000 <home>\AppData\Local\Kingsoft\WPS Office\12.1.0.28488\office6\wpscloudsvr.exe                                  
+15756 wsctrlsvc                              0.0625      2637824                                                                                                                                
+ 1076 WUDFHost                               5.3125     12550144 C:\Windows\System32\WUDFHost.exe                                                                                               
+  848 ZCode                                 0.84375    161947648 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+ 3408 ZCode                              3304.34375    366473216 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+10292 ZCode                                  36.375    129294336 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+13192 ZCode                                222.8125    244465664 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+13880 ZCode                                0.734375    166993920 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+18024 ZCode                               12.546875    209801216 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+18488 ZCode                                111.4375    244674560 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+18508 ZCode                              186.953125    291090432 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+19836 ZCode                                0.046875     40632320 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+20000 ZCode                                  4.6875     59904000 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+20288 ZCode                                  0.8125    111190016 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+24528 ZCode                                   0.875    175468544 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+24860 ZCode                               399.71875    380940288 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+25528 ZCode                                 11.6875    210030592 <home>\AppData\Local\Programs\ZCode\ZCode.exe                                                                  
+
+
+
+== toolchain/load-relevant counts ==
+rustc=0 cargo=0 host=0 render-spike=0
+commit_free_G=11.7

@@ -1,0 +1,2 @@
+602b491f9467ed4fe6cc1ba1d6390504a4e87293abbe02349c1856039199f8dd *target/release/host.exe
+ff4b990f6a102639b8562571b12c9c2d077ff7637a5b1c23b6f2c21fad6767c5 *target/release/render-spike.exe

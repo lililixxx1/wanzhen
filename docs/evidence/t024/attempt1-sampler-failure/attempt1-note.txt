@@ -1,0 +1,6 @@
+T024 attempt-1 window (2026-10-07 06:16-06:19): both legs ran green (rc 0/0, captures complete)
+BUT sampler.ps1 failed to start (0 load samples recorded) -> window evidence INCOMPLETE per D5.
+Root causes (two stacked, both fixed before attempt-2):
+  1) PowerShell 5.1 reads BOM-less .ps1 as ANSI -> Chinese comments broke param-block parse.
+  2) Cmdlet parameter surfaces: Out-File needs -FilePath; Add-Content needs -Path (PS 5.1.19041).
+Attempt-1 captures archived here for the record; the window of record is attempt-2 (parent dir).

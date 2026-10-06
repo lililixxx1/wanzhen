@@ -1,0 +1,67 @@
+== T021 preset smoke 2026-10-07 06:04:55 ==
+== host exe: ../../../target/release/host.exe ==
+== BRP port 15712 / CLI auto-deploy instance port 15713 ==
+== host pid 430 (port 15712) ==
+[CHK-00-port-ready-15712] PASS
+[CHK-01-banner-port-actual] PASS
+[CHK-01b-banner-loopback] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+[CHK-02-preset-default-anchor] PASS
+[CHK-02b-preset-default-units60] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+[CHK-03-melee-units60] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+melee-brawl H1="state_hash":"0xb82a248ff23515e2"
+[CHK-03b-melee-run-hash-captured] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"melee-brawl","seed":7}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xdfdec0dbd037333c","tick":0,"units":60}}
+--- REQ #2 (port 15712): {"jsonrpc":"2.0","id":2,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #2: {"jsonrpc":"2.0","id":2,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+[CHK-03c-melee-replay-bitexact] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"last-stand","seed":7}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":60,"alive_red":20,"deploy_hash":"0x60d991ba7d654ec7","tick":0,"units":80}}
+[CHK-04-laststand-units80] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xca9cfa1343b210a5","tick":1800}}
+[CHK-04b-laststand-run-to-cap] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":56,"alive_red":15,"end_tick":1800,"final_hash":"0xca9cfa1343b210a5","winner":"blue"}}
+[CHK-04c-laststand-winner-blue] PASS
+[CHK-04d-laststand-alive-red15] PASS
+[CHK-04e-laststand-alive-blue56] PASS
+[CHK-04f-laststand-endtick-cap] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42,"red":[{"kind":"militia","count":5}],"blue":[{"kind":"militia","count":5}],"lane_len_m":10}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":5,"deploy_hash":"0x29fee617bafe37e3","tick":0,"units":10}}
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"militia","count":5}],"blue":[{"kind":"militia","count":5}],"lane_len_m":10}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":5,"deploy_hash":"0x29fee617bafe37e3","tick":0,"units":10}}
+override HA="deploy_hash":"0x29fee617bafe37e3" / explicit HB="deploy_hash":"0x29fee617bafe37e3"
+[CHK-05-override-equals-explicit] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"nope"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown preset \"nope\" (available: default, melee-brawl, last-stand)"}}
+[CHK-06-preset-unknown-32602] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","red":[{"kind":"laser","count":1}]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"missing/invalid seed (u64 required)"}}
+[CHK-06b-preset-laser-noseed-32602] PASS
+--- REQ #1 (port 15712): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":1,"red":[{"kind":"laser","count":1}]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown kind \"laser\" (valid: shieldman, heavyknight, pikeman, swordsman, archer, militia)"}}
+[CHK-06c-preset-laser-withseed-32602] PASS
+[CHK-07-host1-process-alive] PASS
+== host2 pid 500 (port 15713, auto-deploy) ==
+[CHK-08-cli-port-ready-15713] PASS
+--- REQ #1 (port 15713): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe2706f0b91a2be8e","tick":0}}
+[CHK-09-cli-statehash-anchor] PASS
+[CHK-10-cli-banner-autodeploy] PASS
+[CHK-10b-cli-banner-port] PASS
+[CHK-11-cli-comp-laser-exit2] PASS
+[CHK-11b-cli-comp-laser-msg] PASS
+[CHK-11c-cli-preset-nope-exit2] PASS
+[CHK-11d-cli-preset-msg] PASS
+[CHK-11e-cli-threads0-exit2] PASS
+[CHK-11f-cli-threads-msg] PASS
+[CHK-12-host2-process-alive] PASS
+== SUMMARY: PASS=30 FAIL=0 ==
+== SCRIPT_EXIT=0 ==

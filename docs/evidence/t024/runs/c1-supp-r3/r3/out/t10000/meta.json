@@ -1,0 +1,10 @@
+{
+  "units": 10000,
+  "seed": 42,
+  "resolution": "1920x1080",
+  "window_resolution_actual": "2400x1350",
+  "warmup_s": 5,
+  "capture_s": 65,
+  "present_mode": "AutoNoVsync",
+  "captured_frames": 22039
+}

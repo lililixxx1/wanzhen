@@ -1,0 +1,4 @@
+    Checking sim v0.1.0 (<trees-root>\t024-a\sim)
+    Checking render-spike v0.1.0 (<trees-root>\t024-a\render-spike)
+    Checking host v0.1.0 (<trees-root>\t024-a\host)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.75s

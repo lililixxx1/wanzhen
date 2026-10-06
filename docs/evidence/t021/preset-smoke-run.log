@@ -1,7 +1,7 @@
-== T021 preset smoke 2026-10-07 03:36:30 ==
+== T021 preset smoke 2026-10-07 06:43:05 ==
 == host exe: ../../../target/release/host.exe ==
 == BRP port 15712 / CLI auto-deploy instance port 15713 ==
-== host pid 737 (port 15712) ==
+== host pid 2091 (port 15712) ==
 [CHK-00-port-ready-15712] PASS
 [CHK-01-banner-port-actual] PASS
 [CHK-01b-banner-loopback] PASS
@@ -49,7 +49,7 @@ override HA="deploy_hash":"0x29fee617bafe37e3" / explicit HB="deploy_hash":"0x29
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown kind \"laser\" (valid: shieldman, heavyknight, pikeman, swordsman, archer, militia)"}}
 [CHK-06c-preset-laser-withseed-32602] PASS
 [CHK-07-host1-process-alive] PASS
-== host2 pid 807 (port 15713, auto-deploy) ==
+== host2 pid 2161 (port 15713, auto-deploy) ==
 [CHK-08-cli-port-ready-15713] PASS
 --- REQ #1 (port 15713): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe2706f0b91a2be8e","tick":0}}

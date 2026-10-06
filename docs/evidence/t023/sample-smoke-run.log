@@ -1,6 +1,6 @@
-== T023 sample_outcomes smoke 2026-10-07 03:36:38 ==
+== T023 sample_outcomes smoke 2026-10-07 06:43:14 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 936 (port 15707) ==
+== host pid 2290 (port 15707) ==
 [CHK-00-port-ready-15707] PASS
 [CHK-01-banner-methods-7] PASS
 [CHK-01b-banner-loopback] PASS

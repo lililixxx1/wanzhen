@@ -36,8 +36,18 @@
 //! 运行时留痕与 [`rpc`] 注册的方法面/绑定地址一一对应。headless 三行逐字
 //! 不变（T018 冒烟回归面）；spectate 形态 mode/methods 两行如实反映实装
 //! （`game.screenshot` 已非桩）。
+//!
+//! T024（M5-07 席位 9）：`--frame-capture <dir>` 帧采集插桩——**仅
+//! `--spectate` 下合法**（无 `--spectate` 给此参 → stderr + exit 2 对齐 CLI
+//! 体例；缺省关）。body 口径逐字沿 render-spike T010 `capture_system`
+//! （warmup 5 s 丢弃 + capture 65 s 满 → `frames.csv`/`meta.json` →
+//! `AppExit::Success` 自退），实现体在 [`frame_capture`]；系统与资源仅挂
+//! [`spectate::SpectatePlugin`]（spectate 形态插件集）——headless 零行为
+//! 变化。`--frame-capture` 不触发 auto-deploy（同 `--port` 语义：非配置
+//! 参数；与配置参数自由组合）。
 
 mod challenges;
+mod frame_capture;
 mod hud;
 mod presets;
 mod present;
@@ -46,6 +56,7 @@ mod spectate;
 mod suite;
 
 use std::env;
+use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::Duration;
 
@@ -86,6 +97,10 @@ struct Args {
     /// 配置参数自由组合——`--spectate --preset melee-brawl --seed 7` = 即看即打）。
     /// 单独出现**不**触发 auto-deploy（配置参数判定不变）。
     spectate: bool,
+    /// `--frame-capture <dir>`：帧采集落档目录（T024/D1；仅 `--spectate` 下
+    /// 合法——无 spectate 给参 → exit 2；缺省关 = None 零开销）。不触发
+    /// auto-deploy（同 `--port`：非配置参数）。
+    frame_capture: Option<PathBuf>,
 }
 
 fn parse_num<T: std::str::FromStr>(raw: &str, name: &str) -> Result<T, String>
@@ -163,6 +178,7 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
         preset: None,
         port: None,
         spectate: false,
+        frame_capture: None,
     };
     let mut i = 0;
     while i < argv.len() {
@@ -198,6 +214,16 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
                     Some(take_value(argv, &mut i, inline, "--preset")?.to_string())
             }
             "--port" => args.port = Some(parse_num(take_value(argv, &mut i, inline, "--port")?, "--port")?),
+            // T024/D1：帧采集落档目录（仅 spectate 合法——值域校验在下方统一段；
+            // 非配置参数，不触发 auto-deploy）。
+            "--frame-capture" => {
+                args.frame_capture = Some(PathBuf::from(take_value(
+                    argv,
+                    &mut i,
+                    inline,
+                    "--frame-capture",
+                )?))
+            }
             // T019/D1：观战形态开关（无值 flag；不支持 --spectate=false——开关即开，
             // 关闭 = 不传，防语义歧义）。
             "--spectate" => args.spectate = true,
@@ -232,6 +258,14 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
                 presets::names().join(", ")
             ));
         }
+    }
+    // T024/D1：`--frame-capture` 仅 spectate 形态合法（无 `--spectate` 给此参
+    // → stderr + exit 2 对齐 CLI 体例；缺省关）。
+    if args.frame_capture.is_some() && !args.spectate {
+        return Err(
+            "--frame-capture requires --spectate (frame capture is a spectate-form feature)"
+                .to_string(),
+        );
     }
     Ok(args)
 }
@@ -269,15 +303,19 @@ fn main() -> ExitCode {
             eprintln!(
                 "usage: host.exe [--spectate] [--seed <u64>] [--comp <kind:count,...>] \
                  [--threads <1..=1024>] [--max-ticks <1..=14400>] [--lane-len-m <m>] \
-                 [--preset <{}>] [--port <u16>] \
+                 [--preset <{}>] [--port <u16>] [--frame-capture <dir>] \
                  (--flag value or --flag=value; --spectate enables the spectate form \
                  (T019: render window 1920x1080, presentation layer, HUD, live \
                  game.screenshot; free to combine with config flags); any config flag \
                  other than --port triggers auto-deploy at startup, overriding the \
                  preset base; --comp deploys symmetrically to both sides; --port alone \
                  only changes the BRP listen port; no flags = pure BRP service, deploy \
-                 via game.deploy; values are decimal)",
-                presets::names().join("|")
+                 via game.deploy; --frame-capture (spectate only, else exit 2) writes \
+                 frames.csv + meta.json into <dir> (warmup {}s + capture {}s, then \
+                 AppExit); values are decimal)",
+                presets::names().join("|"),
+                frame_capture::WARMUP_SEC,
+                frame_capture::CAPTURE_SEC
             );
             return ExitCode::from(2);
         }
@@ -291,6 +329,15 @@ fn main() -> ExitCode {
         eprintln!("[host] mode=spectate (window 1920x1080 fixed, winit loop, presentation+HUD live; T019/D3)");
         eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
         eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(live->T019/D8)");
+        if let Some(dir) = &args.frame_capture {
+            // T024/D1：采集启用运行时留痕（代码+stderr 双留痕，沿 T018 banner 体例）。
+            eprintln!(
+                "[host] frame-capture enabled out={} (warmup {}s + capture {}s -> frames.csv/meta.json; AppExit on full)",
+                dir.display(),
+                frame_capture::WARMUP_SEC,
+                frame_capture::CAPTURE_SEC
+            );
+        }
     } else {
         eprintln!("[host] mode=headless (spectate arrives with T019)");
         eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
@@ -368,6 +415,12 @@ fn main() -> ExitCode {
                 pending: 0,
                 autorun: true,
             });
+        }
+        if let Some(dir) = &args.frame_capture {
+            // T024/D1：帧采集启用态（insert 在 SpectatePlugin init_resource
+            // 之后——无条件覆盖缺省态，同 autorun 先例；解析段已拒绝无
+            // --spectate 组合）。
+            app.insert_resource(frame_capture::FrameCaptureState::new(dir.clone()));
         }
     }
     app.run();

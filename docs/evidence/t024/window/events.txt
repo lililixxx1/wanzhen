@@ -1,0 +1,25 @@
+== T024 measure start 2026-10-07 06:24:27 ==
+== binaries ==
+602b491f9467ed4fe6cc1ba1d6390504a4e87293abbe02349c1856039199f8dd */c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/../../../target/release/host.exe
+ff4b990f6a102639b8562571b12c9c2d077ff7637a5b1c23b6f2c21fad6767c5 */c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/../../../target/release/render-spike.exe
+pre-check OK (rustc/cargo/host/render-spike=0, port 15702 free)
+sampler started pid=1991 -> window/load-samples.csv
+== LEG A START 2026-10-07 06:24:35 ==
+== LEG A END 06:25:46 rc=0 wall=71s ==
+== GAP 30s ==
+== LEG B START 2026-10-07 06:26:17 ==
+== LEG B END 06:27:28 rc=0 wall=71s ==
+sampler stopped pid=1991
+sampler coverage OK: 10 lines (header + 9 samples)
+post-check rustc/cargo/host/render-spike zero: OK
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/spectate-10k/frames.csv (265641 bytes)
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/spectate-10k/meta.json (278 bytes)
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/c1-render-spike/r1/out/t10000/frames.csv (297981 bytes)
+artifact OK: /c/Users/Administrator/Desktop/ccc/trees/wanzhen/t024-a/docs/evidence/t024/runs/c1-render-spike/r1/out/t10000/meta.json (204 bytes)
+== WINDOW CLOSED 2026-10-07 06:27:34 ==
+== POST-WINDOW summaries ==
+summary written: <trees-root>/t024-a/docs/evidence/t024/summary-spectate.md
+summarize_t024.py REAL_EXIT=0
+summary written: <trees-root>/t024-a/docs/evidence/t024/summary-c1-render-spike.md
+t010/summarize.py REAL_EXIT=3 (3 = 缺 1k/2k/5k 档预期，t10000 判定行仍产出)
+== T024 measure done rc_A=0 rc_B=0 post_check=1 ==

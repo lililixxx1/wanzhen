@@ -314,6 +314,12 @@ vsync 旁证四档均「有」（docs/evidence/t010/summary.md L24-27，逐字�
 
 > - `cargo build -p render-spike --release -j 2` / `./target/release/render-spike.exe --units <N> [--seed 42] [--warmup-sec 5] [--capture-sec 65] [--res 1920x1080] --out <dir>` — M0 渲染 spike（T010，验收⑤：窗口化帧采集 frames.csv 逐帧原始档；判定汇总 `python docs/evidence/t010/summarize.py`）。涉 render-spike 的 cargo 一律 **-j 2 从严 + 前置 commit 预检（check/test ≥10G、release ≥12G）**——bevy full 冷编属依赖重型足迹（T010 实测冷编 19m45s）
 
+### ⑤ 条件账 C-1 关账（T024，2026-10-07——M5 席位 9 顺带关账，备忘录 §六）
+
+- 关账动作：干净窗口（三段留痕：`docs/evidence/t024/window/`——跑前全量快照+无并发负载声明 / 量测中每 20 s CPU·CommitFree 抽样 / 结束复扫；窗口内零 cargo·冒烟·额外 host）render-spike t10000 复测——判定行（脚本生成）`t10000: avg_fps=339.64 (≥60 ? 是)、1% low=259.35 (≥45 ? 是) → PASS`（`docs/evidence/t024/summary-c1-render-spike.md`）；加样 ×2 同向 PASS（341.82/257.50、339.05/256.40；`summary-c1-supp-r2.md`/`-r3.md`）。命令与产物：`docs/evidence/t024/runs/c1-render-spike/`、`runs/c1-supp-r2/`、`runs/c1-supp-r3/`。
+- T012 P1-1（带载不可复现：-79%~-89% 漂移 + `window_resolution_actual=0x0` + 窗口非空闲）在干净窗口**未复现**——三样本 avg 漂移 +1.77%~+2.60%（±25% 带内）、1% low 漂移 +26.63%~+28.09%（**超带向上**，三样本一致，如实披露——环境面上偏带状注，不构成翻红或翻绿的判定依据；判定口径/归档值零改动）。归档 PASS 获干净窗口确认，条件账 C-1 **正式闭合**。
+- T013 条件性披露（报告 V1.0 6.2 ⑤：渲染腿后果仅 ⑤ 最终判 FAIL 时触发）以本行为事实依据：干净窗口 ⑤ 维持 PASS，后果路径未触发。
+
 ## §6 验收⑥ 内存长跑
 
 ### ①口径出处

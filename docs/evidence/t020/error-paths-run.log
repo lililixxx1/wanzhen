@@ -1,6 +1,6 @@
-== T020 error paths 2026-10-07 03:36:24 ==
+== T020 error paths 2026-10-07 06:43:00 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 628 ==
+== host pid 1982 ==
 [CHK-00-port-ready] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}

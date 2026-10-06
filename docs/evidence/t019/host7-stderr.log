@@ -1,14 +1,14 @@
 [host] mode=spectate (window 1920x1080 fixed, winit loop, presentation+HUD live; T019/D3)
 [host] BRP listening on 127.0.0.1:15715 (explicit loopback bind; non-loopback forbidden)
 [host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(live->T019/D8)
-[2m2026-10-06T21:47:13.251161Z[0m [32m INFO[0m [2mbevy_diagnostic::system_information_diagnostics_plugin::internal[0m[2m:[0m SystemInfo { os: "Windows 10 IoT Enterprise LTSC 2021", kernel: "19044", cpu: "12th Gen Intel(R) Core(TM) i5-12490F", core_count: "6", memory: "31.8 GiB" }
-[2m2026-10-06T21:47:13.499104Z[0m [32m INFO[0m [2mbevy_render::renderer[0m[2m:[0m AdapterInfo { name: "NVIDIA GeForce RTX 3050", vendor: 4318, device: 9602, device_type: DiscreteGpu, device_pci_bus_id: "0000:01:00.0", driver: "NVIDIA", driver_info: "537.58", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: false }
-[2m2026-10-06T21:47:13.914385Z[0m [32m INFO[0m [2mbevy_pbr::cluster[0m[2m:[0m GPU clustering is supported on this device.
-[2m2026-10-06T21:47:13.914435Z[0m [32m INFO[0m [2mbevy_render::batching::gpu_preprocessing[0m[2m:[0m GPU preprocessing is fully supported on this device.
-[2m2026-10-06T21:47:13.914879Z[0m [32m INFO[0m [2mbevy_winit::system[0m[2m:[0m Creating new window 万阵观战 (65v0)
-[2m2026-10-06T21:47:14.253597Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 requested -> screenshot-4384-1791323233903-0.png (entity 430v0)
-[2m2026-10-06T21:47:14.279551Z[0m [32m INFO[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Screenshot saved to screenshot-4384-1791323233903-0.png
-[2m2026-10-06T21:47:14.281014Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 captured event arrived
-[2m2026-10-06T21:47:16.461706Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 requested -> screenshot-4384-1791323233903-1.png (entity 433v0)
-[2m2026-10-06T21:47:16.475461Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 captured event arrived
-[2m2026-10-06T21:47:16.484002Z[0m [31mERROR[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Cannot save screenshot, IO error: 另一个程序正在使用此文件，进程无法访问。 (os error 32)
+[2m2026-10-06T22:45:59.766301Z[0m [32m INFO[0m [2mbevy_diagnostic::system_information_diagnostics_plugin::internal[0m[2m:[0m SystemInfo { os: "Windows 10 IoT Enterprise LTSC 2021", kernel: "19044", cpu: "12th Gen Intel(R) Core(TM) i5-12490F", core_count: "6", memory: "31.8 GiB" }
+[2m2026-10-06T22:46:00.021466Z[0m [32m INFO[0m [2mbevy_render::renderer[0m[2m:[0m AdapterInfo { name: "NVIDIA GeForce RTX 3050", vendor: 4318, device: 9602, device_type: DiscreteGpu, device_pci_bus_id: "0000:01:00.0", driver: "NVIDIA", driver_info: "537.58", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: false }
+[2m2026-10-06T22:46:00.448076Z[0m [32m INFO[0m [2mbevy_pbr::cluster[0m[2m:[0m GPU clustering is supported on this device.
+[2m2026-10-06T22:46:00.448134Z[0m [32m INFO[0m [2mbevy_render::batching::gpu_preprocessing[0m[2m:[0m GPU preprocessing is fully supported on this device.
+[2m2026-10-06T22:46:00.448675Z[0m [32m INFO[0m [2mbevy_winit::system[0m[2m:[0m Creating new window 万阵观战 (65v0)
+[2m2026-10-06T22:46:00.775625Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 requested -> screenshot-19780-1791326760437-0.png (entity 431v0)
+[2m2026-10-06T22:46:00.788423Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 captured event arrived
+[2m2026-10-06T22:46:00.801187Z[0m [32m INFO[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Screenshot saved to screenshot-19780-1791326760437-0.png
+[2m2026-10-06T22:46:02.998249Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 requested -> screenshot-19780-1791326760437-1.png (entity 434v0)
+[2m2026-10-06T22:46:03.023253Z[0m [31mERROR[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Cannot save screenshot, IO error: 另一个程序正在使用此文件，进程无法访问。 (os error 32)
+[2m2026-10-06T22:46:03.025043Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 captured event arrived

@@ -1,0 +1,13 @@
+{
+  "capture_s": 65,
+  "captured_frames": 35531,
+  "max_ticks": 1800,
+  "mode": "spectate",
+  "present_mode": "AutoNoVsync",
+  "resolution": "1920x1080",
+  "seed": 7,
+  "tick_at_write": 1800,
+  "units_total": 46,
+  "warmup_s": 5,
+  "window_resolution_actual": "2400x1350"
+}
