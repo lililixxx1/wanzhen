@@ -3,7 +3,7 @@
 # Cargo.lock 入库。成员统一经 workspace.dependencies 继承版本。
 [workspace]
 resolver = "2"
-members = ["sim", "render-spike"]
+members = ["sim", "render-spike", "host"]
 
 [workspace.dependencies]
 # default-features 声明在 workspace 级：成员层的 default-features 若 workspace 级未声明会被静默忽略

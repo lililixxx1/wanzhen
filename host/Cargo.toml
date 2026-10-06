@@ -1,0 +1,13 @@
+# M5-01（T018）BRP/观战宿主（席位 1 headless 形态 + 席位 2）。
+# 纪律：bevy 依赖最小 feature 集 + bevy_remote（备忘录 §五）；不引渲染 feature。
+# sim 以纯 lib 挂载（零 bevy API），宿主只调其公共 API。
+[package]
+name = "host"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bevy = { workspace = true, features = ["bevy_remote"] }
+serde_json = "1"
+sim = { path = "../sim" }
