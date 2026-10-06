@@ -1,0 +1,103 @@
+== T018 BRP smoke 2026-10-07 01:19:00 ==
+== host exe: ../../../target/release/host.exe ==
+== host pid 7769 ==
+[CHK-00-port-ready] PASS
+[CHK-01-banner-loopback] PASS
+[CHK-01b-banner-constraint] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"rpc.discover","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"info":{"title":"Bevy Remote Protocol","version":"0.19.1"},"methods":[{"name":"rpc.discover","params":[]},{"name":"registry.schema","params":[]},{"name":"world.query","params":[]},{"name":"world.list_resources","params":[]},{"name":"world.mutate_resources","params":[]},{"name":"world.write_message","params":[]},{"name":"game.outcome","params":[]},{"name":"world.get_components+watch","params":[]},{"name":"world.reparent_entities","params":[]},{"name":"world.mutate_components","params":[]},{"name":"world.remove_resources","params":[]},{"name":"world.get_components","params":[]},{"name":"world.trigger_event","params":[]},{"name":"world.spawn_entity","params":[]},{"name":"schedule.graph","params":[]},{"name":"world.get_resources","params":[]},{"name":"world.list_components+watch","params":[]},{"name":"world.despawn_entity","params":[]},{"name":"world.observe+watch","params":[]},{"name":"world.insert_resources","params":[]},{"name":"game.screenshot","params":[]},{"name":"schedule.list","params":[]},{"name":"game.run_tests","params":[]},{"name":"game.deploy","params":[]},{"name":"world.remove_components","params":[]},{"name":"game.run_to_tick","params":[]},{"name":"world.insert_components","params":[]},{"name":"game.state_hash","params":[]},{"name":"world.list_components","params":[]}],"openrpc":"1.3.2","servers":[{"name":"Server","url":"127.0.0.1:15702"}]}}
+[CHK-02-discover-game.deploy] PASS
+[CHK-02-discover-game.run_to_tick] PASS
+[CHK-02-discover-game.state_hash] PASS
+[CHK-02-discover-game.outcome] PASS
+[CHK-02-discover-game.run_tests] PASS
+[CHK-02-discover-game.screenshot] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
+[CHK-03-not-deployed] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"blue":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+deploy_hash="deploy_hash":"0xe2706f0b91a2be8e"
+[CHK-04-deploy-hash] PASS
+[CHK-04b-deploy-tick0] PASS
+[CHK-04c-deploy-units60] PASS
+[CHK-04d-deploy-alive-red] PASS
+[CHK-04d-deploy-alive-blue] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+[CHK-05-run-tick-1800] PASS
+[CHK-05-anchor2-hit] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+[CHK-06-state-hash-consistent] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"end_tick":1800,"final_hash":"0x958c5938c8682529","winner":"draw"}}
+[CHK-07-outcome-draw] PASS
+[CHK-07b-outcome-endtick] PASS
+[CHK-07c-outcome-finalhash] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":10}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4002,"message":"battle already resolved; call game.deploy to start a new one","data":{"end_tick":1800,"final_hash":"0x958c5938c8682529","winner":"draw"}}}
+[CHK-08-battle-resolved] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"blue":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #2: {"jsonrpc":"2.0","id":2,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #2: {"jsonrpc":"2.0","id":2,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+[CHK-09-replay-bitexact] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"blue":[{"kind":"shieldman","count":5},{"kind":"heavyknight","count":5},{"kind":"pikeman","count":5},{"kind":"swordsman","count":5},{"kind":"archer","count":5},{"kind":"militia","count":5}],"threads":12}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+--- REQ #2: {"jsonrpc":"2.0","id":2,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #2: {"jsonrpc":"2.0","id":2,"result":{"state_hash":"0x958c5938c8682529","tick":1800}}
+[CHK-10-threads12-anchor] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"failed":0,"passed":4,"results":[{"detail":"last_hash 0xd3b6408fd46c2008 == golden","name":"golden_units0_seed42_1800","pass":true},{"detail":"last_hash 0x958c5938c8682529 == golden","name":"golden_default_comp_seed42_1800","pass":true},{"detail":"tick 0/900/1800 pairwise identical; final 0x958c5938c8682529","name":"replay_pairwise_checkpoints","pass":true},{"detail":"tick 0 last_hash identical: 0xe2706f0b91a2be8e","name":"deploy_versus_mirror_equivalence","pass":true}],"suite":"t018-smoke","total":4}}
+[CHK-11-tests-total4] PASS
+[CHK-11b-tests-passed4] PASS
+[CHK-11c-tests-failed0] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"t018-smoke"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"failed":0,"passed":4,"results":[{"detail":"last_hash 0xd3b6408fd46c2008 == golden","name":"golden_units0_seed42_1800","pass":true},{"detail":"last_hash 0x958c5938c8682529 == golden","name":"golden_default_comp_seed42_1800","pass":true},{"detail":"tick 0/900/1800 pairwise identical; final 0x958c5938c8682529","name":"replay_pairwise_checkpoints","pass":true},{"detail":"tick 0 last_hash identical: 0xe2706f0b91a2be8e","name":"deploy_versus_mirror_equivalence","pass":true}],"suite":"t018-smoke","total":4}}
+[CHK-11d-tests-suite-name] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"no-such-suite"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core, challenges, m5-all)"}}
+[CHK-11e-tests-unknown-suite] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4101,"message":"spectate mode not enabled (headless host, T018); arrives with T019","data":{"mode":"headless","planned_task":"T019"}}}
+[CHK-12-screenshot-stub] PASS
+[CHK-12b-screenshot-data] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":1,"red":[{"kind":"laser","count":5}],"blue":[]}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown kind \"laser\" (valid: shieldman, heavyknight, pikeman, swordsman, archer, militia)"}}
+[CHK-13-unknown-kind] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":123}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"invalid suite (string required; omit for default \"t018-smoke\")"}}
+[CHK-13b-suite-non-string] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[],"blue":[{"kind":"militia","count":5}],"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":0,"deploy_hash":"0xbe6f31f6a6a22349","tick":0,"units":5}}
+[CHK-15-empty-red-deploy] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":100}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xbe6f31f6a6a22349","tick":0}}
+[CHK-15b-run-frozen-at-0] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":0,"end_tick":0,"final_hash":"0xbe6f31f6a6a22349","winner":"blue"}}
+[CHK-15c-outcome-blue] PASS
+[CHK-15d-endtick-0] PASS
+[CHK-15e-outcome-alive-red-0] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":10}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4002,"message":"battle already resolved; call game.deploy to start a new one","data":{"end_tick":0,"final_hash":"0xbe6f31f6a6a22349","winner":"blue"}}}
+[CHK-15f-run-after-freeze-4002] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":42,"red":[{"kind":"militia","count":5}],"blue":[{"kind":"militia","count":5}],"lane_len_m":10,"threads":1}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":5,"alive_red":5,"deploy_hash":"0x29fee617bafe37e3","tick":0,"units":10}}
+[CHK-16-shortlane-deploy] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":1800}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfdbc4995554ee691","tick":878}}
+shortlane end tick = 878
+[CHK-16b-extinction-before-cap] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"result":{"alive_blue":0,"alive_red":1,"end_tick":878,"final_hash":"0xfdbc4995554ee691","winner":"red"}}
+[CHK-16c-winner-nondraw] PASS
+[CHK-16d-endtick-matches] PASS
+[CHK-16e-one-side-extinct] PASS
+--- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":10}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4002,"message":"battle already resolved; call game.deploy to start a new one","data":{"end_tick":878,"final_hash":"0xfdbc4995554ee691","winner":"red"}}}
+[CHK-16f-run-after-freeze-4002] PASS
+[CHK-14-process-alive] PASS
+== SUMMARY: PASS=46 FAIL=0 ==
+== SCRIPT_EXIT=0 ==

@@ -13,16 +13,28 @@
 //! 占位 0 首测、与派工单锚值核对一致后回填（断言 6/7；矩阵 F 侧见
 //! replay_matrix.sh）。detail 口径：pass 写实际哈希值（hex），fail 写
 //! 「expected … got …」。
+//!
+//! T022/D3/D4 扩展：`challenges` 套件（3 断言——[`crate::challenges`] 注册表
+//! 每条一断言 `challenge::<name>`）+ `m5-all` 聚合套件（m5-core 9 + challenges
+//! 3 = 12，M5 完整判定面）。缺省套件 / m5-core 计数语义不变（零回归）。
 
 use sim::pool::ThreadPool;
 use sim::units::{UnitKind, ONE_Q32_32};
 use sim::world::{DEFAULT_COMPOSITION, LANE_LEN_Q32, TICK_CAP_REDUCED};
+
+use crate::challenges;
 
 /// 冒烟套件名（T018 落位）。
 pub const SMOKE_SUITE: &str = "t018-smoke";
 
 /// 全量套件名（T020/D1 落位）：九断言判定主体（席位 3）。
 pub const M5_CORE_SUITE: &str = "m5-core";
+
+/// 挑战套件名（T022/D3 落位）：注册表 3 挑战各一条断言（席位 7）。
+pub const CHALLENGES_SUITE: &str = "challenges";
+
+/// M5 完整判定面套件名（T022/D3 落位）：m5-core 9 + challenges 3 = 12 聚合。
+pub const M5_ALL_SUITE: &str = "m5-all";
 
 /// 缺省套件名（run_tests 不带 suite 参数时行使）。
 pub const DEFAULT_SUITE: &str = SMOKE_SUITE;
@@ -39,13 +51,15 @@ pub fn run(name: &str) -> Option<Vec<AssertionResult>> {
     match name {
         SMOKE_SUITE => Some(run_smoke()),
         M5_CORE_SUITE => Some(run_m5_core()),
+        CHALLENGES_SUITE => Some(run_challenges()),
+        M5_ALL_SUITE => Some(run_m5_all()),
         _ => None,
     }
 }
 
 /// 可用套件清单（错误消息用；与 [`run`] 分发同步）。
 pub fn names() -> Vec<&'static str> {
-    vec![SMOKE_SUITE, M5_CORE_SUITE]
+    vec![SMOKE_SUITE, M5_CORE_SUITE, CHALLENGES_SUITE, M5_ALL_SUITE]
 }
 
 /// 冒烟四断言（D8）：两枚 M0 黄金锚 + 同种子重放逐位一致 +
@@ -161,6 +175,27 @@ pub fn run_m5_core() -> Vec<AssertionResult> {
         outcome_freeze_idempotence_shortlane(),
         outcome_overrun_semantics(),
     ]
+}
+
+/// 挑战套件（T022/D3，席位 7）：[`crate::challenges`] 注册表每条一断言
+/// （`challenge::<name>`）。每挑战 = 全新 World（净副作用纪律沿模块注）→
+/// `deploy_versus` → 比对 deploy_hash → `run_battle_with(max_ticks)` → 比对
+/// 终局五字段（D4 六字段口径）；判定路径固定串行（None pool，D2）。
+pub fn run_challenges() -> Vec<AssertionResult> {
+    challenges::names()
+        .iter()
+        .map(|name| {
+            let def = challenges::get(name).expect("challenge registry names/get in sync");
+            challenge_assertion(&def)
+        })
+        .collect()
+}
+
+/// M5 完整判定面（T022/D3）：m5-core 9 + challenges 3 = 12（T025 三合一判定用）。
+pub fn run_m5_all() -> Vec<AssertionResult> {
+    let mut out = run_m5_core();
+    out.extend(run_challenges());
+    out
 }
 
 /// 跨线程等价（T020/D1-5）：同 seed 同构成，一路 12 线程池
@@ -339,6 +374,58 @@ fn outcome_overrun_semantics() -> AssertionResult {
                 o.alive_red,
                 o.alive_blue,
                 o.final_hash
+            )
+        },
+    }
+}
+
+/// 单挑战断言（T022/D4；判定行代码生成）：期望值只在 [`crate::challenges`]
+/// 常量（本函数不含第二份拷贝）。fail detail 含期望 vs 实测全字段（六字段——
+/// 禁只报 bool）；pass detail 写实测六字段。
+fn challenge_assertion(def: &challenges::ChallengeDef) -> AssertionResult {
+    let mut world = sim::world::World::deploy_versus(
+        def.seed,
+        &def.red,
+        &def.blue,
+        def.lane_len_m * ONE_Q32_32,
+    );
+    let deploy_hash = world.last_hash;
+    let o = world.run_battle_with(def.max_ticks, None);
+    let e = &def.expected;
+    let pass = deploy_hash == e.deploy_hash
+        && o.winner.label() == e.winner
+        && o.end_tick == e.end_tick
+        && o.alive_red == e.alive_red
+        && o.alive_blue == e.alive_blue
+        && o.final_hash == e.final_hash;
+    AssertionResult {
+        name: def.assertion_name(),
+        pass,
+        detail: if pass {
+            format!(
+                "winner {} end_tick {} alive {}/{} final 0x{:016x} deploy 0x{:016x} == challenge anchor",
+                o.winner.label(),
+                o.end_tick,
+                o.alive_red,
+                o.alive_blue,
+                o.final_hash,
+                deploy_hash
+            )
+        } else {
+            format!(
+                "expected winner {} end_tick {} alive {}/{} final 0x{:016x} deploy 0x{:016x}; got winner {} end_tick {} alive {}/{} final 0x{:016x} deploy 0x{:016x}",
+                e.winner,
+                e.end_tick,
+                e.alive_red,
+                e.alive_blue,
+                e.final_hash,
+                e.deploy_hash,
+                o.winner.label(),
+                o.end_tick,
+                o.alive_red,
+                o.alive_blue,
+                o.final_hash,
+                deploy_hash
             )
         },
     }

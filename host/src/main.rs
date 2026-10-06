@@ -25,6 +25,7 @@
 //! banner 走 `eprintln!`（stderr 元信息，零 bevy_log feature 依赖——D3），
 //! 运行时留痕与 [`rpc`] 注册的方法面/绑定地址一一对应。
 
+mod challenges;
 mod presets;
 mod rpc;
 mod suite;
