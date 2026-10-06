@@ -20,6 +20,11 @@
 //! -32768..-32000。
 //!
 //! 哈希口径（D5）：一律 `"0x" + {:016x}` hex 字符串，与 M0 CLI 口径一致。
+//!
+//! T021（D1/D3/D5）：`game.deploy` 新增可选 `"preset"` 底座（显式字段一律覆盖，
+//! 预设数据单一来源见 [`crate::presets`]）；deploy 执行段抽取为 [`apply_deploy`]
+//! （BRP handler 与 CLI auto-deploy 共用——入口无关性由构造保证）；`HostRpcPlugin`
+//! 增 `port` 字段（缺省 15702 不变，地址恒回环）。
 
 use bevy::prelude::*;
 use bevy::remote::error_codes;
@@ -29,6 +34,7 @@ use serde_json::{json, Value};
 use sim::units::{UnitKind, ONE_Q32_32};
 use sim::world::{TICK_CAP_FULL, TICK_CAP_REDUCED};
 
+use crate::presets;
 use crate::suite;
 
 /// `game.deploy`（config：构成/参数/种子 → 布阵快照哈希）。
@@ -55,14 +61,18 @@ pub mod game_error_codes {
 }
 
 /// lane_len_m 缺省值（米）= `LANE_LEN_Q32` 的米口径（默认 lane 全长 1000 m）。
-const DEFAULT_LANE_LEN_M: i64 = 1000;
-/// threads 上限（1..=1024，与 sim CLI `--threads` 同域）。
-const MAX_THREADS: u64 = 1024;
-/// 每方单位总数上限（防误配 OOM——D5）。
-const MAX_UNITS_PER_SIDE: usize = 100_000;
+/// T021/D2 起 `pub(crate)`：presets「default」预设与 rpc 缺省同源单一值。
+pub(crate) const DEFAULT_LANE_LEN_M: i64 = 1000;
+/// threads 上限（1..=1024，与 sim CLI `--threads` 同域）。T021/D4 起
+/// `pub(crate)`：host CLI 对 `--threads` 用同域校验（防两入口漂移）。
+pub(crate) const MAX_THREADS: u64 = 1024;
+/// 每方单位总数上限（防误配 OOM——D5）。T021/D4 起 `pub(crate)`：host CLI
+/// 对 `--comp` 用同域校验（防两入口漂移）。
+pub(crate) const MAX_UNITS_PER_SIDE: usize = 100_000;
 /// 兵种六串清单（错误消息用；与 sim `kind_from_id`/`UnitKind::id` 同表——
-/// 映射本体单一来源在 sim，此串仅供报错文案）。
-const KIND_IDS: &str = "shieldman, heavyknight, pikeman, swordsman, archer, militia";
+/// 映射本体单一来源在 sim，此串仅供报错文案）。T021/D4 起 `pub(crate)`：
+/// host CLI `--comp` 报错同串（防两入口文案漂移）。
+pub(crate) const KIND_IDS: &str = "shieldman, heavyknight, pikeman, swordsman, archer, militia";
 
 /// 本模块族共用的参数错误（JSON-RPC INVALID_PARAMS -32602，沿工作流仓先例）。
 fn invalid_params(message: &str) -> BrpError {
@@ -166,29 +176,118 @@ fn alive_counts(units: &[sim::world::Unit]) -> (u32, u32) {
     (red, blue)
 }
 
-/// `game.deploy`（D5）：params `{seed, red, blue, lane_len_m=1000,
-/// max_ticks=1800, threads=1}`。布阵走 `deploy_versus`——镜像情形（red == blue
-/// 且 lane == `LANE_LEN_Q32`）与 `World::deploy` 逐位一致（sim 既有单测等价锚）。
+/// 单侧构成解析（T021/D3）：显式字段（非缺键且非 null）一律覆盖预设底座；
+/// 未给出且 preset 存在 → 取预设底座；两者皆无 → 原缺参错误路径
+/// （`parse_composition` 的 "missing ..." 报错，语义逐字保留）。
+fn resolve_side(
+    params: &Value,
+    field: &str,
+    preset: Option<&[(UnitKind, usize)]>,
+) -> Result<Vec<(UnitKind, usize)>, BrpError> {
+    match params.get(field) {
+        None | Some(Value::Null) => match preset {
+            Some(comp) => Ok(comp.to_vec()),
+            None => parse_composition(params, field),
+        },
+        _ => parse_composition(params, field),
+    }
+}
+
+/// 已决布阵请求（T021/D1）：由两入口（BRP [`deploy_handler`] / CLI auto-deploy）
+/// 的校验段产出，执行统一走 [`apply_deploy`]——入口无关性由构造保证。
+/// 字段 `pub(crate)`：CLI 需在 main.rs 构造（D4）。
+pub(crate) struct ResolvedDeploy {
+    pub(crate) seed: u64,
+    pub(crate) red: Vec<(UnitKind, usize)>,
+    pub(crate) blue: Vec<(UnitKind, usize)>,
+    pub(crate) lane_len_m: i64,
+    pub(crate) max_ticks: u64,
+    pub(crate) threads: usize,
+}
+
+/// deploy 执行段（T021/D1，单一代码路径）：建 World / Pool、HostedGame 整体
+/// 重置（旧 World / 线程池随赋值丢弃，`ThreadPool` Drop 时 join worker）、响应
+/// json 构造。BRP handler 与 CLI auto-deploy 共用；lane / max_ticks / threads /
+/// 每方单位数等域校验已由各入口校验段完成（每方 ≤ [`MAX_UNITS_PER_SIDE`]、
+/// lane ≥ 1 且 Q32.32 不溢出、max_ticks 1..=[`TICK_CAP_FULL`]、threads
+/// 1..=[`MAX_THREADS`]）——本函数不重复拒绝，仅防御性复核 lane 溢出。
+pub(crate) fn apply_deploy(hosted: &mut HostedGame, req: ResolvedDeploy) -> serde_json::Value {
+    // 防御性复核（不可达路径）：两入口校验段均已做 checked_mul 溢出检查。
+    let lane_q32 = req
+        .lane_len_m
+        .checked_mul(ONE_Q32_32)
+        .expect("lane_len_m overflow-checked at deploy_handler/CLI validation");
+
+    let game_world = sim::world::World::deploy_versus(req.seed, &req.red, &req.blue, lane_q32);
+    let pool = sim::pool::ThreadPool::new(req.threads);
+
+    let deploy_hash = format!("0x{:016x}", game_world.last_hash);
+    let units = game_world.units().len();
+    let (alive_red, alive_blue) = alive_counts(game_world.units());
+
+    *hosted = HostedGame {
+        world: Some(game_world),
+        pool: Some(pool),
+        config: Some(GameConfig {
+            seed: req.seed,
+            max_ticks: req.max_ticks,
+            threads: req.threads,
+            lane_len_m: req.lane_len_m,
+        }),
+    };
+
+    json!({
+        "deploy_hash": deploy_hash,
+        "tick": 0,
+        "units": units,
+        "alive_red": alive_red,
+        "alive_blue": alive_blue,
+    })
+}
+
+/// `game.deploy`（D5；T021/D3 增可选 preset）：params `{preset?, seed, red?,
+/// blue?, lane_len_m?, max_ticks?, threads?}`。preset 给出（字符串）时以预设为
+/// 底、显式字段一律覆盖（未知 preset → INVALID_PARAMS，消息列 [`presets::names`]；
+/// null 与缺键同义——沿 lane/max_ticks/threads 既有约定）；无 preset 时语义与
+/// T018 完全一致。布阵走 `deploy_versus`——镜像情形（red == blue 且 lane ==
+/// `LANE_LEN_Q32`）与 `World::deploy` 逐位一致（sim 既有单测等价锚）。
 /// HostedGame 整体重置；响应 `{deploy_hash, tick, units, alive_red, alive_blue}`。
 pub fn deploy_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
     let params = params.ok_or_else(|| {
         invalid_params("missing params (requires {\"seed\": u64, \"red\": [...], \"blue\": [...]})")
     })?;
+    // T021/D3：可选 preset——先于其余字段解析（未知 preset 优先报，消息列清单）。
+    let preset_base = match params.get("preset") {
+        None | Some(Value::Null) => None,
+        Some(Value::String(s)) => Some(presets::get(s).ok_or_else(|| {
+            invalid_params(&format!(
+                "unknown preset \"{s}\" (available: {})",
+                presets::names().join(", ")
+            ))
+        })?),
+        Some(_) => return Err(invalid_params("invalid preset (string required)")),
+    };
     let seed = params
         .get("seed")
         .and_then(Value::as_u64)
         .ok_or_else(|| invalid_params("missing/invalid seed (u64 required)"))?;
-    let red = parse_composition(&params, "red")?;
-    let blue = parse_composition(&params, "blue")?;
+    let red = resolve_side(&params, "red", preset_base.as_ref().map(|p| &p.red[..]))?;
+    let blue = resolve_side(&params, "blue", preset_base.as_ref().map(|p| &p.blue[..]))?;
     let lane_len_m = match params.get("lane_len_m") {
-        None | Some(Value::Null) => DEFAULT_LANE_LEN_M,
+        None | Some(Value::Null) => match &preset_base {
+            Some(p) => p.lane_len_m,
+            None => DEFAULT_LANE_LEN_M,
+        },
         Some(v) => v
             .as_i64()
             .filter(|m| *m >= 1)
             .ok_or_else(|| invalid_params("invalid lane_len_m (integer >= 1 required)"))?,
     };
     let max_ticks = match params.get("max_ticks") {
-        None | Some(Value::Null) => TICK_CAP_REDUCED,
+        None | Some(Value::Null) => match &preset_base {
+            Some(p) => p.max_ticks,
+            None => TICK_CAP_REDUCED,
+        },
         Some(v) => v
             .as_u64()
             .filter(|t| (1..=TICK_CAP_FULL).contains(t))
@@ -208,39 +307,24 @@ pub fn deploy_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpRe
             })? as usize,
     };
     // 米 → Q32.32 定点乘数；checked_mul 防异常大输入的 i64 溢出（release 回绕
-    // 不可接受，拒绝优于回绕）。
-    let lane_q32 = lane_len_m
-        .checked_mul(ONE_Q32_32)
-        .ok_or_else(|| invalid_params("lane_len_m too large (Q32.32 overflow)"))?;
+    // 不可接受，拒绝优于回绕）。T021/D1：校验留在本 handler（语义逐字保留），
+    // 执行段（含 lane_q32 复算）统一进 [`apply_deploy`]。
+    if lane_len_m.checked_mul(ONE_Q32_32).is_none() {
+        return Err(invalid_params("lane_len_m too large (Q32.32 overflow)"));
+    }
 
-    let game_world = sim::world::World::deploy_versus(seed, &red, &blue, lane_q32);
-    let pool = sim::pool::ThreadPool::new(threads);
-
-    let deploy_hash = format!("0x{:016x}", game_world.last_hash);
-    let units = game_world.units().len();
-    let (alive_red, alive_blue) = alive_counts(game_world.units());
-
+    let req = ResolvedDeploy {
+        seed,
+        red,
+        blue,
+        lane_len_m,
+        max_ticks,
+        threads,
+    };
     let mut hosted = world
         .get_resource_mut::<HostedGame>()
         .expect("HostedGame initialized by HostRpcPlugin");
-    *hosted = HostedGame {
-        world: Some(game_world),
-        pool: Some(pool),
-        config: Some(GameConfig {
-            seed,
-            max_ticks,
-            threads,
-            lane_len_m,
-        }),
-    };
-
-    Ok(json!({
-        "deploy_hash": deploy_hash,
-        "tick": 0,
-        "units": units,
-        "alive_red": alive_red,
-        "alive_blue": alive_blue,
-    }))
+    Ok(apply_deploy(&mut hosted, req))
 }
 
 /// `game.run_to_tick`（D5）：params `{ticks: u64}` → `{tick, state_hash}`。
@@ -388,10 +472,20 @@ pub fn screenshot_handler(In(_params): In<Option<Value>>, _world: &mut World) ->
     })
 }
 
-/// 宿主 BRP 插件（D1/D3/D11）：资源初始化 + 6 方法注册 + 显式回环 HTTP 绑定。
-/// 端口/地址写死 127.0.0.1:15702（= bevy_remote DEFAULT_ADDR/DEFAULT_PORT 常量
-/// 值），无 CLI 参数（沿工作流仓「写死不暴露」先例）；回环约束代码侧留痕。
-pub struct HostRpcPlugin;
+/// 缺省 BRP 监听端口（T021/D5：15702 不变；= bevy_remote DEFAULT_PORT 常量值，
+/// bevy_remote-0.19.1/src/http.rs:52——本仓自持字面量，不随上游漂移）。
+pub const DEFAULT_BRP_PORT: u16 = 15702;
+
+/// 宿主 BRP 插件（D1/D3/D11；T021/D5 增 `port` 字段）：资源初始化 + 6 方法注册
+/// + 显式回环 HTTP 绑定。**地址恒为 127.0.0.1**（回环硬约束不变——BRP 无鉴权，
+/// 禁止绑定非回环地址；显式绑定防上游默认值漂移）；端口缺省
+/// [`DEFAULT_BRP_PORT`]、经 `port` 字段可覆盖（CLI `--port` 落地）。留痕
+/// （D5）：并行波次验证隔离（多树多实例同机）与后续多实例实验需要；
+/// T018「写死」精确化为「地址写死回环、端口默认 15702 可选覆盖」。
+pub struct HostRpcPlugin {
+    /// 监听端口（T021/D5）。
+    pub port: u16,
+}
 
 impl Plugin for HostRpcPlugin {
     fn build(&self, app: &mut App) {
@@ -406,7 +500,9 @@ impl Plugin for HostRpcPlugin {
                 .with_method_main(SCREENSHOT_METHOD, screenshot_handler),
         );
         app.add_plugins(
-            RemoteHttpPlugin::default().with_address(std::net::Ipv4Addr::LOCALHOST),
+            RemoteHttpPlugin::default()
+                .with_address(std::net::Ipv4Addr::LOCALHOST)
+                .with_port(self.port),
         );
     }
 }
