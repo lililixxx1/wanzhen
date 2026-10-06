@@ -1,0 +1,7 @@
+== cmd: CARGO_TARGET_DIR=<shared master target> cargo build -p host --release -j 3 (manifest = tree t023-a)
+== guardrail: timeout -k 10 90 (90s cold-build abort per Lead ruling)
+== start 2026-10-07 02:27:21
+   Compiling sim v0.1.0 (<tree-root>\sim)
+   Compiling host v0.1.0 (<tree-root>\host)
+    Finished `release` profile [optimized] target(s) in 7.22s
+== RELEASE_EXIT=0 (124/137=guardrail abort) end 2026-10-07 02:27:28

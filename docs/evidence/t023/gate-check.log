@@ -1,0 +1,4 @@
+== cmd: CARGO_TARGET_DIR=<shared master target> cargo check --workspace -j 3 (manifest = tree t023-a)
+== start 2026-10-07 02:40:06
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.57s
+== CHECK_EXIT=0 end 2026-10-07 02:40:06

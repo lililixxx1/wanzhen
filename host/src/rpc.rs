@@ -1,9 +1,11 @@
-//! BRP `game.*` 初始集 6 方法 + 宿主状态资源 [`HostedGame`] + [`HostRpcPlugin`]
-//! 组装（T018，M5 席位 2；依据 docs/evidence/t018/dispatch-sheet.md「实现清单」
-//! 节 + taskset/t018-brp-host.md 设计裁决 D1~D11 + 备忘录 §五）。
+//! BRP `game.*` 方法面 7 方法 + 宿主状态资源 [`HostedGame`] + [`HostRpcPlugin`]
+//! 组装（T018 初始集 6，M5 席位 2；T023 +1 [`SAMPLE_OUTCOMES_METHOD`]，席位 8；
+//! 依据 docs/evidence/t018/dispatch-sheet.md「实现清单」节 + taskset/t018-brp-host.md
+//! 设计裁决 D1~D11 + 备忘录 §五 + taskset/t023-stats-face.md D1~D6）。
 //!
-//! 方法面（备忘录 §五逐字，6/6）：[`DEPLOY_METHOD`] / [`RUN_TO_TICK_METHOD`] /
-//! [`STATE_HASH_METHOD`] / [`OUTCOME_METHOD`] / [`RUN_TESTS_METHOD`] /
+//! 方法面（备忘录 §五 + T023 计数门禁 6→7，7/7）：[`DEPLOY_METHOD`] /
+//! [`RUN_TO_TICK_METHOD`] / [`STATE_HASH_METHOD`] / [`OUTCOME_METHOD`] /
+//! [`SAMPLE_OUTCOMES_METHOD`] / [`RUN_TESTS_METHOD`] /
 //! [`SCREENSHOT_METHOD`]（headless 桩——结构化错误，不击穿进程，实装随 T019）。
 //!
 //! handler 形态（沿工作流仓 game/src/rpc 先例）：`fn(In(params): In<Option<Value>>,
@@ -60,6 +62,9 @@ pub const RUN_TO_TICK_METHOD: &str = "game.run_to_tick";
 pub const STATE_HASH_METHOD: &str = "game.state_hash";
 /// `game.outcome`（终局四元组）。
 pub const OUTCOME_METHOD: &str = "game.outcome";
+/// `game.sample_outcomes`（T023，M5-06 席位 8）：降规模口径批量采样——n 局
+/// 独立对局终局序列 + 胜率分布（纯只读玩法面，不触碰 [`HostedGame`]）。
+pub const SAMPLE_OUTCOMES_METHOD: &str = "game.sample_outcomes";
 /// `game.run_tests`（套件判定面；本卡最小冒烟集，全量随 T020）。
 pub const RUN_TESTS_METHOD: &str = "game.run_tests";
 /// `game.screenshot`（T018 headless 桩保留；T019/D8 spectate 形态两段式实装，
@@ -85,6 +90,9 @@ pub(crate) const MAX_THREADS: u64 = 1024;
 /// 每方单位总数上限（防误配 OOM——D5）。T021/D4 起 `pub(crate)`：host CLI
 /// 对 `--comp` 用同域校验（防两入口漂移）。
 pub(crate) const MAX_UNITS_PER_SIDE: usize = 100_000;
+/// 批量采样局数上限（T023/D2）：`game.sample_outcomes` 的 `games` 域
+/// **1..=MAX_SAMPLE_GAMES**，超域 INVALID_PARAMS 消息列域。
+pub(crate) const MAX_SAMPLE_GAMES: u64 = 1000;
 /// 兵种六串清单（错误消息用；与 sim `kind_from_id`/`UnitKind::id` 同表——
 /// 映射本体单一来源在 sim，此串仅供报错文案）。T021/D4 起 `pub(crate)`：
 /// host CLI `--comp` 报错同串（防两入口文案漂移）。
@@ -509,6 +517,115 @@ pub fn outcome_handler(In(_params): In<Option<Value>>, world: &mut World) -> Brp
     }))
 }
 
+/// `game.sample_outcomes`（T023，M5-06 席位 8；派工单 §2 语义定案）：params
+/// `{red, blue, seed_base, games, lane_len_m?, max_ticks?, threads?}`。
+/// red/blue 必填（复用 [`parse_composition`]，与 `game.deploy` 同解析同报错）；
+/// lane/max_ticks/threads 缺省与域同 `game.deploy`（[`DEFAULT_LANE_LEN_M`] /
+/// [`TICK_CAP_REDUCED`]（= 降规模 1800 ticks 字面）/ 1；threads 1..=[`MAX_THREADS`]）；
+/// `games` 域 1..=[`MAX_SAMPLE_GAMES`]（超域 INVALID_PARAMS，消息列域）。
+///
+/// 批语义（确定性红线）：局 i ∈ 0..games-1，种子 seed_i =
+/// `seed_base.wrapping_add(i)`（u64 模 2^64 回绕**显式留痕**——序列公开可复现）；
+/// 每局全新 `World::deploy_versus`（沿 suite 净副作用纪律：每局独立 World，
+/// 批与批之间零状态残留；**本 handler 不读写 [`HostedGame`]**——纯只读玩法面，
+/// 不影响已布阵对局），`run_battle_with(max_ticks, pool)` 收束（局间串行、
+/// 池跨局复用——执行资源；T006 跨线程纪律：结果与线程数无关）。
+///
+/// response：`{games, seed_base, red_wins, blue_wins, draws, win_rate_red_pp,
+/// outcomes}`——`win_rate_red_pp = red_wins × 10000 / games`（**万分比整数，
+/// 禁浮点统计**，判定与展示同源）；outcomes 全量（1000 局上限），每局六字段
+/// `{seed, winner, end_tick, alive_red, alive_blue, final_hash}`（final_hash
+/// `0x%016x` 与 `game.outcome` 同格式）。错误面：仅参数错 INVALID_PARAMS
+/// （-32602）——本方法无 NOT_DEPLOYED/BATTLE_RESOLVED 路径（不触对局状态）。
+pub fn sample_outcomes_handler(In(params): In<Option<Value>>, _world: &mut World) -> BrpResult {
+    let params = params.ok_or_else(|| {
+        invalid_params(
+            "missing params (requires {\"red\": [...], \"blue\": [...], \"seed_base\": u64, \"games\": u64})",
+        )
+    })?;
+    let red = parse_composition(&params, "red")?;
+    let blue = parse_composition(&params, "blue")?;
+    let seed_base = params
+        .get("seed_base")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| invalid_params("missing/invalid seed_base (u64 required)"))?;
+    let games = params
+        .get("games")
+        .and_then(Value::as_u64)
+        .filter(|g| (1..=MAX_SAMPLE_GAMES).contains(g))
+        .ok_or_else(|| {
+            invalid_params(&format!("invalid games (1..={MAX_SAMPLE_GAMES} required)"))
+        })?;
+    let lane_len_m = match params.get("lane_len_m") {
+        None | Some(Value::Null) => DEFAULT_LANE_LEN_M,
+        Some(v) => v
+            .as_i64()
+            .filter(|m| *m >= 1)
+            .ok_or_else(|| invalid_params("invalid lane_len_m (integer >= 1 required)"))?,
+    };
+    // 米 → Q32.32；checked_mul 防 i64 溢出（与 deploy_handler 同报错、同理由：
+    // release 回绕不可接受，拒绝优于回绕）。
+    let lane_q32 = lane_len_m
+        .checked_mul(ONE_Q32_32)
+        .ok_or_else(|| invalid_params("lane_len_m too large (Q32.32 overflow)"))?;
+    let max_ticks = match params.get("max_ticks") {
+        None | Some(Value::Null) => TICK_CAP_REDUCED,
+        Some(v) => v
+            .as_u64()
+            .filter(|t| (1..=TICK_CAP_FULL).contains(t))
+            .ok_or_else(|| {
+                invalid_params(&format!(
+                    "invalid max_ticks (1..={TICK_CAP_FULL} required)"
+                ))
+            })?,
+    };
+    let threads = match params.get("threads") {
+        None | Some(Value::Null) => 1,
+        Some(v) => v
+            .as_u64()
+            .filter(|t| (1..=MAX_THREADS).contains(t))
+            .ok_or_else(|| {
+                invalid_params(&format!("invalid threads (1..={MAX_THREADS} required)"))
+            })? as usize,
+    };
+
+    let pool = sim::pool::ThreadPool::new(threads);
+    let mut red_wins: u64 = 0;
+    let mut blue_wins: u64 = 0;
+    let mut draws: u64 = 0;
+    let mut outcomes: Vec<Value> = Vec::with_capacity(games as usize);
+    for i in 0..games {
+        let seed = seed_base.wrapping_add(i);
+        let mut game = sim::world::World::deploy_versus(seed, &red, &blue, lane_q32);
+        let o = game.run_battle_with(max_ticks, Some(&pool));
+        match o.winner {
+            sim::world::Winner::Red => red_wins += 1,
+            sim::world::Winner::Blue => blue_wins += 1,
+            sim::world::Winner::Draw => draws += 1,
+        }
+        outcomes.push(json!({
+            "seed": seed,
+            "winner": o.winner.label(),
+            "end_tick": o.end_tick,
+            "alive_red": o.alive_red,
+            "alive_blue": o.alive_blue,
+            "final_hash": format!("0x{:016x}", o.final_hash),
+        }));
+    }
+    // 万分比整数（red_wins ≤ games ≤ 1000 ⇒ 无溢出面）；games ≥ 1 已保证除零安全。
+    let win_rate_red_pp = red_wins * 10_000 / games;
+
+    Ok(json!({
+        "games": games,
+        "seed_base": seed_base,
+        "red_wins": red_wins,
+        "blue_wins": blue_wins,
+        "draws": draws,
+        "win_rate_red_pp": win_rate_red_pp,
+        "outcomes": outcomes,
+    }))
+}
+
 /// `game.run_tests`（D5/D8）：params `{suite: str}`（可选，缺省 = 默认套件）→
 /// `{suite, total, passed, failed, results}`。断言失败 ≠ 协议错误（pass=false
 /// 正常返回——判定主体语义）；套件无净副作用（全新 World，不碰 HostedGame）。
@@ -569,9 +686,9 @@ pub fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> B
 /// bevy_remote-0.19.1/src/http.rs:52——本仓自持字面量，不随上游漂移）。
 pub const DEFAULT_BRP_PORT: u16 = 15702;
 
-/// 宿主 BRP 插件（D1/D3/D11；T021/D5 增 `port` 字段）：资源初始化 + 6 方法注册
-/// + 显式回环 HTTP 绑定。**地址恒为 127.0.0.1**（回环硬约束不变——BRP 无鉴权，
-/// 禁止绑定非回环地址；显式绑定防上游默认值漂移）；端口缺省
+/// 宿主 BRP 插件（D1/D3/D11；T021/D5 增 `port` 字段；T023 注册 +1 方法）：资源
+/// 初始化 + 7 方法注册 + 显式回环 HTTP 绑定。**地址恒为 127.0.0.1**（回环硬约束
+/// 不变——BRP 无鉴权，禁止绑定非回环地址；显式绑定防上游默认值漂移）；端口缺省
 /// [`DEFAULT_BRP_PORT`]、经 `port` 字段可覆盖（CLI `--port` 落地）。留痕
 /// （D5）：并行波次验证隔离（多树多实例同机）与后续多实例实验需要；
 /// T018「写死」精确化为「地址写死回环、端口默认 15702 可选覆盖」。
@@ -589,6 +706,7 @@ impl Plugin for HostRpcPlugin {
                 .with_method_main(RUN_TO_TICK_METHOD, run_to_tick_handler)
                 .with_method_main(STATE_HASH_METHOD, state_hash_handler)
                 .with_method_main(OUTCOME_METHOD, outcome_handler)
+                .with_method_main(SAMPLE_OUTCOMES_METHOD, sample_outcomes_handler)
                 .with_method_main(RUN_TESTS_METHOD, run_tests_handler)
                 .with_method_main(SCREENSHOT_METHOD, screenshot_handler),
         );

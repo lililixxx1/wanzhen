@@ -283,18 +283,18 @@ fn main() -> ExitCode {
         }
     };
 
-    // 三行运行时留痕（stderr）：形态 / 回环绑定（实际端口，D5）/ 方法面计数（6/6）。
-    // headless 三行逐字不变（T018 冒烟回归面）；spectate 增 mode 行、methods 行
-    // 如实反映 screenshot 实装（D3「banner 增 [host] mode=spectate ... 行」）。
+    // 三行运行时留痕（stderr）：形态 / 回环绑定（实际端口，D5）/ 方法面计数（7/7——T023/D2 计数门禁 6→7）。
+    // headless 形态结构不变（T018 冒烟回归面——methods 行按 T023 计数门禁扩列，树内 46/46 实证不破坏）；
+    // spectate 增 mode 行、methods 行如实反映 screenshot 实装（D3「banner 增 [host] mode=spectate ... 行」）。
     let port = args.port.unwrap_or(DEFAULT_BRP_PORT);
     if args.spectate {
         eprintln!("[host] mode=spectate (window 1920x1080 fixed, winit loop, presentation+HUD live; T019/D3)");
         eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
-        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(live->T019/D8)");
+        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(live->T019/D8)");
     } else {
         eprintln!("[host] mode=headless (spectate arrives with T019)");
         eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
-        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(stub->T019)");
+        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(stub->T019)");
     }
 
     // T021/D4：任一配置参数（除 --port）出现 → 启动即 auto-deploy。

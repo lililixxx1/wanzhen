@@ -1,3 +1,3 @@
 [host] mode=headless (spectate arrives with T019)
 [host] BRP listening on 127.0.0.1:15712 (explicit loopback bind; non-loopback forbidden)
-[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(stub->T019)
+[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(stub->T019)
