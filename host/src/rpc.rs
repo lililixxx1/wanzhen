@@ -336,30 +336,31 @@ pub fn outcome_handler(In(_params): In<Option<Value>>, world: &mut World) -> Brp
     }))
 }
 
-/// `game.run_tests`（D5/D8）：params `{suite: "t018-smoke"}`（可选，缺省即
-/// 冒烟集）→ `{suite, total, passed, failed, results}`。断言失败 ≠ 协议错误
-/// （pass=false 正常返回——判定主体语义）；套件无净副作用（全新 World，不碰
-/// HostedGame）。非冒烟套件名 → INVALID_PARAMS（全量断言面随 T020）。
+/// `game.run_tests`（D5/D8）：params `{suite: str}`（可选，缺省 = 默认套件）→
+/// `{suite, total, passed, failed, results}`。断言失败 ≠ 协议错误（pass=false
+/// 正常返回——判定主体语义）；套件无净副作用（全新 World，不碰 HostedGame）。
+/// 套件注册与判定**全部委托 [`suite`] 模块**（T020 预备重构：本 handler 只做
+/// 参数形状检查与响应组装，套件清单的单一来源在 suite.rs——后续卡扩充断言面
+/// 不再触碰本文件）。
 pub fn run_tests_handler(In(params): In<Option<Value>>, _world: &mut World) -> BrpResult {
     // P2-1 整改：suite 键存在但非字符串 → 显式 INVALID_PARAMS（缺键/null 才走缺省，
     // 不再静默回落默认套件）。
     let suite_name = match params.as_ref().and_then(|p| p.get("suite")) {
-        None | Some(Value::Null) => suite::SMOKE_SUITE,
+        None | Some(Value::Null) => suite::DEFAULT_SUITE,
         Some(Value::String(s)) => s.as_str(),
         Some(_) => {
-            return Err(invalid_params(
-                "invalid suite (string required; omit for default \"t018-smoke\")",
-            ))
+            return Err(invalid_params(&format!(
+                "invalid suite (string required; omit for default \"{}\")",
+                suite::DEFAULT_SUITE
+            )))
         }
     };
-    if suite_name != suite::SMOKE_SUITE {
-        return Err(invalid_params(&format!(
-            "unknown suite \"{suite_name}\" (only \"{}\" exists in T018; full suite arrives with T020)",
-            suite::SMOKE_SUITE
-        )));
-    }
-
-    let results = suite::run_smoke();
+    let results = suite::run(suite_name).ok_or_else(|| {
+        invalid_params(&format!(
+            "unknown suite \"{suite_name}\" (available: {})",
+            suite::names().join(", ")
+        ))
+    })?;
     let total = results.len();
     let passed = results.iter().filter(|r| r.pass).count();
     let failed = total - passed;

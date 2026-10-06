@@ -1,21 +1,41 @@
-//! `game.run_tests` 冒烟套件（T018/D8）：进程内行使、无净副作用——全新
-//! World、不碰 [`crate::rpc::HostedGame`]，纯读 sim 公共 API。host 不加
-//! `#[cfg(test)]`（套件经 BRP 在 release 路径行使，免 bevy_remote debug
-//! 构建足迹）；全量断言面随 T020（席位 3）。
+//! `game.run_tests` 断言套件（T018/D8 冒烟集；全量断言面随 T020 扩充）：
+//! 进程内行使、无净副作用——全新 World、不碰 [`crate::rpc::HostedGame`]，
+//! 纯读 sim 公共 API。host 不加 `#[cfg(test)]`（套件经 BRP 在 release 路径
+//! 行使，免 bevy_remote debug 构建足迹）。
+//!
+//! 套件注册单一来源（T020 预备重构）：[`run`] 按名分发 + [`names`] 清单 +
+//! [`DEFAULT_SUITE`] 缺省名——rpc.rs 的 run_tests handler 只委托本模块，
+//! 扩充断言面不动 rpc.rs。
 //!
 //! 黄金锚 = M0 归档值（D7 锚清单）：十六进制字面量逐字取自派工单，勿手抄
 //! 换算。detail 口径：pass 写实际哈希值（hex），fail 写「expected … got …」。
 
 use sim::world::{DEFAULT_COMPOSITION, LANE_LEN_Q32};
 
-/// 当前唯一套件名（非此值 → 参数错误；全量套件随 T020）。
+/// 冒烟套件名（T018 落位；全量套件名随 T020 增补并同步 [`names`]）。
 pub const SMOKE_SUITE: &str = "t018-smoke";
+
+/// 缺省套件名（run_tests 不带 suite 参数时行使）。
+pub const DEFAULT_SUITE: &str = SMOKE_SUITE;
 
 /// 单条断言结果（pass=false 是正常返回值——断言失败 ≠ 协议错误，D5）。
 pub struct AssertionResult {
     pub name: &'static str,
     pub pass: bool,
     pub detail: String,
+}
+
+/// 按名分发套件（未知名字返回 None——handler 侧转 INVALID_PARAMS）。
+pub fn run(name: &str) -> Option<Vec<AssertionResult>> {
+    match name {
+        SMOKE_SUITE => Some(run_smoke()),
+        _ => None,
+    }
+}
+
+/// 可用套件清单（错误消息用；与 [`run`] 分发同步）。
+pub fn names() -> Vec<&'static str> {
+    vec![SMOKE_SUITE]
 }
 
 /// 冒烟四断言（D8）：两枚 M0 黄金锚 + 同种子重放逐位一致 +
