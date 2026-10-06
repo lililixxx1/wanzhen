@@ -1,0 +1,26 @@
+E1 title | 6 | APPLIED
+E2 description | 7 | APPLIED
+E3 og:title | 8 | APPLIED
+E4 kicker | 167 | APPLIED
+E5 版本 | 171 | APPLIED
+E6 日期 | 172 | APPLIED
+E7 状态 | 175 | APPLIED
+E8 02章市场数据句 | 252 | APPLIED
+E9 04章4.4实测基线句 | 374 | APPLIED
+E10 06章排期 | 471 | APPLIED
+E11 表6-0 tick行 | 482 | APPLIED
+E12 表6-0抽样行 | 486 | APPLIED
+E13 表6-1题注 | 522 | APPLIED
+E14a 6.1硬止损实测判定句 | 525 | APPLIED
+E14b 6.1换算实测替换 | 525 | APPLIED
+E14c 6.1渲染腿触发限定 | 525 | APPLIED
+E15 6.2节标题 | 527 | APPLIED
+E15 6.2表6-2题注 | 541 | APPLIED
+E15 6.2口径修订注 | 542 | APPLIED
+E16 R2 | 558 | APPLIED
+E17 R5功效注 | 561 | APPLIED
+E18 fn9 | 662 | APPLIED
+E19 fn10 | 663 | APPLIED
+E20 colophon | 698 | APPLIED
+E21 修订记录V1.0行 | NOT_APPLIED | FAIL(old串不匹配:派工单old首字符全角「（」vs文件实况「——」，停点上报)
+E21 修订记录V1.0行(补丁轮,Lead更正old串后) | 685 | APPLIED
