@@ -25,7 +25,7 @@
   **`0xe2706f0b91a2be8e`**（T018 显式构成路径归档锚，字面逐字使用）——预设路径 / CLI
   路径 / T018 显式路径三路同哈希，入口无关性由 `apply_deploy` 单一执行路径构造保证。
 - **melee-brawl**（seed 7）：units 60；H1=`0xb82a248ff23515e2`@tick1800；同参重放逐位一致
-  （CHK-03 系列）。H1 与基线 host（未改码）同参实测值一致（实现段开工前探针留证）。
+  （CHK-03 系列）。H1 与开工前基线探针（未改码 host 实测，记录于 worker 回报、未单独归档）一致。
 - **last-stand**（seed 7）：units 80；`run_to_tick 1800` 收于上限 tick 1800（未提前冻结）；
   `game.outcome` winner=blue（sim `run_battle_with` 上限收束 `resolve_by_hp` 总 hp 判定）、
   alive_red=15 / alive_blue=56 确定性精确值（CHK-04 系列）。**与派工单 D6 第 3 项原文
