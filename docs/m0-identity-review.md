@@ -2,7 +2,7 @@
 
 - 生成时刻：2026-10-06T14:26+08:00
 - 生成者：worker-1（隔离树 t014-a；基线 bdffbad75dbcad1cdaad1e1cd77e3c41fc81b4b7）
-- 审核状态：待审（plan-code-reviewer 完整轮）——由 Lead 收口时更新
+- 审核状态：plan-code-reviewer 完整轮**有条件通过**（C-1×2 = 两处扫描留痕档自体命中，非数据缺陷）→ 2026-10-06 同日整改闭环（复验双扫描零命中）；报告 = docs/evidence/t014/review-plan-code-reviewer.md
 - 任务卡：taskset/t014-identity-review.md；派工单存档：docs/evidence/t014/dispatches/wp-a.md
 - 输入 = 报告 V1.0（docs/万阵-游戏前期策划报告.html，2026-10-06）+ T011 证据总索引 docs/evidence/m0/README.md + T012 独立复算 docs/evidence/m0/review/report.md + task-ledger.md + AGENTS.md + bevy-ai-workflow 仓（跨仓短锚）
 - 锚核对：docs/evidence/t014/verify_t014.py（组 A~F 双向子串核对）+ docs/evidence/t014/run_anchor_crossrepo.sh（组 G~J 跨仓，主仓根执行）
@@ -102,10 +102,10 @@ W1 终判（2026-10-11）前后皆可举行——10-11 前按 §2 快照口径�
 | T009 | W1 | ≈145 min | m0 README :397 |
 | T015 | W1 | ≈125 min | m0 README :398 |
 | T010 | W1 | ≈140 min | m0 README :399 |
-| T011 | W1 | ≈140 min | m0 README :400 + task-ledger.md:36 |
+| T011 | W1 | ≈140 min | m0 README :408 小计行 + task-ledger.md:36（:400 为「本卡，收口回填」占位行） |
 | T012 | W1 | ≈150 min（d1：「≈150 min（主会话前置/裁决 D1~D12」） | task-ledger.md:38 |
 | T013 | W1 | ≈110 min（d2：「≈110 min（主会话侦察/owner 三裁决问询」） | task-ledger.md:40 |
-| T014（本卡） | W1 | 收口回填（本行由 Lead 收获时回填实际值；先例 = m0 README §8 T011 行「本卡，收口回填」） | — |
+| T014（本卡） | W1 | ≈165 min（收口回填 2026-10-06：主会话侦察/裁决/派工单 ≈45 + worker-1 执行 ≈35 + G1/收获 ≈25 + 审核轮 ≈32 + 整改收口 ≈28，挂钟全计） | task-ledger.md:42（T014 行） |
 
 注：耗时均为「≈」台账分针近似口径（「≈」合法性边界见 m0 README :402 注），仅投入耗时可用；验收级数字禁用。T001~T011 各行源 = m0 README §8 逐任务表（:389-400）。
 
@@ -115,6 +115,7 @@ W1 终判（2026-10-11）前后皆可举行——10-11 前按 §2 快照口径�
 - W1 累计至 T013 收口（本档滚动快照，算式逐项）：91+605+145+125+140+140+150+110 = 1506 min = 25.10 h——「W1 累计 1506 min = 25.10 h」（e1）〔源: AGENTS.md:12〕。分段核对：T007~T011 六卡 91+605+145+125+140+140 = 1246 min = 20.77 h（b13〔源: docs/evidence/m0/README.md:408〕，T011 收口时点）+ T012 ≈150 min（d1）+ T013 ≈110 min（d2）= 1506 min；1506÷60 = 25.10 h。
 - T012 独立复算旁证（逐字）：「557 min（预备周）/ 1246 min = 20.77h（W1）双 MATCH」（c6）〔源: docs/evidence/m0/review/report.md:22〕。
 - 报告 V1.0 冻结快照：「截至 2026-10-06 T012 收口累计 23.27 h」（a12）〔源: docs/万阵-游戏前期策划报告.html:545〕，与本档滚动快照（25.10 h，截至 T013 收口）为不同时点快照，均如实并列。核对算式：23.27 h = 1246 min（20.77 h，T011 时点）+ T012 150 min（2.5 h）= 1396 min ÷ 60 = 23.2667 → 23.27 h。
+- T014 收口回填后（本卡 ≈165 min，task-ledger.md T014 行）：W1 累计 = 1506 + 165 = 1671 min = 27.85 h——终判 2026-10-11 仍以 m0 README §8 终判行为准（§2.4）。
 
 ### 2.4 终判条款
 
@@ -323,7 +324,7 @@ M1 验收（a26 全句逐字，§3.A 已引）〔源: :503〕；R1 判据句（�
 ### 7.2 自查结果
 
 - **verify_t014.py（组 A~F，84 条双向子串核对）**：runs/verify.txt——汇总行「汇总: 84 条 | PASS 84 | FAIL 0」、REAL_EXIT=0（预注册预期 = 全部 PASS、REAL_EXIT=0，未偏离）。
-- **跨仓组 G~J（9 锚）**：worker 人工双盲全命中（逐条留痕 selfcheck.md §2，含 g4 行号偏差披露）；主仓 G1 留痕档 runs/anchor-crossrepo.txt 由 Lead 收获后经 run_anchor_crossrepo.sh 生成。
+- **跨仓组 G~J（9 锚）**：worker 人工双盲全命中（逐条留痕 selfcheck.md §2，含 g4 行号偏差披露）；主仓 G1 留痕档 runs/anchor-crossrepo.txt 已生成（Lead 收获批次，主仓根执行：9/9 PASS、REAL_EXIT=0）。
 - **措辞自查**：验收级数字无「约/大概」措辞；「≈」仅出现在台账投入耗时口径（§2）与引用原文内（源档/判定行自带字符）；本档自身新算仅三处（预备周小计核对算式 §2.3、W1 小计算式 §2.3、③⑤ 裕度除法 1.1 注一与 §3.A——均给出算式与源）。
 - **行号自查**：全部「源: 路径:行号」经 grep -n 实测核对（组 A~F 84 锚全命中；三处与派工单标注的行号偏差 = a37 实际 :685、b9a/b9b 实际 :158/:159、g4 实际 :134，均已在正文按实际行标注并记 selfcheck.md §1/§2）。
 - **单档自含自查**：§0~§6 全部数字带〔源: …〕标注；评审讨论不需打开其他档案即可进行——证据档（docs/evidence/t014/）仅为深挖指针与核对工具。
