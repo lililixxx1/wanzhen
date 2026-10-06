@@ -38,7 +38,7 @@ tally_hours.py 耗时列解析正确：`re.split(r"(?<!\\)\|", …)` 转义竖�
 三档自洽且强交叉验证：档 a 命令三处逐字一致（t008/runs/plan.txt:51 = t008/runs/red200-th1-s42.cmd = spot cmd），spot stdout 208 字节与归档 diff 空（0 字节），四采样哈希+终局哈希与 t008/matrix.md:15 表行逐值一致（0x4b8f…/0x82c8…/0x07eb…/0xe0cd…/0xde91…）；档 b final_hash 0xc5915d042208e267 与 t007/summary.md:91、t015/summary.md:82 双档附录 A 同配置行同值（D4 只核哈希口径如实注记）；档 c final_hash 0x564cf46fdf191710 与 t009/summary.md:245-247 黄金交叉三方同值一致，命令来源 run_t009.sh:85 = r5-sim-t1.cmd:1 逐字。三档 REAL_EXIT=0 全有留痕（cmd 尾行/.check 行）。覆盖 t007/t008/t009/t015 四个不同证据档（≥3 要求满足）。t010/t015 重型档不重跑的豁免执行本身按 D4，但其指针入档缺位——见 P2-2。
 
 **R6 可公开态 — PASS**
-`grep -rnIF`（模式：`C:\`、`C:/`、`/c/`、`Desktop`、`Administrator`、`D:\`、`D:/`）对 m0/ 全目录排除 wp-a.md 后 19 档零命中（SCAN_EXIT=1）。wp-a.md 按流程档豁免（含树根 `C:\Users\Administrator\Desktop\ccc\trees\wanzhen\t011-a\`，属派工单允许内容）。git bot 身份/密钥类亦零暴露。
+`grep -rnIF`（模式：`C:\`、`C:/`、`/c/`、`Desktop`、`Administrator`、`D:\`、`D:/`）对 m0/ 全目录排除 wp-a.md 后 19 档零命中（SCAN_EXIT=1）。wp-a.md 按流程档豁免（含树根 `<trees-root>\t011-a\`，属派工单允许内容）。git bot 身份/密钥类亦零暴露。
 
 **R7 环境总档 — PASS**
 5 份 environment.txt 全读逐项比对：rustc 1.98.1 (48a229cea 2026-09-01)、cargo 1.98.1 (797e8a9bc 2026-08-05)、CPU i5-12490F 6C/12L/3000MHz、RAM 34187943936 bytes Kingston 3600、OS 10 IoT LTSC 19044、GPU WMI 双卡（RTX 3050 31.0.15.3758 DriverDate 10/04/2023 + GameViewer 15.6.5.199）、toolchain channel 1.98.1、bevy 0.19.1——五档同值断言全部成立。抽验指纹 ≥3 项均对上：t007 bench.exe `D8E251B0…F089`（mtime 2026-10-04 15:19）、t008 sim.exe `C8006C0A…` + bench.exe `80EBCCB0…` + git HEAD b2dad10a…、t010 nvidia-smi 旁行「RTX 3050, 537.58」+ render-spike `264A9593…`、t015 bench `5A2312…`。差异披露如实：nvidia-smi 旁行仅 t010、profile 节 t008/t010 缺省、t008 toolchain 逐行三行、HEAD 字段详略不一——均按「不合并不择优」分行列出。T007 bench 三态哈希链（D8E251→09971d→80ebcc）经 t007/README.md:99/:103 与 t008 环境档交叉闭合。

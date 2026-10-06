@@ -1,7 +1,7 @@
 # T022 派工单（M5-05 挑战预设 ≥3 数据化，席位 7）——Lead 设计段已定，worker 执行
 
 > 任务卡：`taskset/t022-challenges.md`。基线 = 派发时 master HEAD（建树 commit 见工单下发记录）。
-> 附录引用：`C:\Users\Administrator\Desktop\ccc\wanzhen\team-prompt\PROJECT-APPENDIX.md` 附录 A（门禁/内存纪律）、B.1（误报清单）、B.2（数值三查+双盲）、D（隔离树）——只读，禁转写。
+> 附录引用：`<repo>\team-prompt\PROJECT-APPENDIX.md` 附录 A（门禁/内存纪律）、B.1（误报清单）、B.2（数值三查+双盲）、D（隔离树）——只读，禁转写。
 
 ## 0. 结论先行（本单可执行边界）
 

@@ -1,9 +1,9 @@
 # 派工单 WP-A · T011 M0 数据自含成档（worker-1 · 树 t011-a）
 
-- 树根：`C:\Users\Administrator\Desktop\ccc\trees\wanzhen\t011-a\`（git archive 基线 1d304a8 导出，无 .git；工作目录 = 树根）
+- 树根：`<trees-root>\t011-a\`（git archive 基线 1d304a8 导出，无 .git；工作目录 = 树根）
 - 任务卡：`taskset/t011-data-pack.md`（含开工裁决 D1~D9，先通读）
-- 本单路径（主仓，只读）：`C:\Users\Administrator\Desktop\ccc\wanzhen\docs\evidence\m0\dispatches\wp-a.md`
-- **先读项目附录**（只读，禁止转写入任何入库文件）：`C:\Users\Administrator\Desktop\ccc\wanzhen\team-prompt\PROJECT-APPENDIX.md`——附录 A（并发预算/门禁纪律）、B.1（误报清单）、B.2（数值三查五类笔误+双盲）、G（证据档规范）全部适用。
+- 本单路径（主仓，只读）：`<repo>\docs\evidence\m0\dispatches\wp-a.md`
+- **先读项目附录**（只读，禁止转写入任何入库文件）：`<repo>\team-prompt\PROJECT-APPENDIX.md`——附录 A（并发预算/门禁纪律）、B.1（误报清单）、B.2（数值三查五类笔误+双盲）、G（证据档规范）全部适用。
 - 上报：范围外决策一律上报不拍板（SendMessage 或完成简报）；判定语义零裁量——本卡全部判定行**逐字引用既有代码生成档**，你不产生任何新判定。
 
 ## 0. 任务总览

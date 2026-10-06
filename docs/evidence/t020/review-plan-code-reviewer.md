@@ -76,10 +76,10 @@
 
 本次仅在回复中提供报告正文，未写入用户指定的报告文件。相关文件绝对路径：
 
-- `C:\Users\Administrator\Desktop\ccc\wanzhen\host\src\suite.rs`
-- `C:\Users\Administrator\Desktop\ccc\wanzhen\docs\evidence\t020\error_paths.sh`
-- `C:\Users\Administrator\Desktop\ccc\wanzhen\taskset\t020-assertion-suite.md`
-- 指定报告路径：`C:\Users\Administrator\Desktop\ccc\wanzhen\docs\evidence\t020\review-plan-code-reviewer.md`（未创建）
+- `<repo>\host\src\suite.rs`
+- `<repo>\docs\evidence\t020\error_paths.sh`
+- `<repo>\taskset\t020-assertion-suite.md`
+- 指定报告路径：`<repo>\docs\evidence\t020\review-plan-code-reviewer.md`（未创建）
 
 ---
 

@@ -1,6 +1,6 @@
 == 命令: cargo test -p sim -j 3（终态代码复跑；3v3 end_tick 实测用临时 stderr 观测取得后已移除，本档对应终态代码）==
 $ cargo test -p sim -j 3
-   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+   Compiling sim v0.1.0 (<repo>\sim)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.58s
      Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
 

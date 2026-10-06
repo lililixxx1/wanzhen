@@ -1,6 +1,6 @@
 # T010 派工单 · WP-A（实现+门禁+采集+证据一体单）
 
-[执行者] worker-2 · 隔离树 `C:\Users\Administrator\Desktop\ccc\trees\wanzhen\t010-a\`（下称 `<TREE>`，已由 Lead 建好，树内无 .git——git 命令天然不可用）
+[执行者] worker-2 · 隔离树 `<trees-root>\t010-a\`（下称 `<TREE>`，已由 Lead 建好，树内无 .git——git 命令天然不可用）
 
 [目标] T010 渲染 spike（M0-09，验收⑤）：独立 crate `render-spike`——胶囊体灰盒 1 万单位同屏渲染验证，四档帧率数据 + 判定。
 
@@ -13,7 +13,7 @@
 4. `<TREE>\docs\evidence\t010\` 全档
 
 [环境条款引用]（先 Read 再用；机器态文件不入库——入库产物禁止出现其绝对路径或内容转写）
-`C:\Users\Administrator\Desktop\ccc\wanzhen\team-prompt\PROJECT-APPENDIX.md` 附录 A（串行/-j 3 上限/量测空闲独占/门禁清单/Bash 10min 上限）、B.1（误报清单）、B.2（数值纪律）、G（证据档规范）
+`<repo>\team-prompt\PROJECT-APPENDIX.md` 附录 A（串行/-j 3 上限/量测空闲独占/门禁清单/Bash 10min 上限）、B.1（误报清单）、B.2（数值纪律）、G（证据档规范）
 
 **内存纪律（本单从严）**：bevy full 冷编属依赖重型足迹——涉 render-spike 的 cargo 一律 **`-j 2`**（附录 A 上限 3 的从严执行）；**每条 cargo 前**单独整句跑附录 A 的 commit 余量预检：`check/test` 需 CommitFree_G ≥ 10、`build --release` 需 ≥ 12；不足则 sleep 120 重检（≤5 次）后上报。长构建（>10 min 会触发 ZCode Bash 硬超时）一律 `run_in_background` 分步取证（附录 A「ZCode Bash 上限」条 + B.1）。
 

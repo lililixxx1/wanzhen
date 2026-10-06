@@ -1,7 +1,7 @@
 # T023 派工单（M5-06 统计面接入，席位 8）——形态已裁决，worker 执行
 
 > 任务卡：`taskset/t023-stats-face.md`。基线 = 派发时 master HEAD（建树 commit 见工单下发记录）。
-> 附录引用：`C:\Users\Administrator\Desktop\ccc\wanzhen\team-prompt\PROJECT-APPENDIX.md` 附录 A/B.1/B.2/D——只读，禁转写。
+> 附录引用：`<repo>\team-prompt\PROJECT-APPENDIX.md` 附录 A/B.1/B.2/D——只读，禁转写。
 
 ## 0. 结论先行
 

@@ -1,6 +1,6 @@
 # T009 派工单 · WP-A（实现+门禁+量测+证据一体单）
 
-[执行者] worker-1 · 隔离树 `C:\Users\Administrator\Desktop\ccc\trees\wanzhen\t009-a\`（下称 `<TREE>`，已由 Lead 建好，树内无 .git——git 命令天然不可用，「只新增不改既有行」由你自查 + Lead 收获时逐行 diff 复核）
+[执行者] worker-1 · 隔离树 `<trees-root>\t009-a\`（下称 `<TREE>`，已由 Lead 建好，树内无 .git——git 命令天然不可用，「只新增不改既有行」由你自查 + Lead 收获时逐行 diff 复核）
 
 [目标] T009 平衡实验场 v0 与吞吐量测（验收③）：sim 新增第二 bin `arena`（胜率矩阵/吞吐/全规模抽样三模式）+ lib 增量 `World::deploy_versus`，产出全部证据档。
 
@@ -12,7 +12,7 @@
 3. `<TREE>\docs\evidence\t009\` 全档（README.md + summarize.py + runs\ + 环境档 + 跑批脚本）
 
 [环境条款引用]（先 Read 再用；该文件为机器态不入库——你的任何入库产物禁止出现其绝对路径或内容转写）
-`C:\Users\Administrator\Desktop\ccc\wanzhen\team-prompt\PROJECT-APPENDIX.md` 附录 A（cargo -j 3 串行 / 量测空闲独占 / 门禁清单）、B.1（误报清单）、B.2（数值纪律固化单）、C（锚点保真）、G（证据档规范）
+`<repo>\team-prompt\PROJECT-APPENDIX.md` 附录 A（cargo -j 3 串行 / 量测空闲独占 / 门禁清单）、B.1（误报清单）、B.2（数值纪律固化单）、C（锚点保真）、G（证据档规范）
 
 [门禁]（附录 A 清单条目；全部在 `<TREE>` 根执行、串行、期望退出码 0；B.1 纪律：验收命令单独整句执行取退出码，不接管道 `echo $?`）
 1. `cargo check --workspace -j 3`（0 警告）

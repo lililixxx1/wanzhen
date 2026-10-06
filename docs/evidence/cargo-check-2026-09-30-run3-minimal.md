@@ -47,6 +47,6 @@ $ cargo check --workspace -j 3
     Checking bevy_diagnostic v0.19.1
     Checking bevy_internal v0.19.1
     Checking bevy v0.19.1
-    Checking sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+    Checking sim v0.1.0 (<repo>\sim)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.21s
 REAL_EXIT=0

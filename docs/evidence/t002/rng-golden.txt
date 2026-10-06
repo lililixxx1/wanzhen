@@ -69,7 +69,7 @@ sim/src/world.rs（golden_hash_seed42_units0_1800ticks）。
    Compiling bevy_transform v0.19.1
    Compiling bevy_internal v0.19.1
    Compiling bevy v0.19.1
-   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+   Compiling sim v0.1.0 (<repo>\sim)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 48.06s
      Running unittests src\lib.rs (target\debug\deps\sim-e5ca253373322079.exe)
 

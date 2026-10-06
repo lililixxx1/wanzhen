@@ -74,6 +74,6 @@ $ cargo build -p sim --release -j 3
    Compiling bevy_transform v0.19.1
    Compiling bevy_internal v0.19.1
    Compiling bevy v0.19.1
-   Compiling sim v0.1.0 (C:\Users\Administrator\Desktop\ccc\wanzhen\sim)
+   Compiling sim v0.1.0 (<repo>\sim)
     Finished `release` profile [optimized] target(s) in 1m 20s
 REAL_EXIT=0
