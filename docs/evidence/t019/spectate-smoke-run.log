@@ -1,0 +1,326 @@
+== T019 spectate smoke 2026-10-07 03:31:12 ==
+== host exe: ../../../target/release/host.exe ==
+[CHK-00-port-15715-free] PASS
+[CHK-00-port-15716-free] PASS
+[CHK-00-port-15717-free] PASS
+== host1 pid 1521 (spectate autorun, port 15715) ==
+[CHK-01-port-ready] PASS
+[CHK-02-banner-mode-spectate] PASS
+[CHK-02b-banner-loopback-port] PASS
+[CHK-02c-banner-loopback-constraint] PASS
+[CHK-02d-banner-autodeploy] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x41dc33deabc45283","tick":9}}
+[CHK-03-statehash-shape] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x8e5584d6f0bf6e7c","tick":13}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb754fd3637ce836f","tick":50}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x2fda7a654e133a81","tick":86}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x40fab049cbda448b","tick":122}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xffcc3db9c115897b","tick":158}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x387d019a9944a964","tick":194}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x9d7a004bf4ce1221","tick":230}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf6e36bd9f5064a95","tick":266}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x29d731a623460459","tick":301}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x97f0f2c910cb60c4","tick":337}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb5c3a8e0f3513f16","tick":373}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xea76014564022656","tick":409}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe0ad6f356909b17a","tick":445}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcb8d987c8d417325","tick":481}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x06544469ead4e35e","tick":517}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x425d56c047c1b2b1","tick":553}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfcfbf17bfd626c69","tick":589}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x61815b0c7e9c5ff1","tick":625}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x0ea0cb8817463ce3","tick":661}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x977f4c939a0f9f7a","tick":698}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x4d713df73530ba1f","tick":734}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x28fbef875a35a56e","tick":770}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x927696276928bf03","tick":806}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x834be8c84e6fe677","tick":842}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xdf830575b5c027d8","tick":877}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x27fe1971bdb6e26d","tick":914}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x702364fe5107b887","tick":949}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x1e95483f95e3b42d","tick":985}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x5ece8b5dbbc12356","tick":1021}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x8b8486b0f474238b","tick":1057}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x0ca2c2ebe0edbda3","tick":1093}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x7081922102872789","tick":1129}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf2fc04d7211e07c3","tick":1165}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xdf99e1981b1c1e89","tick":1201}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfb5549749b928aa5","tick":1236}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x48298d0638a19083","tick":1273}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x1ca1b20572d7c6f7","tick":1309}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6fb2c1e1e0a09644","tick":1345}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x2d2b97b693738b82","tick":1380}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x02bbeb51706faa59","tick":1416}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xc073fbcdbe3ecf10","tick":1452}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x2dfb01f506146a49","tick":1488}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x2ddcd4a35d761975","tick":1524}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xc5b7c1ad7d7c12ab","tick":1560}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xdb05ee91ec18e83e","tick":1596}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6cdf732f5bfbdcb2","tick":1632}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xfdfff82efea62542","tick":1668}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x1deff8ac02c6a3c2","tick":1703}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x938dbe597734b5f7","tick":1739}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3f0a4cc0d8635d8b","tick":1775}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+[CHK-04-autoran-frozen] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":23,"alive_red":23,"end_tick":1800,"final_hash":"0xb82a248ff23515e2","winner":"red"}}
+spectate melee-brawl seed7: end_tick=1800 final_hash="final_hash":"0xb82a248ff23515e2" (frozen_at: {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}})
+[CHK-05-anchor-mb-bitexact] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb82a248ff23515e2","tick":1800}}
+[CHK-05b-statehash-frozen-consistent] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":10}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"error":{"code":4002,"message":"battle already resolved; call game.deploy to start a new one","data":{"end_tick":1800,"final_hash":"0xb82a248ff23515e2","winner":"red"}}}
+[CHK-06-frozen-run-4002] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"id":0,"status":"requested"}}
+[CHK-07-shot-requested] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{"id":0}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"bytes":104239,"path":"screenshot-0.png","status":"captured"}}
+[CHK-07b-shot-captured] PASS
+shot1: id=0 path=screenshot-0.png bytes=104239
+[CHK-07c-shot-file-exists] PASS
+[CHK-07d-shot-bytes-nonzero] PASS
+[CHK-07e-shot-png-magic] PASS
+04443929ecd7e0ecbef0007c1022016f82ab544628551b2360c83dfaac82eaa5 *shot-1-frozen-melee-seed7.png
+[CHK-07f-shot-moved-evidence] PASS
+[CHK-08-host1-alive] PASS
+[CHK-08b-host1-no-panic] PASS
+== host2 pid 1996 (spectate autorun, port 15716) ==
+[CHK-09-port2-ready] PASS
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3a115d6e16f2703a","tick":5}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x63ce11c9b07766c4","tick":41}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x22e909cd19c656e8","tick":77}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x8ae30e438327ec25","tick":113}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x07a3c99823a37713","tick":148}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xd7214748363ceba8","tick":184}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x24ff7bb5a85ba0a2","tick":220}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xa4b2eb07dad31043","tick":256}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xa1ab40518387a493","tick":291}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x82409368c02c6ea1","tick":328}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcc0641e5b3872563","tick":364}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe834dacb15f1b0f7","tick":399}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe4114cf2c5c6fee1","tick":435}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3363d800a0eacc80","tick":471}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x24b5da135ac97ed9","tick":507}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3146f1babb8cd931","tick":543}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3b2778cf45c10b7c","tick":580}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x4ddfa2463ffac8ba","tick":615}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xebc88d4a47762df4","tick":651}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe7716aabc4806e0c","tick":687}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x7ea5d5bd1bef7a48","tick":724}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xbb580af6336e3d0b","tick":759}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe79ee7ba02a0dda9","tick":795}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x5519a4606509b16b","tick":831}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x5580f0333ebe2989","tick":867}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf003487442a785ba","tick":903}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcdeef40cdc5b029d","tick":939}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x906041cf841a202b","tick":975}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe9c49a814452a502","tick":1010}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf63499878c0a1da5","tick":1046}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xce4769e53ebebec6","tick":1082}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xe1025c95bbbf39a6","tick":1118}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6584778cadc85456","tick":1154}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x60ac0c270d46f8b0","tick":1189}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x454a04a094ba1ebc","tick":1225}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcd745a8282395904","tick":1261}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xd34b68dd6b4de0ec","tick":1297}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3b5afe033d1aff15","tick":1333}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xd2b72d8f87b91894","tick":1369}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x742c85dab37b0c1f","tick":1405}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x806150097f1f9f3f","tick":1440}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x0cc2e4f2ad47d53b","tick":1477}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xb6c25c83f0a5e84b","tick":1513}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xf0f42348d9d1ce59","tick":1548}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x0a825898e7c10f2a","tick":1584}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x8dc6c1b08ec32594","tick":1620}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6baa9266c0c936c5","tick":1657}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x95104890f273cd74","tick":1693}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x052a86a4bba859bb","tick":1729}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x6a8dbad20465e749","tick":1765}}
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x26c77d5372dc7ad0","tick":1800}}
+[CHK-10-autoran2-frozen] PASS
+--- REQ #1 (port 15716): {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1 (port 15716): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":2,"alive_red":2,"end_tick":1800,"final_hash":"0x26c77d5372dc7ad0","winner":"red"}}
+spectate seed43 swordsman:10 lane50: "winner":"red" "end_tick":1800 "final_hash":"0x26c77d5372dc7ad0"
+[CHK-10b-hash2-captured] PASS
+[CHK-10c-host2-alive] PASS
+[CHK-10d-host2-no-panic] PASS
+== host3 pid 2424 (headless, port 15717) ==
+[CHK-11-port3-ready] PASS
+[CHK-11b-banner-headless] PASS
+--- REQ #1 (port 15717): {"jsonrpc":"2.0","id":1,"method":"game.outcome","params":{}}
+--- RESP #1 (port 15717): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":2,"alive_red":2,"end_tick":1800,"final_hash":"0x26c77d5372dc7ad0","winner":"red"}}
+headless seed43 swordsman:10 lane50: "final_hash":"0x26c77d5372dc7ad0"
+[CHK-12-spectate-headless-bitexact] PASS
+[CHK-12b-host3-alive] PASS
+[CHK-12c-host3-no-panic] PASS
+== host4 pid 2437 (spectate pure service, port 15715) ==
+[CHK-13-port-ready-again] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":43,"red":[{"kind":"swordsman","count":10}],"blue":[{"kind":"swordsman","count":10}],"lane_len_m":50}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":10,"alive_red":10,"deploy_hash":"0x7d01e8ec14f0a12d","tick":0,"units":20}}
+[CHK-14-brp-deploy-tick0] PASS
+[CHK-14b-brp-deploy-units20] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":300}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"queued":300,"state_hash":"0x7d01e8ec14f0a12d","tick":0}}
+[CHK-15-queued-300-immediate] PASS
+[CHK-15b-queued-tick0] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x3a115d6e16f2703a","tick":5}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x63ce11c9b07766c4","tick":41}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x22e909cd19c656e8","tick":77}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x8ae30e438327ec25","tick":113}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x07a3c99823a37713","tick":148}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xd7214748363ceba8","tick":184}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0x24ff7bb5a85ba0a2","tick":220}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xa4b2eb07dad31043","tick":256}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xae490a261f56e25e","tick":292}}
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcdf3fef834f172ce","tick":300}}
+spectate manual-drive: tick=300 hash="state_hash":"0xcdf3fef834f172ce"
+[CHK-16-manual-advanced] PASS
+== host5 pid 2535 (headless pure service, port 15717) ==
+[CHK-17-port3-ready-again] PASS
+--- REQ #1 (port 15717): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"seed":43,"red":[{"kind":"swordsman","count":10}],"blue":[{"kind":"swordsman","count":10}],"lane_len_m":50}}
+--- RESP #1 (port 15717): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":10,"alive_red":10,"deploy_hash":"0x7d01e8ec14f0a12d","tick":0,"units":20}}
+[CHK-17b-headless-deploy] PASS
+--- REQ #1 (port 15717): {"jsonrpc":"2.0","id":1,"method":"game.run_to_tick","params":{"ticks":300}}
+--- RESP #1 (port 15717): {"jsonrpc":"2.0","id":1,"result":{"state_hash":"0xcdf3fef834f172ce","tick":300}}
+headless 300t: tick=300 hash="state_hash":"0xcdf3fef834f172ce"
+[CHK-18-manual-crossmode-bitexact] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.deploy","params":{"preset":"default","seed":42}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"alive_blue":30,"alive_red":30,"deploy_hash":"0xe2706f0b91a2be8e","tick":0,"units":60}}
+[CHK-19-redeploy-default-units60] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"id":0,"status":"requested"}}
+[CHK-20-shot2-requested] PASS
+--- REQ #1 (port 15715): {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{"id":0}}
+--- RESP #1 (port 15715): {"jsonrpc":"2.0","id":1,"result":{"bytes":65627,"path":"screenshot-0.png","status":"captured"}}
+[CHK-20b-shot2-captured] PASS
+shot2: id=0 path=screenshot-0.png bytes=65627
+[CHK-20c-shot2-file-exists] PASS
+[CHK-20d-shot2-bytes-nonzero] PASS
+[CHK-20e-shot2-png-magic] PASS
+4743fb272be28e6ef35a3d874adbf0f28adf61be64ebe7ba43171a74dbdb55c5 *shot-2-sixkinds-deployed.png
+[CHK-20f-shot2-moved-evidence] PASS
+[CHK-21-host4-alive] PASS
+[CHK-21b-host5-alive] PASS
+[CHK-21c-host4-no-panic] PASS
+[CHK-21d-host5-no-panic] PASS
+[CHK-22-port-15715-reaped] PASS
+[CHK-22-port-15716-reaped] PASS
+[CHK-22-port-15717-reaped] PASS
+== SUMMARY: PASS=54 FAIL=0 ==
+== SCRIPT_EXIT=0 ==

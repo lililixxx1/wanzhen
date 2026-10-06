@@ -1,0 +1,121 @@
+    Checking host v0.1.0 (<t019-tree>\host)
+warning: type `HudTickLine` is more private than the item `update_hud`
+  --> host\src\hud.rs:83:1
+   |
+83 | / pub(crate) fn update_hud(
+84 | |     hosted: Res<HostedGame>,
+85 | |     mut tick_line: Query<
+86 | |         &'static mut Text,
+...  |
+96 | |     >,
+97 | | ) {
+   | |_^ function `update_hud` is reachable at visibility `pub(crate)`
+   |
+note: but type `HudTickLine` is only usable at visibility `pub(self)`
+  --> host\src\hud.rs:36:1
+   |
+36 | struct HudTickLine;
+   | ^^^^^^^^^^^^^^^^^^
+   = note: `#[warn(private_interfaces)]` on by default
+
+warning: type `HudAliveLine` is more private than the item `update_hud`
+  --> host\src\hud.rs:83:1
+   |
+83 | / pub(crate) fn update_hud(
+84 | |     hosted: Res<HostedGame>,
+85 | |     mut tick_line: Query<
+86 | |         &'static mut Text,
+...  |
+96 | |     >,
+97 | | ) {
+   | |_^ function `update_hud` is reachable at visibility `pub(crate)`
+   |
+note: but type `HudAliveLine` is only usable at visibility `pub(self)`
+  --> host\src\hud.rs:39:1
+   |
+39 | struct HudAliveLine;
+   | ^^^^^^^^^^^^^^^^^^^
+
+warning: type `HudEndLine` is more private than the item `update_hud`
+  --> host\src\hud.rs:83:1
+   |
+83 | / pub(crate) fn update_hud(
+84 | |     hosted: Res<HostedGame>,
+85 | |     mut tick_line: Query<
+86 | |         &'static mut Text,
+...  |
+96 | |     >,
+97 | | ) {
+   | |_^ function `update_hud` is reachable at visibility `pub(crate)`
+   |
+note: but type `HudEndLine` is only usable at visibility `pub(self)`
+  --> host\src\hud.rs:42:1
+   |
+42 | struct HudEndLine;
+   | ^^^^^^^^^^^^^^^^^
+
+warning: type `PresentationRoot` is more private than the item `rebuild_on_deploy`
+   --> host\src\present.rs:159:1
+    |
+159 | / pub(crate) fn rebuild_on_deploy(
+160 | |     hosted: Res<HostedGame>,
+161 | |     assets: Res<PresentationAssets>,
+162 | |     mut root: ResMut<PresentationRoot>,
+163 | |     mut commands: Commands,
+164 | | ) {
+    | |_^ function `rebuild_on_deploy` is reachable at visibility `pub(crate)`
+    |
+note: but type `PresentationRoot` is only usable at visibility `pub(self)`
+   --> host\src\present.rs:65:1
+    |
+ 65 | struct PresentationRoot {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type `PresentationRoot` is more private than the item `update_presentation`
+   --> host\src\present.rs:257:1
+    |
+257 | / pub(crate) fn update_presentation(
+258 | |     hosted: Res<HostedGame>,
+259 | |     root: Res<PresentationRoot>,
+260 | |     mut query: Query<(&PresentUnit, &mut Transform, &mut Visibility)>,
+261 | |     mut queue: Local<std::collections::HashMap<i64, u32>>,
+262 | | ) {
+    | |_^ function `update_presentation` is reachable at visibility `pub(crate)`
+    |
+note: but type `PresentationRoot` is only usable at visibility `pub(self)`
+   --> host\src\present.rs:65:1
+    |
+ 65 | struct PresentationRoot {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type `PresentUnit` is more private than the item `update_presentation`
+   --> host\src\present.rs:257:1
+    |
+257 | / pub(crate) fn update_presentation(
+258 | |     hosted: Res<HostedGame>,
+259 | |     root: Res<PresentationRoot>,
+260 | |     mut query: Query<(&PresentUnit, &mut Transform, &mut Visibility)>,
+261 | |     mut queue: Local<std::collections::HashMap<i64, u32>>,
+262 | | ) {
+    | |_^ function `update_presentation` is reachable at visibility `pub(crate)`
+    |
+note: but type `PresentUnit` is only usable at visibility `pub(self)`
+   --> host\src\present.rs:77:1
+    |
+ 77 | struct PresentUnit {
+    | ^^^^^^^^^^^^^^^^^^
+
+error: type `PresentationRoot` is private
+   --> host\src\spectate.rs:115:17
+    |
+115 | /                 (
+116 | |                     spectate_driver,
+117 | |                     present::rebuild_on_deploy,
+118 | |                     present::update_presentation,
+...   |
+121 | |                     .chain(),
+    | |____________________________^ private type
+
+warning: `host` (bin "host") generated 6 warnings
+error: could not compile `host` (bin "host") due to 1 previous error; 6 warnings emitted
+REAL_EXIT=101

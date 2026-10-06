@@ -1,0 +1,85 @@
+   Compiling smallvec v1.16.2
+   Compiling bevy_tasks v0.19.1
+   Compiling bevy_reflect v0.19.1
+   Compiling half v2.7.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling bevy_ecs v0.19.1
+   Compiling bevy_app v0.19.1
+   Compiling bevy_time v0.19.1
+   Compiling bevy_math v0.19.1
+   Compiling bevy_diagnostic v0.19.1
+   Compiling bevy_asset v0.19.1
+   Compiling bevy_color v0.19.1
+REAL_EXIT=127
+
+== ABORT NOTE (T019 worker): Lead 分型判定放行执行——起跑前进程门 cargo/rustc=0；起跑 65 s 日志见上方 Compiling bevy_ecs/bevy_app/bevy_reflect 等依赖栈编译行 = 判定真冷编，命中中止条件②，已于 2026-10-07 taskkill cargo+rustc 全清（计数复查=0），回退 ≥12G 等待并上报 ==
+
+== 裁决留痕（Lead，2026-10-07）==：分型判定（增量复用）试跑后命中真冷编签名中止（见上 ABORT NOTE）；二裁 = -j 1 冷编放行——「12G 门按 -j 2 并发冷编口径；-j 1 峰值足迹估算 ≈5-6G，11.9G 余量下裕度 ≥5G，从严方向（更慢不更险）经 Lead 裁决放行 + 7G 监控地板（跌破即 taskkill 中止上报）+ 开跑前进程门 cargo/rustc=0」==
+   Compiling bevy_asset v0.19.1
+   Compiling bevy_color v0.19.1
+   Compiling bevy_transform v0.19.1
+   Compiling bevy_image v0.19.1
+   Compiling bevy_mesh v0.19.1
+   Compiling bevy_input v0.19.1
+   Compiling bevy_window v0.19.1
+   Compiling bevy_camera v0.19.1
+   Compiling bevy_log v0.19.1
+   Compiling naga v29.0.4
+   Compiling wgpu-naga-bridge v29.0.4
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling wgpu-hal v29.0.4
+   Compiling naga_oil v0.22.0
+   Compiling bevy_shader v0.19.1
+   Compiling wgpu-core-deps-windows-linux-android v29.0.4
+   Compiling bevy_gizmos v0.19.1
+   Compiling bevy_material v0.19.1
+   Compiling wgpu-core v29.0.4
+   Compiling enumn v0.1.14
+   Compiling fontique v0.9.0
+   Compiling accesskit v0.24.1
+   Compiling harfrust v0.6.2
+   Compiling icu_segmenter v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling wgpu v29.0.4
+   Compiling bevy_light v0.19.1
+   Compiling bevy_picking v0.19.1
+   Compiling bevy_render v0.19.1
+   Compiling parley v0.9.0
+   Compiling bevy_clipboard v0.19.1
+   Compiling bevy_text v0.19.1
+   Compiling bevy_core_pipeline v0.19.1
+   Compiling bevy_sprite v0.19.1
+   Compiling bevy_input_focus v0.19.1
+   Compiling bevy_a11y v0.19.1
+   Compiling bevy_animation v0.19.1
+   Compiling bevy_world_serialization v0.19.1
+   Compiling bevy_gltf v0.19.1
+   Compiling bevy_ui v0.19.1
+   Compiling bevy_sprite_render v0.19.1
+   Compiling bevy_pbr v0.19.1
+   Compiling accesskit_consumer v0.35.0
+   Compiling hyper v1.11.1
+   Compiling bevy_state v0.19.1
+   Compiling accesskit_windows v0.32.1
+   Compiling bevy_ui_render v0.19.1
+   Compiling bevy_dev_tools v0.19.1
+   Compiling accesskit_winit v0.32.2
+   Compiling smol-hyper v0.1.1
+   Compiling bevy_winit v0.19.1
+   Compiling bevy_scene v0.19.1
+   Compiling bevy_remote v0.19.1
+   Compiling bevy_audio v0.19.1
+   Compiling bevy_gilrs v0.19.1
+   Compiling bevy_gizmos_render v0.19.1
+   Compiling bevy_ui_widgets v0.19.1
+   Compiling bevy_post_process v0.19.1
+   Compiling bevy_anti_alias v0.19.1
+   Compiling bevy_internal v0.19.1
+   Compiling bevy v0.19.1
+   Compiling sim v0.1.0 (<t019-tree>\sim)
+   Compiling host v0.1.0 (<t019-tree>\host)
+    Finished `release` profile [optimized] target(s) in 31m 42s
+REAL_EXIT=0 (j1 run)
+
+== 事件留痕（T019 worker，2026-10-07）==：j1 全量构建 REAL_EXIT=0（31m42s）完成后，02:27 共享 target/release/host.exe 被主仓侧 release 构建覆盖（主仓收获门禁，其源无 --spectate——树 exe 哈希同步变为旧源产物，冒烟二跑 --spectate 报 unknown argument 实锚）；处置 = 树源增量重编 host（10.63s，REAL_EXIT=0）+ 即拷即验（--spectate 识别 ✓）。共享 target 跨仓覆写风险已知，冒烟三跑以树内 exe 为准 ==

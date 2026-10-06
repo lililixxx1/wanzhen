@@ -1,5 +1,7 @@
-# M5-01（T018）BRP/观战宿主（席位 1 headless 形态 + 席位 2）。
-# 纪律：bevy 依赖最小 feature 集 + bevy_remote（备忘录 §五）；不引渲染 feature。
+# M5 BRP/观战宿主（T018 headless + T019 观战形态，席位 1 headless+观战 / 2 / 4 / 5）。
+# T019/D2 依赖切换：bevy_full 别名（workspace 级 default-features = true）+ bevy_remote
+# feature——渲染栈（bevy_winit/wgpu/bevy_ui/bevy_text/default_font 等）随 default features
+# 进入 host；裸 `bevy` 依赖项移除（同一 package 不容双依赖项，bevy-ai-workflow/T010 先例）。
 # sim 以纯 lib 挂载（零 bevy API），宿主只调其公共 API。
 [package]
 name = "host"
@@ -8,6 +10,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { workspace = true, features = ["bevy_remote"] }
+bevy_full = { workspace = true, features = ["bevy_remote"] }
 serde_json = "1"
 sim = { path = "../sim" }

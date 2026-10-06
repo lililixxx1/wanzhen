@@ -1,0 +1,4 @@
+    Finished `release` profile [optimized] target(s) in 0.56s
+REAL_EXIT=0
+7fcb2080a45606499e59252d897f53080885631634b0d94791249e28c730ed26 *<main-repo>/target/release/host.exe
+7fcb2080a45606499e59252d897f53080885631634b0d94791249e28c730ed26 *<t019-tree>/target/release/host.exe

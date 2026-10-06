@@ -25,7 +25,21 @@
 //! 预设数据单一来源见 [`crate::presets`]）；deploy 执行段抽取为 [`apply_deploy`]
 //! （BRP handler 与 CLI auto-deploy 共用——入口无关性由构造保证）；`HostRpcPlugin`
 //! 增 `port` 字段（缺省 15702 不变，地址恒回环）。
+//!
+//! T019（D4/D5/D8）：共享推进函数 [`advance_ticks`]（headless run_to_tick 与
+//! spectate 驱动系统唯一模拟推进路径——语义零漂移）；[`HostedGame`] 增
+//! `generation` 世代替换计数（表现层重建判据，D5）；`game.run_to_tick` spectate
+//! 形态入队立即返回（响应多 `queued` 字段 = 模式差异留痕，headless 响应形态
+//! 不变）；`game.deploy` spectate 形态下复位 autorun=false（BRP deploy 恒调用
+//! 方驱动，D4）；`game.screenshot` 分形态——headless 4101 桩逐字不变、spectate
+//! 实装两段式（实装体在 [`crate::spectate`]）。形态判据 = `SpectateState`
+//! 资源存在性（headless 无此资源，路径零漂移——T018 冒烟回归面）。
 
+use bevy_full as bevy;
+// derive 宏（下方 Resource 等）展开为 `bevy_ecs::` 绝对路径；依赖名为别名
+// bevy_full 时宏无法经清单解析命中，按 bevy_macro_utils 0.19.1 内置说明补别名
+// （render-spike/src/main.rs:23-26 + T010 api-notes 先例）。
+use bevy_full::ecs as bevy_ecs;
 use bevy::prelude::*;
 use bevy::remote::error_codes;
 use bevy::remote::http::RemoteHttpPlugin;
@@ -35,6 +49,7 @@ use sim::units::{UnitKind, ONE_Q32_32};
 use sim::world::{TICK_CAP_FULL, TICK_CAP_REDUCED};
 
 use crate::presets;
+use crate::spectate::SpectateState;
 use crate::suite;
 
 /// `game.deploy`（config：构成/参数/种子 → 布阵快照哈希）。
@@ -47,7 +62,8 @@ pub const STATE_HASH_METHOD: &str = "game.state_hash";
 pub const OUTCOME_METHOD: &str = "game.outcome";
 /// `game.run_tests`（套件判定面；本卡最小冒烟集，全量随 T020）。
 pub const RUN_TESTS_METHOD: &str = "game.run_tests";
-/// `game.screenshot`（headless 桩：结构化错误，实装随 T019）。
+/// `game.screenshot`（T018 headless 桩保留；T019/D8 spectate 形态两段式实装，
+/// 实装体在 [`crate::spectate`]，本模块 handler 只按形态分发）。
 pub const SCREENSHOT_METHOD: &str = "game.screenshot";
 
 /// 域错误码（D6）：正码 4xxx，避开 JSON-RPC 保留段 -32768..-32000。
@@ -75,7 +91,8 @@ pub(crate) const MAX_UNITS_PER_SIDE: usize = 100_000;
 pub(crate) const KIND_IDS: &str = "shieldman, heavyknight, pikeman, swordsman, archer, militia";
 
 /// 本模块族共用的参数错误（JSON-RPC INVALID_PARAMS -32602，沿工作流仓先例）。
-fn invalid_params(message: &str) -> BrpError {
+/// T019 起 `pub(crate)`：spectate 截图两段式的参数错误同码同构造（D8）。
+pub(crate) fn invalid_params(message: &str) -> BrpError {
     BrpError {
         code: error_codes::INVALID_PARAMS,
         message: message.to_string(),
@@ -106,11 +123,17 @@ pub struct GameConfig {
 /// 宿主对局状态（D4）：`game.deploy` 整体重置（旧 World / 线程池随赋值丢弃，
 /// `ThreadPool` Drop 时 join worker）。sim 类型全限定（与 bevy `World` 同名，
 /// 见模块注释命名纪律）。
+///
+/// T019/D5 增 `generation`：布阵世代替换计数——`apply_deploy` 每次递增（首布
+/// = 1），表现层据此检测重部署并重建实体池（防 10k 级实体 churn 下的新旧
+/// World 错配）。`Default` 派生给出 generation=0（未布阵语义）。
 #[derive(Resource, Default)]
 pub struct HostedGame {
     pub world: Option<sim::world::World>,
     pub pool: Option<sim::pool::ThreadPool>,
     pub config: Option<GameConfig>,
+    /// 布阵世代（T019/D5）：初始 0，`apply_deploy` 递增。
+    pub generation: u64,
 }
 
 /// 兵种 id → [`UnitKind`]：直接用 sim 公共 API `sim::units::kind_from_id`
@@ -162,7 +185,9 @@ fn parse_composition(params: &Value, field: &str) -> Result<Vec<(UnitKind, usize
 }
 
 /// 双方存活计数（host 侧数公共 `units()` 切片——O(N) 每步一次可忽略，D5）。
-fn alive_counts(units: &[sim::world::Unit]) -> (u32, u32) {
+/// T019 起 `pub(crate)`：HUD 终局前行（席位 5，D7）与 sim 内部 `alive_counts`
+/// 同口径（按索引序单遍），单一来源在本函数。
+pub(crate) fn alive_counts(units: &[sim::world::Unit]) -> (u32, u32) {
     let mut red: u32 = 0;
     let mut blue: u32 = 0;
     for u in units {
@@ -225,6 +250,8 @@ pub(crate) fn apply_deploy(hosted: &mut HostedGame, req: ResolvedDeploy) -> serd
     let units = game_world.units().len();
     let (alive_red, alive_blue) = alive_counts(game_world.units());
 
+    // T019/D5：世代递增（首布 = 1；wrapping 防理论溢出 panic——u64 实际不可达）。
+    let generation = hosted.generation.wrapping_add(1);
     *hosted = HostedGame {
         world: Some(game_world),
         pool: Some(pool),
@@ -234,6 +261,7 @@ pub(crate) fn apply_deploy(hosted: &mut HostedGame, req: ResolvedDeploy) -> serd
             threads: req.threads,
             lane_len_m: req.lane_len_m,
         }),
+        generation,
     };
 
     json!({
@@ -321,10 +349,20 @@ pub fn deploy_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpRe
         max_ticks,
         threads,
     };
-    let mut hosted = world
-        .get_resource_mut::<HostedGame>()
-        .expect("HostedGame initialized by HostRpcPlugin");
-    Ok(apply_deploy(&mut hosted, req))
+    let resp = {
+        let mut hosted = world
+            .get_resource_mut::<HostedGame>()
+            .expect("HostedGame initialized by HostRpcPlugin");
+        apply_deploy(&mut hosted, req)
+    };
+    // T019/D4：BRP deploy 恒 autorun=false（调用方驱动）。SpectateState 资源
+    // 仅 spectate 形态存在（SpectatePlugin init）——headless 此处为 no-op，
+    // 行为逐位不变。新布阵后旧 pending 作废（与新 World 无对应关系）。
+    if let Some(mut st) = world.get_resource_mut::<SpectateState>() {
+        st.pending = 0;
+        st.autorun = false;
+    }
+    Ok(resp)
 }
 
 /// `game.run_to_tick`（D5）：params `{ticks: u64}` → `{tick, state_hash}`。
@@ -333,6 +371,13 @@ pub fn deploy_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpRe
 /// 越过灭绝继续推会使 outcome 的 end_tick 失真——逐 tick 检查即为此语义代价）。
 /// 未 deploy → [`game_error_codes::NOT_DEPLOYED`]；已冻结 →
 /// [`game_error_codes::BATTLE_RESOLVED`]。
+///
+/// T019/D4 spectate 形态：`ticks` 入 [`SpectateState`] pending 队列**立即返回**
+/// `{tick: <当前>, state_hash: <当前>, queued: n}`（响应多 `queued` 字段 = 模式
+/// 差异留痕；headless 响应形态不变）；入队时 autorun=false（手动接管优先）。
+/// 实际推进由 [`crate::spectate`] 驱动系统按 30Hz 预算经 [`advance_ticks`]
+/// 执行——两形态唯一推进路径，确定性红线（同参数 state_hash 跨模式逐位一致）
+/// 由构造保证。已冻结仍 4002（入队前拦截，两形态同域）。
 pub fn run_to_tick_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
     let params = params
         .ok_or_else(|| invalid_params("missing params (requires {\"ticks\": u64})"))?;
@@ -341,42 +386,86 @@ pub fn run_to_tick_handler(In(params): In<Option<Value>>, world: &mut World) -> 
         .and_then(Value::as_u64)
         .ok_or_else(|| invalid_params("missing/invalid ticks (u64 required)"))?;
 
+    // 冻结/未布阵拦截先行（读路径；T018 语义逐字保留：not_deployed 先于
+    // BATTLE_RESOLVED，与原 mut 路径判序一致）。未冻结才允许入队/直推。
+    {
+        let hosted = world
+            .get_resource::<HostedGame>()
+            .expect("HostedGame initialized by HostRpcPlugin");
+        let game = hosted.world.as_ref().ok_or_else(not_deployed)?;
+        if let Some(outcome) = game.outcome() {
+            return Err(BrpError {
+                code: game_error_codes::BATTLE_RESOLVED,
+                message: "battle already resolved; call game.deploy to start a new one".into(),
+                data: Some(json!({
+                    "winner": outcome.winner.label(),
+                    "end_tick": outcome.end_tick,
+                    "final_hash": format!("0x{:016x}", outcome.final_hash),
+                })),
+            });
+        }
+    }
+
+    // T019/D4：spectate 入队（autorun=false 手动接管优先）；headless 无此资源
+    // → false，走原直推路径。分支判定与改写先于 HostedGame 可变借用（两次
+    // world 借用不重叠——handler 由 bevy_remote 经 run_system_with 独占执行）。
+    let spectate = match world.get_resource_mut::<SpectateState>() {
+        Some(mut st) => {
+            st.pending = st.pending.saturating_add(ticks);
+            st.autorun = false;
+            true
+        }
+        None => false,
+    };
+
     let mut hosted = world
         .get_resource_mut::<HostedGame>()
         .expect("HostedGame initialized by HostRpcPlugin");
     let HostedGame { world: game, pool, .. } = &mut *hosted;
 
     let game = game.as_mut().ok_or_else(not_deployed)?;
-    if let Some(outcome) = game.outcome() {
-        return Err(BrpError {
-            code: game_error_codes::BATTLE_RESOLVED,
-            message: "battle already resolved; call game.deploy to start a new one".into(),
-            data: Some(json!({
-                "winner": outcome.winner.label(),
-                "end_tick": outcome.end_tick,
-                "final_hash": format!("0x{:016x}", outcome.final_hash),
-            })),
-        });
+
+    if spectate {
+        // 入队立即返回（模拟态未动；queued = 本次入队量）。
+        return Ok(json!({
+            "tick": game.tick,
+            "state_hash": format!("0x{:016x}", game.last_hash),
+            "queued": ticks,
+        }));
     }
 
-    let target = game.tick.saturating_add(ticks);
-    loop {
-        // 每步先数双方存活（灭绝即收束）；再查 target；否则推 1 tick。
-        let (alive_red, alive_blue) = alive_counts(game.units());
-        if alive_red == 0 || alive_blue == 0 {
-            game.run_battle_with(game.tick, pool.as_ref());
-            break;
-        }
-        if game.tick >= target {
-            break;
-        }
-        game.run_with(1, pool.as_ref());
-    }
+    advance_ticks(game, pool.as_ref(), ticks);
 
     Ok(json!({
         "tick": game.tick,
         "state_hash": format!("0x{:016x}", game.last_hash),
     }))
+}
+
+/// 共享推进函数（T019/D4）：headless `game.run_to_tick` 直推与 spectate 驱动
+/// 系统的**唯一**模拟推进路径。循环体自 `run_to_tick_handler` 逐字迁移
+/// （T018 原实现，语义零漂移）：逐 tick 灭绝检查——任一方归零即以
+/// `run_battle_with(当前 tick)` 收束（end_tick 真值），否则推 1 tick 至 target。
+/// 确定性注：`run_with(n)` 内部即 n 次 `step_with`（sim/src/world.rs:895-899），
+/// 故分帧切块推进（spectate 30Hz 预算）与单次直推（headless）终态逐位一致。
+pub(crate) fn advance_ticks(
+    game: &mut sim::world::World,
+    pool: Option<&sim::pool::ThreadPool>,
+    ticks: u64,
+) {
+    let target = game.tick.saturating_add(ticks);
+    loop {
+        // 每步先数双方存活（灭绝即收束）；再查 target；否则推 1 tick。
+        let (alive_red, alive_blue) = alive_counts(game.units());
+        if alive_red == 0 || alive_blue == 0 {
+            game.run_battle_with(game.tick, pool);
+            break;
+        }
+        if game.tick >= target {
+            break;
+        }
+        game.run_with(1, pool);
+    }
 }
 
 /// `game.state_hash`（D5）：无 params → `{tick, state_hash}`（读 last_hash）。
@@ -400,7 +489,7 @@ pub fn outcome_handler(In(_params): In<Option<Value>>, world: &mut World) -> Brp
     let mut hosted = world
         .get_resource_mut::<HostedGame>()
         .expect("HostedGame initialized by HostRpcPlugin");
-    let HostedGame { world: game, pool, config } = &mut *hosted;
+    let HostedGame { world: game, pool, config, .. } = &mut *hosted;
 
     let game = game.as_mut().ok_or_else(not_deployed)?;
     // config 与 world 在 deploy 时同步写入；config 为 None 仅当未 deploy
@@ -462,14 +551,18 @@ pub fn run_tests_handler(In(params): In<Option<Value>>, _world: &mut World) -> B
     }))
 }
 
-/// `game.screenshot`（D5/D6 headless 桩）：恒返回结构化错误
-/// [`game_error_codes::SPECTATE_NOT_ENABLED`]，不击穿进程；实装随 T019。
-pub fn screenshot_handler(In(_params): In<Option<Value>>, _world: &mut World) -> BrpResult {
-    Err(BrpError {
-        code: game_error_codes::SPECTATE_NOT_ENABLED,
-        message: "spectate mode not enabled (headless host, T018); arrives with T019".into(),
-        data: Some(json!({ "mode": "headless", "planned_task": "T019" })),
-    })
+/// `game.screenshot`（D8 分形态）：headless（无 `SpectateState` 资源）→ 4101 桩
+/// **逐字不变**（语义分阶段留痕沿 T018，t018 冒烟 CHK-12 回归面）；spectate →
+/// 两段式实装（受理/轮询，见 [`crate::spectate::screenshot_handler`]）。
+pub fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
+    if !world.contains_resource::<SpectateState>() {
+        return Err(BrpError {
+            code: game_error_codes::SPECTATE_NOT_ENABLED,
+            message: "spectate mode not enabled (headless host, T018); arrives with T019".into(),
+            data: Some(json!({ "mode": "headless", "planned_task": "T019" })),
+        });
+    }
+    crate::spectate::screenshot_handler(params, world)
 }
 
 /// 缺省 BRP 监听端口（T021/D5：15702 不变；= bevy_remote DEFAULT_PORT 常量值，

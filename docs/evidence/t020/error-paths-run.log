@@ -1,6 +1,6 @@
-== T020 error paths 2026-10-07 00:45:27 ==
+== T020 error paths 2026-10-07 03:30:47 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 1582 ==
+== host pid 1665 ==
 [CHK-00-port-ready] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.state_hash","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4001,"message":"no deployed game","data":{"hint":"call game.deploy first"}}}
@@ -43,7 +43,7 @@
 [CHK-12-unknown-preset-32602] PASS
 [CHK-12b-unknown-preset-msg] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.run_tests","params":{"suite":"no-such-suite"}}
---- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core)"}}
+--- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"unknown suite \"no-such-suite\" (available: t018-smoke, m5-core, challenges, m5-all)"}}
 [CHK-13-unknown-suite-32602] PASS
 --- REQ #1: {"jsonrpc":"2.0","id":1,"method":"game.screenshot","params":{}}
 --- RESP #1: {"jsonrpc":"2.0","id":1,"error":{"code":4101,"message":"spectate mode not enabled (headless host, T018); arrives with T019","data":{"mode":"headless","planned_task":"T019"}}}

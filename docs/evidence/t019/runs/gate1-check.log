@@ -1,0 +1,194 @@
+    Checking sim v0.1.0 (<t019-tree>\sim)
+    Checking render-spike v0.1.0 (<t019-tree>\render-spike)
+    Checking host v0.1.0 (<t019-tree>\host)
+error[E0425]: cannot find type `BrpResult` in this scope
+   --> host\src\spectate.rs:203:87
+    |
+203 | pub(crate) fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
+    |                                                                                       ^^^^^^^^^
+    |
+   ::: <cargo-registry>/rsproxy.cn-e3de039b2554c837\bevy_ecs-0.19.1\src\error\mod.rs:82:1
+    |
+ 82 | pub type Result<T = (), E = BevyError> = core::result::Result<T, E>;
+    | -------------------------------------- similarly named type alias `Result` defined here
+    |
+help: a type alias with a similar name exists
+    |
+203 - pub(crate) fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
+203 + pub(crate) fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> Result {
+    |
+
+error[E0425]: cannot find type `BrpResult` in this scope
+   --> host\src\spectate.rs:232:45
+    |
+232 | fn request_screenshot(world: &mut World) -> BrpResult {
+    |                                             ^^^^^^^^^
+    |
+   ::: <cargo-registry>/rsproxy.cn-e3de039b2554c837\bevy_ecs-0.19.1\src\error\mod.rs:82:1
+    |
+ 82 | pub type Result<T = (), E = BevyError> = core::result::Result<T, E>;
+    | -------------------------------------- similarly named type alias `Result` defined here
+    |
+help: a type alias with a similar name exists
+    |
+232 - fn request_screenshot(world: &mut World) -> BrpResult {
+232 + fn request_screenshot(world: &mut World) -> Result {
+    |
+
+error[E0425]: cannot find type `BrpResult` in this scope
+   --> host\src\spectate.rs:251:47
+    |
+251 | fn poll_screenshot(world: &World, id: u32) -> BrpResult {
+    |                                               ^^^^^^^^^
+    |
+   ::: <cargo-registry>/rsproxy.cn-e3de039b2554c837\bevy_ecs-0.19.1\src\error\mod.rs:82:1
+    |
+ 82 | pub type Result<T = (), E = BevyError> = core::result::Result<T, E>;
+    | -------------------------------------- similarly named type alias `Result` defined here
+    |
+help: a type alias with a similar name exists
+    |
+251 - fn poll_screenshot(world: &World, id: u32) -> BrpResult {
+251 + fn poll_screenshot(world: &World, id: u32) -> Result {
+    |
+
+error[E0425]: cannot find type `BrpError` in this scope
+   --> host\src\spectate.rs:287:39
+    |
+287 | fn internal_error(message: String) -> BrpError {
+    |                                       ^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `BrpError` in this scope
+   --> host\src\spectate.rs:288:5
+    |
+288 |     BrpError {
+    |     ^^^^^^^^ not found in this scope
+
+error[E0603]: function `update_presentation` is private
+   --> host\src\spectate.rs:117:30
+    |
+117 |                     present::update_presentation,
+    |                              ^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `update_presentation` is defined here
+   --> host\src\present.rs:257:1
+    |
+257 | / fn update_presentation(
+258 | |     hosted: Res<HostedGame>,
+259 | |     root: Res<PresentationRoot>,
+260 | |     mut query: Query<(&PresentUnit, &mut Transform, &mut Visibility)>,
+...   |
+295 | | }
+    | |_^
+
+error[E0027]: pattern does not mention field `generation`
+   --> host\src\rpc.rs:492:9
+    |
+492 |     let HostedGame { world: game, pool, config } = &mut *hosted;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing field `generation`
+    |
+help: include the missing field in the pattern
+    |
+492 |     let HostedGame { world: game, pool, config, generation } = &mut *hosted;
+    |                                               ++++++++++++
+help: if you don't care about this missing field, you can explicitly ignore it
+    |
+492 |     let HostedGame { world: game, pool, config, generation: _ } = &mut *hosted;
+    |                                               +++++++++++++++
+help: or always ignore missing fields here
+    |
+492 |     let HostedGame { world: game, pool, config, .. } = &mut *hosted;
+    |                                               ++++
+
+error[E0308]: mismatched types
+   --> host\src\rpc.rs:565:41
+    |
+565 |     crate::spectate::screenshot_handler(params, world)
+    |     ----------------------------------- ^^^^^^ expected `In<Option<Value>>`, found `Option<Value>`
+    |     |
+    |     arguments to this function are incorrect
+    |
+    = note: expected struct `bevy::bevy_ecs::system::In<Option<_>>`
+                 found enum `Option<_>`
+note: function defined here
+   --> host\src\spectate.rs:203:15
+    |
+203 | pub(crate) fn screenshot_handler(In(params): In<Option<Value>>, world: &mut World) -> BrpResult {
+    |               ^^^^^^^^^^^^^^^^^^ -----------------------------
+help: try wrapping the expression in `bevy::bevy_ecs::system::In`
+    |
+565 |     crate::spectate::screenshot_handler(bevy::bevy_ecs::system::In(params), world)
+    |                                         +++++++++++++++++++++++++++      +
+
+error[E0027]: pattern does not mention field `generation`
+   --> host\src\spectate.rs:134:9
+    |
+134 |       let HostedGame {
+    |  _________^
+135 | |         world: game,
+136 | |         pool,
+137 | |         config,
+138 | |     } = &mut *hosted;
+    | |_____^ missing field `generation`
+    |
+help: include the missing field in the pattern
+    |
+137 -         config,
+138 -     } = &mut *hosted;
+137 +         config, generation } = &mut *hosted;
+    |
+help: if you don't care about this missing field, you can explicitly ignore it
+    |
+137 -         config,
+138 -     } = &mut *hosted;
+137 +         config, generation: _ } = &mut *hosted;
+    |
+help: or always ignore missing fields here
+    |
+137 -         config,
+138 -     } = &mut *hosted;
+137 +         config, .. } = &mut *hosted;
+    |
+
+error[E0308]: arguments to this function are incorrect
+   --> host\src\main.rs:316:25
+    |
+316 |             resolution: WindowResolution::new(1920.0, 1080.0),
+    |                         ^^^^^^^^^^^^^^^^^^^^^ ------  ------ expected `u32`, found floating-point number
+    |                                               |
+    |                                               expected `u32`, found floating-point number
+    |
+note: associated function defined here
+   --> <cargo-registry>/rsproxy.cn-e3de039b2554c837\bevy_window-0.19.1\src\window.rs:923:12
+    |
+923 |     pub fn new(physical_width: u32, physical_height: u32) -> Self {
+    |            ^^^
+
+error[E0433]: cannot find type `ScheduleRunnerPlugin` in this scope
+   --> host\src\main.rs:326:44
+    |
+326 |         app.add_plugins(MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(
+    |                                            ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `ScheduleRunnerPlugin`
+
+error[E0308]: mismatched types
+  --> host\src\hud.rs:53:20
+   |
+53 |         font_size: FONT_SIZE,
+   |                    ^^^^^^^^^ expected `FontSize`, found `f32`
+   |
+help: try wrapping the expression in a variant of `FontSize`
+   |
+53 |         font_size: bevy::bevy_text::FontSize::Px(FONT_SIZE),
+   |                    ++++++++++++++++++++++++++++++         +
+53 |         font_size: bevy::bevy_text::FontSize::Vw(FONT_SIZE),
+   |                    ++++++++++++++++++++++++++++++         +
+53 |         font_size: bevy::bevy_text::FontSize::Vh(FONT_SIZE),
+   |                    ++++++++++++++++++++++++++++++         +
+53 |         font_size: bevy::bevy_text::FontSize::VMin(FONT_SIZE),
+   |                    ++++++++++++++++++++++++++++++++         +
+   = and 2 other candidates
+
+Some errors have detailed explanations: E0027, E0308, E0422, E0425, E0433, E0603.
+For more information about an error, try `rustc --explain E0027`.
+error: could not compile `host` (bin "host") due to 12 previous errors
+REAL_EXIT=101

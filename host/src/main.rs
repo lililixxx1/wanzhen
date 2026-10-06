@@ -1,11 +1,16 @@
-//! M5-01（T018）BRP/观战宿主入口——headless 形态（席位 1）+ game.* 初始方法面
-//! （席位 2，实装见 [`rpc`]）。观战模式（窗口/表现层/HUD/`game.screenshot`
-//! 实装）随 T019，本卡为 headless 桩。
+//! M5 BRP/观战宿主入口——headless 形态（T018，席位 1）+ 观战形态（T019，席位
+//! 1 观战/4/5）+ game.* 方法面（席位 2，实装见 [`rpc`]）。
 //!
-//! 组装（D3/D11）：`MinimalPlugins` + `ScheduleRunnerPlugin::run_loop`(60Hz)
-//! + [`rpc::HostRpcPlugin`]（内含 `RemotePlugin` 6 方法注册 + `RemoteHttpPlugin`
-//! 显式回环绑定——BRP 无鉴权，禁止绑定非回环地址；显式绑定防上游默认值漂移；
-//! **地址恒 127.0.0.1、端口缺省 15702，`--port` 可选覆盖（T021/D5）**）。
+//! 组装（T019/D3 单二双形态，`--spectate` 开关切换；D1：无 cargo feature 分裂）：
+//! - headless（无 `--spectate`）：`MinimalPlugins` +
+//!   `ScheduleRunnerPlugin::run_loop`(60Hz)——现路径逐字不变（T018 回归面）；
+//! - spectate（`--spectate`）：`DefaultPlugins.set(WindowPlugin {…})` 固定
+//!   1920×1080 窗口 + **无 ScheduleRunnerPlugin**（winit 循环驱动）+
+//!   [`spectate::SpectatePlugin`]（状态资源/驱动系统/表现层/HUD/截图 observer，
+//!   D4~D8）。两形态共用 [`rpc::HostRpcPlugin`]（内含 `RemotePlugin` 6 方法
+//!   注册 + `RemoteHttpPlugin` 显式回环绑定——BRP 无鉴权，禁止绑定非回环地址；
+//!   显式绑定防上游默认值漂移；**地址恒 127.0.0.1、端口缺省 15702，`--port`
+//!   可选覆盖（T021/D5）**）。
 //!
 //! T021/D4 auto-deploy：任一配置参数（`--seed/--comp/--threads/--max-ticks/
 //! --lane-len-m/--preset`）出现 → 启动即布阵（解析 → 覆盖 preset 底座 →
@@ -16,6 +21,11 @@
 //! `init_resource_does_not_overwrite`（同文件 :4323））；`--port` 单独出现
 //! **不**触发 deploy；无任何参数 = T018 纯服务形态（行为不变）。
 //!
+//! T019/D4 autorun 语义：`--spectate` + auto-deploy → `SpectateState.autorun =
+//! true`（核心循环观战腿——部署即自走至终局）；BRP deploy 恒 autorun=false
+//! （[`rpc::deploy_handler] 内复位）；`game.run_to_tick` 入队时 autorun=false
+//! （手动接管优先）。
+//!
 //! CLI 解析风格对齐 `sim/src/main.rs`（std::env::args 手写、`--key value` 与
 //! `--key=value` 两形态、非法值 stderr + exit 2）；`--comp` 与 sim 同语法
 //! （`kind:count` 逗号分隔，双方对称构成）。CLI 值域与 BRP deploy 校验段同域
@@ -23,19 +33,29 @@
 //! 每方 ≤ 100_000——常量直接引 [`rpc`]，防两入口漂移）。
 //!
 //! banner 走 `eprintln!`（stderr 元信息，零 bevy_log feature 依赖——D3），
-//! 运行时留痕与 [`rpc`] 注册的方法面/绑定地址一一对应。
+//! 运行时留痕与 [`rpc`] 注册的方法面/绑定地址一一对应。headless 三行逐字
+//! 不变（T018 冒烟回归面）；spectate 形态 mode/methods 两行如实反映实装
+//! （`game.screenshot` 已非桩）。
 
 mod challenges;
+mod hud;
 mod presets;
+mod present;
 mod rpc;
+mod spectate;
 mod suite;
 
 use std::env;
 use std::process::ExitCode;
 use std::time::Duration;
 
+use bevy_full as bevy;
+// T019/D2 依赖名切为 bevy_full 后 derive 宏（Resource 等）仍展开为
+// `bevy_ecs::` 绝对路径；本文件当前无 bevy derive，故不引 ecs 别名
+// （引了会触发 unused_imports 警告——0 警告门禁）。
 use bevy::app::ScheduleRunnerPlugin;
 use bevy::prelude::*;
+use bevy::window::{PresentMode, WindowResolution};
 use sim::units::{kind_from_id, UnitKind, ONE_Q32_32};
 use sim::world::TICK_CAP_FULL;
 
@@ -62,6 +82,10 @@ struct Args {
     preset: Option<String>,
     /// `--port <u16>`：BRP 监听端口（缺省 15702；单独出现不触发 auto-deploy）。
     port: Option<u16>,
+    /// `--spectate`：观战形态开关（T019/D1 单二双形态；无值 flag，与 T021
+    /// 配置参数自由组合——`--spectate --preset melee-brawl --seed 7` = 即看即打）。
+    /// 单独出现**不**触发 auto-deploy（配置参数判定不变）。
+    spectate: bool,
 }
 
 fn parse_num<T: std::str::FromStr>(raw: &str, name: &str) -> Result<T, String>
@@ -138,6 +162,7 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
         lane_len_m: None,
         preset: None,
         port: None,
+        spectate: false,
     };
     let mut i = 0;
     while i < argv.len() {
@@ -173,6 +198,9 @@ fn parse_args(argv: &[String]) -> Result<Args, String> {
                     Some(take_value(argv, &mut i, inline, "--preset")?.to_string())
             }
             "--port" => args.port = Some(parse_num(take_value(argv, &mut i, inline, "--port")?, "--port")?),
+            // T019/D1：观战形态开关（无值 flag；不支持 --spectate=false——开关即开，
+            // 关闭 = 不传，防语义歧义）。
+            "--spectate" => args.spectate = true,
             _ => return Err(format!("unknown argument: '{raw}'")),
         }
         i += 1;
@@ -239,26 +267,35 @@ fn main() -> ExitCode {
         Err(msg) => {
             eprintln!("host: {msg}");
             eprintln!(
-                "usage: host.exe [--seed <u64>] [--comp <kind:count,...>] \
+                "usage: host.exe [--spectate] [--seed <u64>] [--comp <kind:count,...>] \
                  [--threads <1..=1024>] [--max-ticks <1..=14400>] [--lane-len-m <m>] \
                  [--preset <{}>] [--port <u16>] \
-                 (--flag value or --flag=value; any config flag other than --port \
-                 triggers auto-deploy at startup, overriding the preset base; --comp \
-                 deploys symmetrically to both sides; --port alone only changes the BRP \
-                 listen port; no flags = pure BRP service, deploy via game.deploy; \
-                 values are decimal)",
+                 (--flag value or --flag=value; --spectate enables the spectate form \
+                 (T019: render window 1920x1080, presentation layer, HUD, live \
+                 game.screenshot; free to combine with config flags); any config flag \
+                 other than --port triggers auto-deploy at startup, overriding the \
+                 preset base; --comp deploys symmetrically to both sides; --port alone \
+                 only changes the BRP listen port; no flags = pure BRP service, deploy \
+                 via game.deploy; values are decimal)",
                 presets::names().join("|")
             );
             return ExitCode::from(2);
         }
     };
 
-    // 三行运行时留痕（stderr）：headless 形态 / 回环绑定（实际端口，D5）/
-    // 方法面计数（6/6）。
+    // 三行运行时留痕（stderr）：形态 / 回环绑定（实际端口，D5）/ 方法面计数（6/6）。
+    // headless 三行逐字不变（T018 冒烟回归面）；spectate 增 mode 行、methods 行
+    // 如实反映 screenshot 实装（D3「banner 增 [host] mode=spectate ... 行」）。
     let port = args.port.unwrap_or(DEFAULT_BRP_PORT);
-    eprintln!("[host] mode=headless (spectate arrives with T019)");
-    eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
-    eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(stub->T019)");
+    if args.spectate {
+        eprintln!("[host] mode=spectate (window 1920x1080 fixed, winit loop, presentation+HUD live; T019/D3)");
+        eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
+        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(live->T019/D8)");
+    } else {
+        eprintln!("[host] mode=headless (spectate arrives with T019)");
+        eprintln!("[host] BRP listening on 127.0.0.1:{port} (explicit loopback bind; non-loopback forbidden)");
+        eprintln!("[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.run_tests, game.screenshot(stub->T019)");
+    }
 
     // T021/D4：任一配置参数（除 --port）出现 → 启动即 auto-deploy。
     let auto = args.seed.is_some()
@@ -269,10 +306,33 @@ fn main() -> ExitCode {
         || args.preset.is_some();
 
     let mut app = App::new();
-    app.add_plugins(MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(
-        // headless 常驻循环（官方文档例原样）：BRP 请求经调度排空。
-        Duration::from_secs_f64(1.0 / 60.0),
-    )));
+    // T019/D3 双形态组装：插件集按 --spectate 切换，资源/方法面路径两形态共用。
+    if args.spectate {
+        // 观战形态：DefaultPlugins（渲染栈）+ 固定 1920×1080 窗口（范围预裁剪
+        // 「多分辨率不做」）+ AutoNoVsync（vsync 关，T010 先例）。focused 显式
+        // 钉 true（= bevy_window-0.19.1/src/window.rs:498 缺省值，防上游漂移；
+        // WindowPlugin 字段面见派工单 D3）。**无 ScheduleRunnerPlugin**——
+        // winit 事件循环驱动（DefaultPlugins 内 WinitPlugin）。
+        let window = Window {
+            title: "万阵观战".to_string(),
+            // 0.19.1 签名：WindowResolution::new(physical_width: u32,
+            // physical_height: u32)（bevy_window-0.19.1/src/window.rs:923）——
+            // T010 render-spike 同款 u32 传参。
+            resolution: WindowResolution::new(1920, 1080),
+            present_mode: PresentMode::AutoNoVsync,
+            focused: true,
+            ..default()
+        };
+        app.add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(window),
+            ..default()
+        }));
+    } else {
+        app.add_plugins(MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(
+            // headless 常驻循环（官方文档例原样）：BRP 请求经调度排空。
+            Duration::from_secs_f64(1.0 / 60.0),
+        )));
+    }
 
     if auto {
         let req = build_resolved(&args);
@@ -295,6 +355,21 @@ fn main() -> ExitCode {
     }
 
     app.add_plugins(rpc::HostRpcPlugin { port });
+    if args.spectate {
+        // T019/D3：观战插件（状态资源 + 驱动系统 + 表现层 + HUD + 截图 observer，
+        // D4~D8 全在 SpectatePlugin 内落位）；headless 形态不加——资源不存在
+        // 即 headless 判据（rpc.rs screenshot/run_to_tick 分支据此走原路径）。
+        app.add_plugins(spectate::SpectatePlugin);
+        if auto {
+            // T019/D4：CLI auto-deploy + --spectate → autorun=true（部署即自走
+            // 至终局）。insert_resource 在 SpectatePlugin init_resource 之后执行
+            // ——无条件覆盖，autorun 落 true。
+            app.insert_resource(spectate::SpectateState {
+                pending: 0,
+                autorun: true,
+            });
+        }
+    }
     app.run();
     ExitCode::SUCCESS
 }

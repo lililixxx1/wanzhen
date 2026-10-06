@@ -1,6 +1,6 @@
-== T018 BRP smoke 2026-10-07 01:25:49 ==
+== T018 BRP smoke 2026-10-07 03:30:37 ==
 == host exe: ../../../target/release/host.exe ==
-== host pid 3010 ==
+== host pid 1462 ==
 [CHK-00-port-ready] PASS
 [CHK-01-banner-loopback] PASS
 [CHK-01b-banner-constraint] PASS
