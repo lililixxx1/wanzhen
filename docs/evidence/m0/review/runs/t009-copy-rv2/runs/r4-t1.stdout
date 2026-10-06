@@ -1,0 +1,1 @@
+{"games":512,"threads":1,"warmup":16,"wall_s":[11.0664217,11.1078791,10.6348024],"wall_s_median":11.0664217,"games_per_hour":166557.90371697114,"per_game_ms":21.614104882812498,"ai_decision_cost":0,"final_hash_xor":"0xd1b28b373f7791e3"}

@@ -1,0 +1,4 @@
+# cmd: diff docs/evidence/t008/runs/full10000-th12-s44.stdout docs/evidence/m0/review/runs/t008-full10000-th12-s44.stdout
+REAL_EXIT=0
+# cmd: cmp (byte-exact)
+REAL_EXIT=0

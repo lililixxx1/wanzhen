@@ -1,0 +1,5 @@
+# cmd: powershell Get-Counter processor load, 3 samples (pre render-sample-2)
+29.0589017026111
+38.0181774889352
+33.7189194713599
+REAL_EXIT=0

@@ -1,0 +1,9 @@
+# CMD: python docs/evidence/m0/review/runs/render-recompute-rv2.py
+# RUN_UTC: 2026-10-06T03:03:37Z
+sample  N  sum_s  avg_fps  k1  1pct_low  max_delta_ms  min_delta_ms  non_vsync_lt15865ms  J_avg60  J_low45  drift_avg  drift_low  win_res_actual
+s1(render-t10000-rv2)  4167  65.008  64.1002  42  22.1551  128.31  1.476  1037  PASS  FAIL  -80.76%  -89.06%  0x0 (meta captured_frames=4167)
+s2(-s2-rv2)  3862  65.002  59.4140  39  23.2732  83.32  1.469  619  FAIL  FAIL  -82.17%  -88.51%  0x0 (meta captured_frames=3862)
+s3(-s3-rv2)  3864  65.018  59.4301  39  23.8714  83.03  1.542  526  FAIL  FAIL  -82.16%  -88.21%  0x0 (meta captured_frames=3864)
+REF: t010/summary.md:14/:31  avg_fps=333.15  1pct_low=202.48  verdict PASS (drift band +-25%)
+PRE-REGISTERED EXPECTATION (dispatch): t10000 judgment line produced AND PASS -> deviation disclosed as-is if not.
+# REAL_EXIT: 0

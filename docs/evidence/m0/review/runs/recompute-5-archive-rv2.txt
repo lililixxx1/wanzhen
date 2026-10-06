@@ -1,0 +1,5 @@
+# CMD: python docs/evidence/m0/review/runs/recompute-5-archive-rv2.py
+# RUN_UTC: 2026-10-06T03:19:33Z
+archived t10000 frames.csv candidates: ['docs/evidence/t010/runs\\r5_t10000\\out\\t10000\\frames.csv']
+docs/evidence/t010/runs\r5_t10000\out\t10000\frames.csv: N=21656 sum_s=65.003 avg_fps=333.15 (t010/summary.md:14 ref 333.15 MATCH) 1pct_low=202.48 (ref 202.48 MATCH) judge(avg>=60 and low>=45)=PASS
+# REAL_EXIT: 0

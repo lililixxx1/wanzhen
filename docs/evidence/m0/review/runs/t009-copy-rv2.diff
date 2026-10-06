@@ -1,0 +1,8 @@
+# CMD: python docs/evidence/t009/summarize.py --out docs/evidence/m0/review/runs/t009-copy-rv2
+# RUN_UTC: 2026-10-06T03:07:22Z
+summary written: docs/evidence/m0/review/runs/t009-copy-rv2/summary.md
+# REAL_EXIT: 0
+# CMD: diff docs/evidence/t009/summary.md docs/evidence/m0/review/runs/t009-copy-rv2/summary.md (full-file disclosure)
+# REAL_EXIT(diff): 0
+# CMD: cmp (byte-exact) same pair
+# REAL_EXIT(cmp): 0

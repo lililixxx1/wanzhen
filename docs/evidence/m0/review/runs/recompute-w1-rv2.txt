@@ -1,0 +1,24 @@
+# CMD: python docs/evidence/m0/review/runs/recompute-w1-rv2.py
+# RUN_UTC: 2026-10-06T03:16:41Z
+Traceback (most recent call last):
+  File "<主仓根>\docs\evidence\m0\review\runs\recompute-w1-rv2.py", line 9, in <module>
+    cells = re.split(r"(?<!\)\|", line)
+  File "<python-root>\Lib\re\__init__.py", line 267, in split
+    return _compile(pattern, flags).split(string, maxsplit)
+           ~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<python-root>\Lib\re\__init__.py", line 350, in _compile
+    p = _compiler.compile(pattern, flags)
+  File "<python-root>\Lib\re\_compiler.py", line 762, in compile
+    p = _parser.parse(p, flags)
+  File "<python-root>\Lib\re\_parser.py", line 973, in parse
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+  File "<python-root>\Lib\re\_parser.py", line 460, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       not nested and not items))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python-root>\Lib\re\_parser.py", line 780, in _parse
+    raise source.error("missing ), unterminated subpattern",
+                       source.tell() - start)
+re.PatternError: missing ), unterminated subpattern at position 0
+# REAL_EXIT: 1

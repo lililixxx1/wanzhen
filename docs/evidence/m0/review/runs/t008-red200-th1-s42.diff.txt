@@ -1,0 +1,4 @@
+# cmd: diff docs/evidence/t008/runs/red200-th1-s42.stdout docs/evidence/m0/review/runs/t008-red200-th1-s42.stdout
+REAL_EXIT=0
+# cmd: cmp (byte-exact)
+REAL_EXIT=0

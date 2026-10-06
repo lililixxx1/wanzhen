@@ -1,0 +1,3 @@
+# cmd: python docs/evidence/t010/summarize.py --root docs/evidence/m0/review/runs/render-regen-root --out docs/evidence/m0/review/runs/render-summary-regen.md
+summary written: docs/evidence/m0/review/runs/render-summary-regen.md
+REAL_EXIT=3

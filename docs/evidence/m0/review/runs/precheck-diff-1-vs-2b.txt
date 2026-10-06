@@ -1,0 +1,23 @@
+# cmd: process-name diff precheck-1 vs precheck-2b (what appeared during render attempts)
+7c7
+<       7 DingTalk.exe
+---
+>      10 DingTalk.exe
+34a35
+>       1 SGTool.exe
+56c57,58
+<       3 bash.exe
+---
+>       1 audiodg.exe
+>       6 bash.exe
+59c61
+<      16 conhost.exe
+---
+>      17 conhost.exe
+70a73
+>       2 govulncheck.exe
+94c97
+<       9 uTools.exe
+---
+>      10 uTools.exe
+REAL_EXIT=1

@@ -1,0 +1,8 @@
+# CMD: python docs/evidence/m0/review/runs/throughput-recompute-rv2.py
+# RUN_UTC: 2026-10-06T03:05:51Z
+Traceback (most recent call last):
+  File "<主仓根>\docs\evidence\m0\review\runs\throughput-recompute-rv2.py", line 9, in <module>
+    with open(P, encoding="utf-8") as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'docs/evidence/m0/review/runs/throughput_t12-rv2/throughput_t12-rv2.json'
+# REAL_EXIT: 1

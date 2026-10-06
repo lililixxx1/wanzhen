@@ -1,0 +1,19 @@
+# CMD: diff docs/evidence/t008/runs/red200-th1-s42.stdout docs/evidence/m0/review/runs/step1-1a-rv2.stdout
+# REAL_EXIT(diff): 0
+# CMD: cmp (byte-exact) same pair
+# REAL_EXIT(cmp): 0
+## ANCHOR GREP on fresh stdout
+hash=0xde91d6a5a6e84d43
+# REAL_EXIT(grep final hash): 0
+sample=1350 hash=0xe0cd7861ca5a211f
+# REAL_EXIT(grep sample1350): 0
+## FRESH STDOUT (for self-containment)
+sample=0 hash=0x4b8f1372b7893b23
+sample=450 hash=0x82c847b71ca33d46
+sample=900 hash=0x07eb592ec79d2650
+sample=1350 hash=0xe0cd7861ca5a211f
+seed=42
+ticks=1800
+units=200
+final_tick=1800
+hash=0xde91d6a5a6e84d43

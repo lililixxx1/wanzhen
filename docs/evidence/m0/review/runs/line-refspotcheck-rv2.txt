@@ -1,0 +1,22 @@
+# CMD: line-reference spot checks (dispatch cited anchors)
+# RUN_UTC: 2026-10-06T03:19:33Z
+## docs/evidence/t009/run_t009.sh:85 (1c command source)
+run_batch r5-sim-t1         1800 './target/release/sim.exe --comp shieldman:5000 --seed 3000000 --battle --ticks 14400 --threads 1'
+# REAL_EXIT(sed): 0
+## docs/evidence/t008/runs/plan.txt:51 (1a command source)
+red200-th1-s42 ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 1 --seed 42
+# REAL_EXIT(sed): 0
+## docs/evidence/t010/README.md:90-94 (DPI disclosure)
+- **实际窗口尺寸披露**：`--res 1920x1080` 为请求值；实际物理窗口 **2400×1350**（各档 meta.json
+  `window_resolution_actual` 一致）。成因：显示器 125% DPI 缩放，bevy_winit 无 scale override 时按
+  **逻辑尺寸**请求、由 OS 套用缩放（源码 `bevy_winit-0.19.1/src/winit_windows.rs:114-120`）。
+  即实测画布面积 ≈ 3.24 Mpix = 1080p 的 1.56×——**渲染负载更重，判定为保守方向**；
+  判定口径（avg/1% low）与阈值不变，不改判。详见 api-notes.md。
+# REAL_EXIT(sed): 0
+## docs/evidence/t015/README.md:31 (D10 no-rerun disclosure)
+- ⑥ 内存未重跑（无内存行为变更，D10 预登记；summarize 披露行在档）。
+# REAL_EXIT(sed): 0
+## t015/summary.md appendix A table span (grep -n table header/last row)
+70:## 附录 A 全配置中位数与样本 CV（原始 median 复算）
+89:| 50000 | 12 | 30 | 180891300 | 180.891 | 0.120594 | 8.088783 | 0x022c5abdfae119dc |
+# REAL_EXIT(grep): 0

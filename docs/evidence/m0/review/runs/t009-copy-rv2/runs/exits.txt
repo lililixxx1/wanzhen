@@ -1,0 +1,21 @@
+# T009 REAL_EXIT 台账（run_t009.sh 与手工门禁共用；格式：<run_id> REAL_EXIT=<rc> wall_ms=<ms>）
+# r0-1 首次尝试 REAL_EXIT=101（arena.rs usage 串 {T} 被格式化解析，E0425）——修一处分歧后重跑，本行为留痕（原 stderr 未保留，特此声明）
+r0-1-check REAL_EXIT=0 (attempt 2; attempt 1 = 101, see note above)
+r0-2-test REAL_EXIT=0 (47 passed: lib 44 = 43 existing + W1, bin arena 3 = W2/W3/W4)
+r0-3-build-sim REAL_EXIT=0
+r0-4-build-arena REAL_EXIT=0
+r1-smoke REAL_EXIT=0 wall_ms=155
+r2-matrix-per100 REAL_EXIT=0 wall_ms=11375
+r3-matrix-per10 REAL_EXIT=0 wall_ms=1615
+r4-t1 REAL_EXIT=0 wall_ms=33276
+r4-t3 REAL_EXIT=0 wall_ms=12302
+r4-t6 REAL_EXIT=0 wall_ms=7208
+r4-t12 REAL_EXIT=0 wall_ms=5157
+r5-arena REAL_EXIT=0 wall_ms=11414
+r5-sim-t1 REAL_EXIT=0 wall_ms=11318
+r5-sim-t12 REAL_EXIT=0 wall_ms=10964
+r5-cross REAL_EXIT=0 wall_ms=361
+r6-sampling REAL_EXIT=0 wall_ms=1321531
+r7-env REAL_EXIT=0 wall_ms=1721
+r8-summary REAL_EXIT=0 wall_ms=225
+r8-summary-regen REAL_EXIT=0 (summarize.py 区间标注修正后重生成 summary.md；数据输入零改动)

@@ -1,0 +1,9 @@
+# NOTE: first write attempt of recompute-6-all-rv2.py was truncated by the shell command-length limit (bash warning: here-document delimited by end-of-file); the heredoc terminator never arrived and the tail of the command was swallowed into the file. Incident trace below; script rewritten in small chunks afterwards.
+# RUN_UTC: 2026-10-06T03:13:27Z
+145 docs/evidence/m0/review/runs/recompute-6-all-rv2.py
+--- tail 5 ---
+    return ok_all
+
+REF_T015_APPX = {}
+for u, t, med, us, cv, h in [
+    (1000,1,36390400,"0.060651","2.473757","0x88b33d31245

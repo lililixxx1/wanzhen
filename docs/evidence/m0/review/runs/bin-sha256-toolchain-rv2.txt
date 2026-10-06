@@ -1,0 +1,26 @@
+# CMD: certutil -hashfile target/release/sim.exe SHA256
+SHA256 的 target/release/sim.exe 哈希:
+ea79ce438adb877269a299acc716edd83138e05e123b18898f6e76b968a72bf5
+CertUtil: -hashfile 命令成功完成。
+# REAL_EXIT: 0
+# CMD: certutil -hashfile target/release/bench.exe SHA256
+SHA256 的 target/release/bench.exe 哈希:
+8eebc283574cf31d6e69af3ae90e35fe9600882bcc9500a7462bdac51d275350
+CertUtil: -hashfile 命令成功完成。
+# REAL_EXIT: 0
+# CMD: certutil -hashfile target/release/arena.exe SHA256
+SHA256 的 target/release/arena.exe 哈希:
+c302f3a0dfda7aaf7cb8f1d63f3b841bef0468ad18b662eced671d9a4a753c81
+CertUtil: -hashfile 命令成功完成。
+# REAL_EXIT: 0
+# CMD: certutil -hashfile target/release/render-spike.exe SHA256
+SHA256 的 target/release/render-spike.exe 哈希:
+ce64db4e20fb289bbefb462dc38593c71be05158cda176df8c7715bf0840fbdd
+CertUtil: -hashfile 命令成功完成。
+# REAL_EXIT: 0
+# CMD: rustc -V
+rustc 1.98.1 (48a229cea 2026-09-01)
+# REAL_EXIT: 0
+# CMD: cargo -V
+cargo 1.98.1 (797e8a9bc 2026-08-05)
+# REAL_EXIT: 0

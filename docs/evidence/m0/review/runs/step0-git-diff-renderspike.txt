@@ -1,0 +1,4 @@
+# CMD: git diff --stat 1d304a8..HEAD -- render-spike/
+# RUN_UTC: 2026-10-06T02:42:31Z
+# EXPECT: empty output
+# REAL_EXIT: 0

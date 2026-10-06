@@ -1,0 +1,9 @@
+# CMD: python docs/evidence/m0/review/runs/recompute-6-anchorfix-rv2.py
+# RUN_UTC: 2026-10-06T03:16:18Z
+t007 anchor10k: measured12=7.221411 ref=7.221411 MATCH
+t007 anchor10k: speedup16=9.416188 ref=9.416188 MATCH
+t007 anchor10k: verdict=OK ref=OK MATCH
+NOTE: the '(2) anchor10k ... FAIL' lines inside the T007 block of recompute-6-all-rv2.txt are a
+script label artifact (t015 anchor constants reused in the shared function); computed values
+above match t007/summary.md:42 digit-for-digit.
+# REAL_EXIT: 0

@@ -1,0 +1,9 @@
+# CMD: tail -n +4 both matrix files then cmp (downgrade analysis for the single self-described command line)
+# RUN_UTC: 2026-10-06T03:08:08Z
+# RATIONALE: regenerated file differs from archive ONLY in line 3 (tool records its own argv: archive ran without explicit out arg, regen ran with --out path per dispatch 5a). All judgment/hash/table content must be byte-identical.
+# REAL_EXIT(cmp tail-from-4): 0
+1c1
+< - 生成命令: python docs/evidence/t008/compare_matrix.py docs/evidence/t008/runs
+---
+> - 生成命令: python docs/evidence/t008/compare_matrix.py docs/evidence/t008/runs docs/evidence/m0/review/runs/t008-matrix-regen-rv2.md
+# REAL_EXIT(diff line3): 1

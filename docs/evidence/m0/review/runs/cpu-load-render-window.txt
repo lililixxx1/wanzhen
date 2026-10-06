@@ -1,0 +1,5 @@
+# cmd: powershell Get-Counter processor load, 3 samples
+34.5915176961374
+29.6062283830049
+29.8086213185984
+REAL_EXIT=0

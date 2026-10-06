@@ -1,0 +1,2 @@
+    Finished `release` profile [optimized] target(s) in 0.33s
+REAL_EXIT=0

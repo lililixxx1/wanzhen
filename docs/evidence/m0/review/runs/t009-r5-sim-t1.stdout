@@ -1,0 +1,8 @@
+seed=3000000
+comp_red=shieldman:5000
+comp_blue=shieldman:5000
+winner=red
+end_tick=14400
+alive_red=4990
+alive_blue=4990
+final_hash=0x564cf46fdf191710

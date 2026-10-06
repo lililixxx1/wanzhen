@@ -1,0 +1,5 @@
+[2m2026-10-06T02:25:34.693577Z[0m [32m INFO[0m [2mbevy_diagnostic::system_information_diagnostics_plugin::internal[0m[2m:[0m SystemInfo { os: "Windows 10 IoT Enterprise LTSC 2021", kernel: "19044", cpu: "12th Gen Intel(R) Core(TM) i5-12490F", core_count: "6", memory: "31.8 GiB" }
+[2m2026-10-06T02:25:34.963737Z[0m [32m INFO[0m [2mbevy_render::renderer[0m[2m:[0m AdapterInfo { name: "NVIDIA GeForce RTX 3050", vendor: 4318, device: 9602, device_type: DiscreteGpu, device_pci_bus_id: "0000:01:00.0", driver: "NVIDIA", driver_info: "537.58", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: false }
+[2m2026-10-06T02:25:35.455937Z[0m [32m INFO[0m [2mbevy_pbr::cluster[0m[2m:[0m GPU clustering is supported on this device.
+[2m2026-10-06T02:25:35.455989Z[0m [32m INFO[0m [2mbevy_render::batching::gpu_preprocessing[0m[2m:[0m GPU preprocessing is fully supported on this device.
+[2m2026-10-06T02:25:35.456604Z[0m [32m INFO[0m [2mbevy_winit::system[0m[2m:[0m Creating new window render-spike (T010) (65v0)

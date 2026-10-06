@@ -1,0 +1,31 @@
+����λ�� docs\evidence\t009\precheck_load.ps1:8 �ַ�: 9
++ $L.Add("== processes (cargo/rustc/sim/bench/arena/python match) ==")
++         ~
+����������ȱ�١�)����
+����λ�� docs\evidence\t009\precheck_load.ps1:9 �ַ�: 86
++ ... �pythonw.exe = ZCode 框架遥测 tps_stats_server.py，常�?~0 CPU，非量测负载�?)
++                                                                         ~
+����ʽ������а�������ı�ǡ�)����
+����λ�� docs\evidence\t009\precheck_load.ps1:15 �ַ�: 17
++         $L.Add("  " + $p.Name + " pid=" + $p.ProcessId + " cmd=" + $p ...
++                 ~
+����������ȱ�١�)����
+����λ�� docs\evidence\t009\precheck_load.ps1:15 �ַ�: 19
++         $L.Add("  " + $p.Name + " pid=" + $p.ProcessId + " cmd=" + $p ...
++                   ~~~~~~~~~~~~~~~
+����ʽ������а�������ı�ǡ�" + $p.Name + "����
+����λ�� docs\evidence\t009\precheck_load.ps1:15 �ַ�: 35
++         $L.Add("  " + $p.Name + " pid=" + $p.ProcessId + " cmd=" + $p ...
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~
+����ʽ������а�������ı�ǡ�pid=" + $p.ProcessId + "����
+����λ�� docs\evidence\t009\precheck_load.ps1:24 �ַ�: 34
++ Write-Output ("precheck written: " + $outFile)
++                                  ~~~~~~~~~~~~~
+�ַ���ȱ����ֹ��: "��
+����λ�� docs\evidence\t009\precheck_load.ps1:11 �ַ�: 23
++ if ($null -eq $procs) {
++                       ~
+��������Ͷ�����ȱ���ҡ�}����
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MissingEndParenthesisInMethodCall
+ 

@@ -1,0 +1,5 @@
+sample          N     sum_s     avg_fps   k1   1pct_low  max_delta_ms  J_avg60  J_low45  drift_avg   drift_low
+s1(render-t10000)  4458    65.015    68.5686   45    22.3574       109.85  PASS     FAIL      -79.42%    -88.96%
+s2(-s2)           4847    65.002    74.5667   49    24.7426        92.45  PASS     FAIL      -77.62%    -87.78%
+s3(-s3)           3870    65.015    59.5244   39    25.2042        64.85  FAIL     FAIL      -82.13%    -87.55%
+REAL_EXIT=0

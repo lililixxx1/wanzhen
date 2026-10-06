@@ -1,0 +1,10 @@
+# CMD: python docs/evidence/m0/review/runs/assert-bench-rv2.py
+# RUN_UTC: 2026-10-06T02:54:24Z
+id  fresh_us  ref_us  drift_pct  band25  hash_ok  le_1us  le_2us
+2a  0.081122  0.070617  +14.88%  IN  OK  OK  OK  hash_consistent=True
+2b  0.071968  0.070482  +2.11%  IN  OK  OK  OK  hash_consistent=True
+2c  0.120623  0.108681  +10.99%  IN  OK  OK  OK  hash_consistent=True
+2d  0.143774  0.120594  +19.22%  IN  OK  OK  OK  hash_consistent=True
+fresh_speedup_2a_over_2b = 243366900/215904400 = 1.12720  band_0.8_1.3 = IN
+OVERALL_ASSERT: PASS
+# REAL_EXIT: 0

@@ -1,0 +1,3 @@
+# CMD: ./target/release/sim.exe --comp "shieldman:17,heavyknight:17,pikeman:17,swordsman:17,archer:16,militia:16" --ticks 1800 --hash-samples 0,450,900,1350 --threads 1 --seed 42
+# RUN_UTC: 2026-10-06T02:50:47Z
+# REAL_EXIT: 0

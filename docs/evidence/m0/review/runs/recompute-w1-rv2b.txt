@@ -1,0 +1,18 @@
+# CMD: python docs/evidence/m0/review/runs/recompute-w1-rv2b.py
+# RUN_UTC: 2026-10-06T03:17:27Z
+T001 total=150 -> prep
+T002 total=15 -> prep
+T003 total=18 -> prep
+T004 total=35 -> prep
+T005 total=110 -> prep
+T006 total=130 -> prep
+T007 total=190 stages=[190, 99, 65, 25] -> prep=99 W1=91 (stages[1:] sum 189 + tail -189 = 91)
+T008 total=605 -> W1
+T009 total=145 -> W1
+T015 total=125 -> W1
+T010 total=140 -> W1
+T011 total=140 -> W1
+prep_components = 150+15+18+35+110+130+99 = 557 min = 9.28 h   (m0/README §8 ref 557 = 9.28 h)
+W1_components   = 91+605+145+125+140+140 = 1246 min = 20.77 h   (m0/README §8 ref 1246 = 20.77 h)
+prep MATCH | W1 MATCH
+# REAL_EXIT: 0

@@ -1,0 +1,7 @@
+id  fresh_us  ref_us  drift_pct  band25  hash_ok  le_1us  le_2us
+2a  0.083369  0.070617  +18.06%  IN  OK  OK  OK  hash_consistent=True
+2b  0.084688  0.070482  +20.16%  IN  OK  OK  OK  hash_consistent=True
+2c  0.121381  0.108681  +11.69%  IN  OK  OK  OK  hash_consistent=True
+2d  0.146866  0.120594  +21.79%  IN  OK  OK  OK  hash_consistent=True
+fresh_speedup_2a_over_2b = 250108500/254064100 = 0.98443  band_0.8_1.3 = IN
+REAL_EXIT=0

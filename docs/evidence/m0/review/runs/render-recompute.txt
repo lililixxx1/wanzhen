@@ -1,0 +1,12 @@
+N frames          = 4458
+sum delta_ns      = 65015185600
+avg_fps           = 68.5686   (N/(sum/1e9))
+k1                = 45   ((N+99)//100)
+1pct_low_fps      = 22.3574   (1e9/mean(slowest k1))
+max delta_ns      = 109850800
+min delta_ns      = 1367700
+JUDGE avg>=60     : PASS
+JUDGE low1>=45    : FAIL
+drift avg_fps: fresh=68.57 ref=333.15 => -79.42%  band25=OUT
+drift 1pct_low: fresh=22.36 ref=202.48 => -88.96%  band25=OUT
+REAL_EXIT=0

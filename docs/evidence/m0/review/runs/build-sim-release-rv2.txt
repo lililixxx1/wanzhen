@@ -1,0 +1,4 @@
+# CMD: cargo build -p sim --release -j 3
+# RUN_UTC: 2026-10-06T02:47:56Z
+    Finished `release` profile [optimized] target(s) in 0.49s
+# REAL_EXIT: 0

@@ -1,0 +1,12 @@
+# CMD: python docs/evidence/m0/review/runs/throughput-recompute-rv2b.py
+# RUN_UTC: 2026-10-06T03:06:49Z
+wall_s repeats      = [2.1323223000000002, 2.1753613, 1.9003218]
+median(wall_s) own  = 2.1323223   json wall_s_median = 2.1323223
+gph own = games*3600/median = 512*3600/2.1323223 = 864409.7
+gph json field             = 864409.7
+ref (t009/summary.md:180)  = 1099638.6
+drift vs ref               = -21.39%  band25 = IN
+per_game_ms own            = 4.165  json = 4.165
+final_hash_xor fresh       = 0xd1b28b373f7791e3   archive t009 = 0xd1b28b373f7791e3 (cross-check)
+JUDGE gph>=10000           : PASS
+# REAL_EXIT: 0
