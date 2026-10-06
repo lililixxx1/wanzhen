@@ -31,4 +31,9 @@
 
 ## 执行记录
 
-- （开工后补）
+- **首派中断**（10-06 深夜）：worker-1 配额中断零进度（附录 E 补位先例如实记）。
+- **实现**（10-07，worker-1 重派，树 t019-a 基线 c368204）：D1~D9 全落位（--spectate 单二双形态/bevy_full 切换/advance_ticks 共享/generation 表现层/六 mesh 双阵营色/正交俯视/三行 HUD/screenshot 两段式 + headless 桩保留）；check 0 警告；release 分型裁决链（冷编签名 65s 中止 → -j1 + 7G 地板放行 31m42s，全程 12.7~15.1G 未触地板）；回归四项全绿（t018 46/46、t021 30/30、树内 t020 error_paths 22/22 勘误口径、m5core 19/19）+ spectate 冒烟 54/54（跨模式确定性三锚：终局 0x26c77d5372dc7ad0 / 手动 300t 0xcdf3fef834f172ce / melee-brawl seed7 0xb82a248ff23515e2）。D4 autorun 上限收束分支经 Lead 批复（终局=outcome 存在语义内）。收获 = 19c417d（main.rs 三方合并 1 冲突手工解决——T022 mod 声明区重叠）。
+- **轻量轮**（10-07）：**不通过 P0×1/P1×1**——P0 = 六兵种形状全场镜头下 ≈2px「可见」验收不成立（实现正确 ≠ 验收可见）；P1 = 截图文件名跨进程复用可把旧文件误报 captured。
+- **整改**（10-07）：worker-1 续做 35min 配额二次中断（当日 2 次——附录 E 停派本波次，**转卡 worker-2**）；worker-2 续做收尾：P1 代码核验（nonce + captured 仅本次文件校验通过后置 + mtime≥受理时刻）+ 近景段跑通（修出 04:32 中断轮真因 = HOST_EXE 盘符路径解析缺陷）+ smoke 88/88 + shot-3 产出（2400×1350/70,171B）。**P0 视觉核验** = vision-reader 识图（vision-verify-shot3.md：六形体五明辨+一尺寸辨、红蓝色值实测可分、12 实体与 HUD 自洽 → **PASS**；HUD 第三行 CJK 缺字形框 = 已知显示限制如实留痕）。
+- **修后复审**（10-07）：**修后可合并**（P0 关闭、P1 落盘核验关闭）；残留 Important 86 = 毫秒 nonce 同毫秒双进程碰撞窗 → **Lead 同日终处置**：文件名加 pid 段（screenshot-{pid}-{nonce}-{id}.png——活进程 pid 全机唯一封死该场景）+ 新增 CHK-26c2 + 复跑全绿（spectate 89/89 + t018 46/46）。
+- **终态**：通过。台账 ≈378 min（首派 2 + worker-1 实现 177 + 轻量轮 16 + 整改 worker-1 35 + 整改续做 worker-2 49 + 视觉核验 5 + 修后复审 9 + Lead 派工/收获合并/终处置 ≈85），全计 W1。收获合并链与 T023 交错（banner 块手工三方合并）——七组冒烟全集成全绿。

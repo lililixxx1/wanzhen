@@ -10,6 +10,21 @@
 # autorun 驱动在 tick≥max_ticks 且未灭绝时走 run_battle_with(max_ticks)
 # resolve_by_hp 收束（不再推 tick）——final_hash = 上限 tick 态哈希，与 T021
 # headless 归档锚同点。脚本预期值仅供核对，以实际运行为准，不一致即停。
+#
+# P0/P1 整改段（2026-10-07 修后复审轮，Lead 裁决 = 审核建议 A 近景证据补充）：
+# - 段 4 近景可辨（P0）：BRP deploy 六兵种 × 双阵营各 1（12 单位）、
+#   lane_len_m 60——全场镜头（present.rs D6 ScalingMode::AutoMin 覆盖算式，
+#   min_width ≥ lane + 2×MARGIN）下 ~0.8m 兵种网格 ≈ 1920×(0.8/62) ≈ 25px/
+#   单位，形状轮廓可辨；产出 shot-3-sixkinds-closeup-lane60.png。形状目检 =
+#   Lead 侧 vision-reader 识图回填 README，本脚本只证场景构型与档案真实。
+#   断言：存在 + 魔数 + 尺寸 ≥1920×1080 逻辑（16:9 物理像素——125% DPI 下
+#   捕获 2400×1350，README §4 尺寸注口径）+ ≥30KB 非空白画布下界 + sha256。
+# - 段 4 亦含 P1 断言①：同进程两次截图 nonce 段相同、id 递增、路径不同。
+# - 段 5 截图唯一性（P1 断言②）：预置残留有效 PNG 于下次请求路径 + PowerShell
+#   独占句柄（FileShare::None）物理造写盘失败 → 轮询恒 pending + detail
+#   （不误报 captured）+ host stderr「Cannot save screenshot」见证
+#   （bevy_render-0.19.1 screenshot.rs:147——写盘失败只记日志）；杀掉句柄后
+#   复询验 mtime 分支（stale leftover suspected——整改续做修复，见段 5 内注）。
 set -u
 cd "$(dirname "$0")"
 LOG="spectate-smoke-run.log"
@@ -23,6 +38,16 @@ elif [ -f "../../../target/release/host.exe" ]; then
   HOST_EXE="../../../target/release/host.exe"
 fi
 [ -n "$HOST_EXE" ] || { echo "FATAL: host.exe not found (set CARGO_TARGET_DIR or build first)"; exit 1; }
+# 段 5 需要切换 CWD 注入写盘失败——host.exe 先绝对化（段 5 起 CWD 无关）。
+# 整改续做修复（2026-10-07）：补 Windows 盘符绝对路径分支——CARGO_TARGET_DIR 以
+# C:/... 传入时不匹配 /*，旧逻辑误判为相对路径而前缀 $PWD，路径作废致宿主无法
+# 启动（中断轮实锚：host1-stderr「No such file or directory」、整轮恒 FAIL）。
+case "$HOST_EXE" in
+  /*) ;;  # MSYS 绝对（/c/...）
+  [A-Za-z]:/* | [A-Za-z]:\\*)
+    HOST_EXE=$(cygpath -u "$HOST_EXE" 2>/dev/null || echo "$HOST_EXE") ;;  # Windows 盘符绝对（CARGO_TARGET_DIR=C:/...）→ MSYS 绝对
+  *) HOST_EXE="$PWD/$HOST_EXE" ;;  # 仓库根相对（../../../target/release/host.exe）
+esac
 
 PORT_SP1=15715   # spectate autorun：melee-brawl seed7（黄金锚对拍）+ 冻结后 screenshot
 PORT_SP2=15716   # spectate autorun：seed43 swordsman:10 lane50（对拍记录 H2）
@@ -82,6 +107,12 @@ assert_no_panic() { # stderr-log name
 
 png_magic_ok() { # file -> 0/1（\x89PNG\r\n\x1a\n = 89504e470d0a1a0a）
   [ "$(head -c 8 "$1" | od -An -tx1 | tr -d ' \n')" = "89504e470d0a1a0a" ]
+}
+
+png_dims() { # file -> echoes "WxH"（IHDR：字节 17-20 = 宽 BE u32、21-24 = 高 BE u32）
+  local h
+  h=$(head -c 24 "$1" | tail -c 8 | od -An -tx1 | tr -d ' \n')
+  echo "$((16#${h:0:8}))x$((16#${h:8:8}))"
 }
 
 port_free() { # port -> 0=free
@@ -285,6 +316,208 @@ assert_no_panic host5-stderr.log CHK-21d-host5-no-panic
 sleep 1
 for P in $PORT_SP1 $PORT_SP2 $PORT_HL; do
   port_free "$P"; check "CHK-22-port-$P-reaped" $?
+done
+
+# ── 段 4（P0 整改 + P1 断言①）：近景可辨——六兵种 × 双阵营 lane 60m（shot-3）──
+"$HOST_EXE" --spectate --port $PORT_SP2 > host6-stdout.log 2> host6-stderr.log &
+HOST6_PID=$!
+echo "== host6 pid $HOST6_PID (spectate closeup, port $PORT_SP2) =="
+wait_ready "$PORT_SP2"; check "CHK-23-port2-ready-closeup" $?
+
+# 六兵种各 1 × 双阵营 = 12 单位、lane 60m（算式见脚本头注：~25px/单位）
+SIX='[{"kind":"shieldman","count":1},{"kind":"heavyknight","count":1},{"kind":"pikeman","count":1},{"kind":"swordsman","count":1},{"kind":"archer","count":1},{"kind":"militia","count":1}]'
+R=$(brp game.deploy "{\"seed\":42,\"red\":$SIX,\"blue\":$SIX,\"lane_len_m\":60}" "$PORT_SP2")
+echo "$R" | grep -qF '"tick":0'; check "CHK-24-closeup-deploy-tick0" $?
+echo "$R" | grep -qF '"units":12'; check "CHK-24b-closeup-deploy-units12" $?
+
+# shot-3 两段式（近景形状人证；BRP deploy 恒 autorun=false → tick 冻在 0，
+# 六兵种布阵态 + 阵营色同框）
+sleep 2   # 留帧窗口给表现层重建（CHK-19 同款）
+R=$(brp game.screenshot '{}' "$PORT_SP2")
+echo "$R" | grep -qF '"status":"requested"'; check "CHK-25-closeup-shot-requested" $?
+SHOT3_ID=$(echo "$R" | grep -o '"id":[0-9]*' | tail -1 | grep -o '[0-9]*')
+SHOT3_FULLPATH=""
+SHOT3_OK=0
+if [ -n "$SHOT3_ID" ]; then
+  for i in $(seq 1 60); do
+    R=$(brp game.screenshot "{\"id\":$SHOT3_ID}" "$PORT_SP2")
+    if echo "$R" | grep -qF '"status":"captured"'; then break; fi
+    sleep 0.5
+  done
+  echo "$R" | grep -qF '"status":"captured"'; check "CHK-25b-closeup-shot-captured" $?
+  SHOT3_FULLPATH=$(echo "$R" | grep -o '"path":"[^"]*"' | head -1 | sed 's/"path":"//;s/"//')
+  SHOT3_BYTES=$(echo "$R" | grep -o '"bytes":[0-9]*' | head -1 | grep -o '[0-9]*')
+  echo "shot3: id=$SHOT3_ID path=$SHOT3_FULLPATH bytes=$SHOT3_BYTES"
+  if [ -n "$SHOT3_FULLPATH" ] && [ -f "$SHOT3_FULLPATH" ]; then
+    check "CHK-25c-closeup-shot-file-exists" 0
+    [ -n "$SHOT3_BYTES" ] && [ "$SHOT3_BYTES" -gt 0 ]; check "CHK-25d-closeup-shot-bytes-nonzero" $?
+    png_magic_ok "$SHOT3_FULLPATH"; check "CHK-25e-closeup-shot-png-magic" $?
+    DIMS=$(png_dims "$SHOT3_FULLPATH")
+    W=$(echo "$DIMS" | cut -dx -f1); H=$(echo "$DIMS" | cut -dx -f2)
+    echo "shot3 dims: ${W}x${H}（逻辑 1920x1080；125% DPI 物理捕获 2400x1350，README §4 注）"
+    [ "$W" -ge 1920 ] && [ "$H" -ge 1080 ] && [ $((W*9)) -eq $((H*16)) ]
+    check "CHK-25f-closeup-shot-dims-1080p-16v9" $?
+    [ -n "$SHOT3_BYTES" ] && [ "$SHOT3_BYTES" -ge 30720 ]; check "CHK-25g-closeup-shot-min30k" $?
+    mv "$SHOT3_FULLPATH" "shot-3-sixkinds-closeup-lane60.png"
+    sha256sum "shot-3-sixkinds-closeup-lane60.png"
+    check "CHK-25h-closeup-shot-moved-evidence" $?
+    SHOT3_OK=1
+  else
+    check "CHK-25c-closeup-shot-file-exists" 1; check "CHK-25d-closeup-shot-bytes-nonzero" 1
+    check "CHK-25e-closeup-shot-png-magic" 1; check "CHK-25f-closeup-shot-dims-1080p-16v9" 1
+    check "CHK-25g-closeup-shot-min30k" 1; check "CHK-25h-closeup-shot-moved-evidence" 1
+  fi
+else
+  check "CHK-25b-closeup-shot-captured" 1; check "CHK-25c-closeup-shot-file-exists" 1
+  check "CHK-25d-closeup-shot-bytes-nonzero" 1; check "CHK-25e-closeup-shot-png-magic" 1
+  check "CHK-25f-closeup-shot-dims-1080p-16v9" 1; check "CHK-25g-closeup-shot-min30k" 1
+  check "CHK-25h-closeup-shot-moved-evidence" 1
+fi
+
+# P1 断言①：同进程第二次截图——nonce 段相同、id 递增、路径不同（跨进程
+# 唯一性由 nonce 保证，见 spectate.rs ScreenshotLog 注）
+R=$(brp game.screenshot '{}' "$PORT_SP2")
+echo "$R" | grep -qF '"status":"requested"'; check "CHK-26-shot2nd-requested" $?
+SHOTB_ID=$(echo "$R" | grep -o '"id":[0-9]*' | tail -1 | grep -o '[0-9]*')
+SHOTB_PATH=""
+if [ -n "$SHOTB_ID" ]; then
+  for i in $(seq 1 60); do
+    R=$(brp game.screenshot "{\"id\":$SHOTB_ID}" "$PORT_SP2")
+    if echo "$R" | grep -qF '"status":"captured"'; then break; fi
+    sleep 0.5
+  done
+  echo "$R" | grep -qF '"status":"captured"'; check "CHK-26b-shot2nd-captured" $?
+  SHOTB_PATH=$(echo "$R" | grep -o '"path":"[^"]*"' | head -1 | sed 's/"path":"//;s/"//')
+  echo "shot3b: id=$SHOTB_ID path=$SHOTB_PATH（唯一性断言用，用完即弃不进证据集）"
+  A_NONCE=$(basename "$SHOT3_FULLPATH" | sed -n 's/^screenshot-\([0-9]*-[0-9]*\)-[0-9]*\.png$/\1/p')
+  A_IDNUM=$(basename "$SHOT3_FULLPATH" | sed -n 's/^screenshot-[0-9]*-[0-9]*-\([0-9]*\)\.png$/\1/p')
+  B_NONCE=$(basename "$SHOTB_PATH" | sed -n 's/^screenshot-\([0-9]*-[0-9]*\)-[0-9]*\.png$/\1/p')
+  B_IDNUM=$(basename "$SHOTB_PATH" | sed -n 's/^screenshot-[0-9]*-[0-9]*-\([0-9]*\)\.png$/\1/p')
+  echo "shot naming: A(nonce=$A_NONCE id=$A_IDNUM) B(nonce=$B_NONCE id=$B_IDNUM)"
+  # 三段名 screenshot-{pid}-{nonce}-{id}.png（修后复审 Important 86 整改体例；
+  # A_NONCE/B_NONCE 变量现承载 pid-nonce 两段）
+  A_PID=$(echo "$A_NONCE" | cut -d- -f1); B_PID=$(echo "$B_NONCE" | cut -d- -f1)
+  [ -n "$A_NONCE" ] && [ "$A_NONCE" = "$B_NONCE" ]; check "CHK-26c-shot-pidnonce-same-process" $?
+  [ "$A_PID" != "0" ] && [ "$A_PID" = "$B_PID" ]; check "CHK-26c2-shot-pid-live-nonzero" $?
+  [ -n "$A_IDNUM" ] && [ -n "$B_IDNUM" ] && [ "$B_IDNUM" -eq $((A_IDNUM+1)) ]
+  check "CHK-26d-shot-id-increment" $?
+  [ -n "$SHOTB_PATH" ] && [ "$SHOTB_PATH" != "$SHOT3_FULLPATH" ]; check "CHK-26e-shot-paths-distinct" $?
+  [ -f "$SHOTB_PATH" ] && sha256sum "$SHOTB_PATH"
+  rm -f "$SHOTB_PATH"; check "CHK-26f-shot2nd-cleaned" $?
+else
+  check "CHK-26b-shot2nd-captured" 1; check "CHK-26c-shot-nonce-same-process" 1
+  check "CHK-26d-shot-id-increment" 1; check "CHK-26e-shot-paths-distinct" 1
+  check "CHK-26f-shot2nd-cleaned" 1
+fi
+
+kill -0 "$HOST6_PID" 2>/dev/null; check "CHK-26g-host6-alive" $?
+kill "$HOST6_PID" 2>/dev/null; sleep 1; kill -9 "$HOST6_PID" 2>/dev/null
+assert_no_panic host6-stderr.log CHK-26h-host6-no-panic
+
+# ── 段 5（P1 断言②）：预置残留 + 物理写盘失败 → 恒 pending（不误报 captured）──
+# 场景 = 复审 P1 原文最坏情形：本次保存失败（独占句柄锁住目标路径）且同路径
+# 预置有效 PNG 残留——nonce 唯一路径 + mtime ≥ 受理时刻界桩共同闭合。
+INJDIR="$PWD/p1-inject-tmp"
+INJDIR_WIN=$(cygpath -m "$INJDIR" 2>/dev/null || echo "$INJDIR")
+rm -rf "$INJDIR"; mkdir -p "$INJDIR"
+EVDIR="$PWD"
+cd "$INJDIR"
+"$HOST_EXE" --spectate --port $PORT_SP1 > "$EVDIR/host7-stdout.log" 2> "$EVDIR/host7-stderr.log" &
+HOST7_PID=$!
+cd "$EVDIR"
+echo "== host7 pid $HOST7_PID (spectate inject, port $PORT_SP1, cwd $INJDIR) =="
+wait_ready "$PORT_SP1"; check "CHK-27-port1-ready-inject" $?
+
+# 基线：小构型布阵 + 正常截一张（写盘通路 OK），从响应路径取得 nonce 体例
+R=$(brp game.deploy '{"seed":42,"red":[{"kind":"swordsman","count":1}],"blue":[{"kind":"swordsman","count":1}],"lane_len_m":60}' "$PORT_SP1")
+echo "$R" | grep -qF '"units":2'; check "CHK-27b-inject-deploy" $?
+R=$(brp game.screenshot '{}' "$PORT_SP1")
+INJ_ID=$(echo "$R" | grep -o '"id":[0-9]*' | tail -1 | grep -o '[0-9]*')
+INJ_PATH0=""
+if [ -n "$INJ_ID" ]; then
+  for i in $(seq 1 60); do
+    R=$(brp game.screenshot "{\"id\":$INJ_ID}" "$PORT_SP1")
+    if echo "$R" | grep -qF '"status":"captured"'; then break; fi
+    sleep 0.5
+  done
+  echo "$R" | grep -qF '"status":"captured"'; check "CHK-28-inject-shot0-captured" $?
+  INJ_PATH0=$(echo "$R" | grep -o '"path":"[^"]*"' | head -1 | sed 's/"path":"//;s/"//')
+  echo "inject baseline: path=$INJ_PATH0"
+else
+  check "CHK-28-inject-shot0-captured" 1
+fi
+
+INJ_PREPARED=0
+if [ -n "$INJ_PATH0" ] && [ -f "$INJDIR/$INJ_PATH0" ]; then
+  # 预置残留：有效 PNG 复制到下一次请求将用的路径（screenshot-{pid}-{nonce}-1.png，
+  # 同进程 pid+nonce 同段——id 序号可预知）。残留 mtime 早于下一次受理时刻。
+  INJ_NONCE=$(basename "$INJ_PATH0" | sed -n 's/^screenshot-\([0-9]*-[0-9]*\)-[0-9]*\.png$/\1/p')
+  INJ_PATH1="screenshot-${INJ_NONCE}-1.png"
+  cp "$INJDIR/$INJ_PATH0" "$INJDIR/$INJ_PATH1"
+  png_magic_ok "$INJDIR/$INJ_PATH1"; check "CHK-28b-inject-plant-valid-png" $?
+  sha256sum "$INJDIR/$INJ_PATH1"
+  # 物理注入：PowerShell 独占句柄（FileShare::None）——std::fs 写打开被拒
+  # sharing violation → save_to_disk 写盘失败（screenshot.rs:145-147 只记日志）。
+  powershell -NoProfile -Command "\$fs=[System.IO.File]::Open('$INJDIR_WIN/$INJ_PATH1',[System.IO.FileMode]::Open,[System.IO.FileAccess]::ReadWrite,[System.IO.FileShare]::None); Start-Sleep -Seconds 40; \$fs.Close()" &
+  HOLDER_PID=$!
+  sleep 1.5
+  INJ_PREPARED=1
+fi
+if [ "$INJ_PREPARED" -eq 1 ]; then
+  # 下一次请求（id=1）：受理时刻晚于残留 mtime；保存必失败
+  R=$(brp game.screenshot '{}' "$PORT_SP1")
+  INJ_ID1=$(echo "$R" | grep -o '"id":[0-9]*' | tail -1 | grep -o '[0-9]*')
+  INJ_CAPT=0
+  if [ -n "$INJ_ID1" ]; then
+    for i in $(seq 1 12); do
+      R=$(brp game.screenshot "{\"id\":$INJ_ID1}" "$PORT_SP1")
+      echo "  inject poll #$i: $R"
+      echo "$R" | grep -qF '"status":"captured"' && INJ_CAPT=1
+      [ "$INJ_CAPT" -eq 1 ] && break
+      sleep 0.5
+    done
+    [ "$INJ_CAPT" -eq 0 ]; check "CHK-29-inject-shot1-never-captured" $?
+    echo "$R" | grep -qF '"status":"pending"'; check "CHK-29b-inject-shot1-pending-final" $?
+    echo "$R" | grep -qF '"detail"'; check "CHK-29c-inject-shot1-detail-present" $?
+  else
+    check "CHK-29-inject-shot1-never-captured" 1; check "CHK-29b-inject-shot1-pending-final" 1
+    check "CHK-29c-inject-shot1-detail-present" 1
+  fi
+  # 物理见证：bevy save_to_disk 写盘失败日志确实发生（注入成立）
+  grep -qF "Cannot save screenshot" "$EVDIR/host7-stderr.log"
+  check "CHK-29e-inject-save-failure-witness" $?
+  # 收尾：杀句柄持有者 → 文件锁释放
+  kill "$HOLDER_PID" 2>/dev/null; sleep 0.5; kill -9 "$HOLDER_PID" 2>/dev/null
+  ! kill -0 "$HOLDER_PID" 2>/dev/null; check "CHK-29f-inject-holder-reaped" $?
+  # P1 时间戳分支实证（整改续做修复 2026-10-07）：锁持有期内文件打开被
+  # sharing violation 拒绝（os error 32 实锚），mtime 界桩分支不可达——杀掉
+  # 句柄持有者后复询：本次输出文件可读、mtime 早于受理时刻 → 恒 pending +
+  # detail = stale leftover suspected（不误报 captured；mini-test 预验通过）。
+  # 原 29d 断言置于锁持有期内属脚本缺陷（mtime 分支不可达），本修复移至此。
+  if [ -n "$INJ_ID1" ]; then
+    sleep 1
+    R=$(brp game.screenshot "{\"id\":$INJ_ID1}" "$PORT_SP1")
+    echo "  inject post-release poll: $R"
+    echo "$R" | grep -qF 'stale leftover suspected'; check "CHK-29d-inject-shot1-stale-flagged" $?
+  else
+    check "CHK-29d-inject-shot1-stale-flagged" 1
+  fi
+else
+  check "CHK-28b-inject-plant-valid-png" 1; check "CHK-29-inject-shot1-never-captured" 1
+  check "CHK-29b-inject-shot1-pending-final" 1; check "CHK-29c-inject-shot1-detail-present" 1
+  check "CHK-29d-inject-shot1-stale-flagged" 1; check "CHK-29e-inject-save-failure-witness" 1
+  check "CHK-29f-inject-holder-reaped" 1
+fi
+
+kill -0 "$HOST7_PID" 2>/dev/null; check "CHK-30-host7-alive" $?
+kill "$HOST7_PID" 2>/dev/null; sleep 1; kill -9 "$HOST7_PID" 2>/dev/null
+assert_no_panic "$EVDIR/host7-stderr.log" CHK-30b-host7-no-panic
+rm -rf "$INJDIR"; [ ! -d "$INJDIR" ]; check "CHK-30c-inject-tmpdir-cleaned" $?
+
+# 进程收尾核验（段 4/5 两口全空——无残留实例）
+sleep 1
+for P in $PORT_SP2 $PORT_SP1; do
+  port_free "$P"; check "CHK-30d-port-$P-reaped-closeup-inject" $?
 done
 
 echo "== SUMMARY: PASS=$PASS FAIL=$FAIL =="

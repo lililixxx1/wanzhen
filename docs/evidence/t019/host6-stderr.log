@@ -1,0 +1,14 @@
+[host] mode=spectate (window 1920x1080 fixed, winit loop, presentation+HUD live; T019/D3)
+[host] BRP listening on 127.0.0.1:15716 (explicit loopback bind; non-loopback forbidden)
+[host] methods: game.deploy, game.run_to_tick, game.state_hash, game.outcome, game.sample_outcomes, game.run_tests, game.screenshot(live->T019/D8)
+[2m2026-10-06T21:47:06.814672Z[0m [32m INFO[0m [2mbevy_diagnostic::system_information_diagnostics_plugin::internal[0m[2m:[0m SystemInfo { os: "Windows 10 IoT Enterprise LTSC 2021", kernel: "19044", cpu: "12th Gen Intel(R) Core(TM) i5-12490F", core_count: "6", memory: "31.8 GiB" }
+[2m2026-10-06T21:47:07.074407Z[0m [32m INFO[0m [2mbevy_render::renderer[0m[2m:[0m AdapterInfo { name: "NVIDIA GeForce RTX 3050", vendor: 4318, device: 9602, device_type: DiscreteGpu, device_pci_bus_id: "0000:01:00.0", driver: "NVIDIA", driver_info: "537.58", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: false }
+[2m2026-10-06T21:47:07.502311Z[0m [32m INFO[0m [2mbevy_pbr::cluster[0m[2m:[0m GPU clustering is supported on this device.
+[2m2026-10-06T21:47:07.502371Z[0m [32m INFO[0m [2mbevy_render::batching::gpu_preprocessing[0m[2m:[0m GPU preprocessing is fully supported on this device.
+[2m2026-10-06T21:47:07.502798Z[0m [32m INFO[0m [2mbevy_winit::system[0m[2m:[0m Creating new window 万阵观战 (65v0)
+[2m2026-10-06T21:47:09.923841Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 requested -> screenshot-22836-1791323227491-0.png (entity 440v0)
+[2m2026-10-06T21:47:09.937710Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #0 captured event arrived
+[2m2026-10-06T21:47:09.947924Z[0m [32m INFO[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Screenshot saved to screenshot-22836-1791323227491-0.png
+[2m2026-10-06T21:47:10.903939Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 requested -> screenshot-22836-1791323227491-1.png (entity 443v0)
+[2m2026-10-06T21:47:10.917080Z[0m [32m INFO[0m [2mhost::spectate[0m[2m:[0m [spectate] screenshot #1 captured event arrived
+[2m2026-10-06T21:47:10.928001Z[0m [32m INFO[0m [2mbevy_render::view::window::screenshot[0m[2m:[0m Screenshot saved to screenshot-22836-1791323227491-1.png
