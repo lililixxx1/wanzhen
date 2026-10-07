@@ -1,0 +1,57 @@
+# T028 可公开态终扫（沿 T039 体例：受管面零命中 + 证据目录环境痕迹定性 + 全历史 bot 身份核对）
+
+- 日期：2026-10-07（W1 D3）；执行：Lead（主会话）
+- 口径：grep -F 字面匹配（命令一律单引号——Windows shell 双引号会吃掉反斜杠层致漏检，沿本项目扫描纪律）；受管面 = git 跟踪文件中 docs/evidence/ 以外全部（源码 / 文档正文 / taskset / 台账 / AGENTS / 配置）
+- 上游先例：工作流仓 T039 open-source-scan.txt（受管面零命中 + 证据目录环境痕迹定性保留 + 全历史 bot 身份）
+
+## 一、全历史 bot 身份核对
+
+$ git log --format='%an <%ae>' | sort | uniq -c
+     50 wanzhen <bot@wanzhen.invalid>
+
+判定：全历史 50 commit 唯一身份，零个人信息。PASS
+
+## 二、受管面四变体机器路径扫描
+
+变体：`C:\Users`（反斜杠）/ `C:/Users`（正斜杠）/ `/c/Users`（msys）/ `ADMINI~1`（Windows 8.3 短名）
+
+首轮（清洗前）：受管面 3 文件命中——AGENTS.md / task-ledger.md / taskset/t024-perf-c1.md，逐行核对均为 T024 路径清洗事件的「ADMINI~1 短名」**形态名文字性提及**（非实际路径实体）。
+处置：3 处字面清洗为「Windows 8.3 短名」（语义不变、最小扰动，沿 T003/T007/T024 只改字面不动行号内容先例）。
+
+复扫（清洗后，四变体受管面零命中；命令同口径逐变体执行）：
+
+$ git ls-files -z | xargs -0 grep -l -F 'C:\Users'
+  → 仅 docs/evidence/ 内 3 文件（m0/review/g1-lead-recheck.md / t009/README.md / t009/g1-lead-recheck.txt）
+$ git ls-files -z | xargs -0 grep -l -F 'C:/Users'
+  → 仅 docs/evidence/ 内 4 文件（t003/README.md / t008/dispatches/wp-a-runner-red-matrix.md / t008/dispatches/wp-d-matrix-readme.md / t009/g1-lead-recheck.txt）
+$ git ls-files -z | xargs -0 grep -l -F '/c/Users'
+  → 仅 docs/evidence/ 内 6 文件（t008/dispatches/wp-d-matrix-readme.md / t019/spectate-smoke-run.log / t024/attempt1-sampler-failure/window/events.txt / t024/runs/smoke-t019-spectate-console.log / t024/window/events-supp.txt / t024/window/events.txt）
+$ git ls-files -z | xargs -0 grep -l -F 'ADMINI~1'
+  → 仅 docs/evidence/ 内 1 文件（t024/review-plan-code-reviewer.md）
+
+判定：受管面四变体零命中。PASS
+
+## 三、敏感词扫描（大小写不敏感）
+
+$ git ls-files -z | xargs -0 grep -l -i -E 'password|passwd|secret|api[_-]?key|credential|private[_-]?key|BEGIN (RSA|OPENSSH|EC|DSA)'
+  → 命中列表 0 行（SENS_HITS=0；xargs 汇总退出码 123 系 grep -l 无命中逐文件返回 1 所致——列表为空即零命中，退出码语义见附录 B.1 管道退出码纪律）
+
+判定：PASS
+
+## 四、证据目录环境痕迹定性（沿 T039 先例：原样保留）
+
+docs/evidence/ 命中 13 文件，逐类定性：
+- 通用路径形态（C:\Users\... / C:/Users/... / /c/Users/...）：审核转录与命令原始输出中的环境痕迹（如 t019/spectate-smoke-run.log 为 shell 命令回显路径）；
+- 通用账户短名（ADMINI~1）：t024/review-plan-code-reviewer.md 1 处 = 审核器原文对 8.3 短名形态的**描述性引用**（审核转录保真，不改动）；
+- 均无密钥 / token / 个人姓名 / 邮箱。
+定性：可公开，历史证据原样保留（与 T024 整改清洗范围口径一致——整改清的是测量件与转录档的可清前缀，保真要求的原文引用不在清洗面）。
+
+## 五、gitignore 覆盖核对
+
+$ git ls-files | grep -c '^tools/\|^team-prompt/'
+  → 0（tools/（sweep_paths.py 本机维护工具）与 team-prompt/（项目附录，含机器事实）均不入库，.gitignore 生效）
+
+## 判定
+
+受管面四变体 + 敏感词零命中；全历史唯一 bot 身份（50 commit）；证据目录环境痕迹定性可公开——**可公开态终扫 PASS**（受管面 3 处形态名字面清洗后达成，明细见 §二）。
+REAL_EXIT=0

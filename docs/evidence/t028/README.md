@@ -1,0 +1,19 @@
+# T028 证据档（万阵归档与开源准备 + 跨仓回流收尾）
+
+- 任务卡：taskset/t028-archive-opensource.md（★完整轮）
+- 决策依据：docs/m5-identity-decision.md §4-3（开源沉淀按推荐采纳）/ §4-5（回流收尾）/ §5-1（随线动作 1）
+
+## 索引
+
+| 档 | 内容 | 判定 |
+|---|---|---|
+| open-source-scan.txt | 可公开态终扫（四变体 + 敏感词 + 全历史 bot 身份 + gitignore 覆盖，沿 T039 体例） | PASS（受管面 3 处形态名字面清洗后零命中） |
+
+## 回流收尾（工作流仓侧，跨仓引用不复制正文）
+
+五项入库落点与留痕锚见工作流仓 assets-methodology/patterns.md（PAT-M 新增条目）与 bevy-dev/patterns/（PAT-B 新增条目）——判定与 claim-lint 双绿留档以工作流仓台账 T028 行为权威。
+
+## License / README / 发布状态
+
+- LICENSE-MIT / LICENSE-APACHE：沿工作流仓已审权威文本（T039 终审核逐字比对一致先例）改版权行 `wanzhen contributors`；双许可说明并入根 README（沿 T039 建议 N5 不单设说明文件）。
+- 发布动作（gh 公开仓创建 + 全历史 push）：**未执行**——待 owner 终审拍板（决策记录 §5-1）。
