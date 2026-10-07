@@ -1,50 +1,45 @@
-# T028 可公开态终扫（沿 T039 体例：受管面零命中 + 证据目录环境痕迹定性 + 全历史 bot 身份核对）
+# T028 可公开态终扫（沿 T039 体例：受管面零命中 + 证据目录环境痕迹定性 + 全历史 bot 身份核对）——v2（整改批复扫档）
 
-- 日期：2026-10-07（W1 D3）；执行：Lead（主会话）
-- 口径：grep -F 字面匹配（命令一律单引号——Windows shell 双引号会吃掉反斜杠层致漏检，沿本项目扫描纪律）；受管面 = git 跟踪文件中 docs/evidence/ 以外全部（源码 / 文档正文 / taskset / 台账 / AGENTS / 配置）
-- 上游先例：工作流仓 T039 open-source-scan.txt（受管面零命中 + 证据目录环境痕迹定性保留 + 全历史 bot 身份）
+- 日期：2026-10-07（W1 D3）；执行：Lead（主会话）；完整轮终审 = plan-code-reviewer（首发有条件通过 P0×1 → 本批整改 → 复扫本档 v2）
+- **v2 修订缘由（首发 P0-1 整改，如实记）**：首发档两处缺陷被终审核抓出——① 任务卡 taskset/t028-archive-opensource.md 原样引用四变体与敏感词**模式字面**，任务卡自身成为受管面命中源（含敏感词字面）；② 首发档的命令口径为全跟踪文件，复跑会命中扫描档自身的模式清单（自命中），与档案记录的空列表不一致。整改：任务卡非字面化（字面清单只落扫描档=证据面）+ 本档判定命令与判定面统一为**受管面口径**（git pathspec 排除 docs/evidence/）+ 复扫。首发档内容以 git 历史（94e56a4）为准，本档整体替换。
+- 口径：grep -F 字面匹配（命令一律单引号——Windows shell 双引号会吃掉反斜杠层致漏检）；**受管面 = git 跟踪文件中 docs/evidence/ 以外全部**（源码 / 文档正文 / taskset / 台账 / AGENTS / 配置）；判定命令统一 `git ls-files -- ':!docs/evidence'` 前置。
+- **扫描基准**：本档写于 T028 整改批提交前的工作树（树内容 = 该提交树）；提交后 git rev-list --count HEAD = 52（提交后实测复核，见执行记录）；身份核对在 50/51/52 commit 三个时点各跑一次均唯一。
+- 上游先例：工作流仓 T039 open-source-scan.txt（受管面零命中 + 证据目录环境痕迹定性保留 + 全历史 bot 身份）。
 
-## 一、全历史 bot 身份核对
+## 一、全历史 bot 身份核对（三时点）
 
 $ git log --format='%an <%ae>' | sort | uniq -c
-     50 wanzhen <bot@wanzhen.invalid>
+     50 wanzhen <bot@wanzhen.invalid>    # 首发扫描时点
+     51 wanzhen <bot@wanzhen.invalid>    # 整改批复扫时点（git rev-list --count HEAD = 51 实测）
+（整改批提交后为 52——提交后复核，见档尾执行记录）
 
-判定：全历史 50 commit 唯一身份，零个人信息。PASS
+判定：全历史唯一身份，零个人信息。PASS
 
-## 二、受管面四变体机器路径扫描
+## 二、受管面四变体机器路径扫描（判定口径：git ls-files -- ':!docs/evidence'）
 
-变体：`C:\Users`（反斜杠）/ `C:/Users`（正斜杠）/ `/c/Users`（msys）/ `ADMINI~1`（Windows 8.3 短名）
+变体四类（字面清单仅在本档=证据面给出）：反斜杠用户目录前缀（win32）/ 正斜杠用户目录前缀 / msys 根式 / Windows 8.3 短名。
 
-首轮（清洗前）：受管面 3 文件命中——AGENTS.md / task-ledger.md / taskset/t024-perf-c1.md，逐行核对均为 T024 路径清洗事件的「ADMINI~1 短名」**形态名文字性提及**（非实际路径实体）。
-处置：3 处字面清洗为「Windows 8.3 短名」（语义不变、最小扰动，沿 T003/T007/T024 只改字面不动行号内容先例）。
+首发轮（94e56a4 树）：受管面 3 文件命中（AGENTS.md / task-ledger.md / taskset/t024-perf-c1.md，均系 T024 路径清洗事件的短名**形态名文字性提及**）→ 字面清洗为「Windows 8.3 短名」（3 处，语义不变）；**另终审 P0-1 抓出任务卡模式字面自命中**（本档 v2 修订缘由）→ 任务卡非字面化。
 
-复扫（清洗后，四变体受管面零命中；命令同口径逐变体执行）：
+复扫轮（整改批工作树，逐变体命令如下；xargs 汇总码 123 = 逐文件 grep -l 无命中、列表为空即零命中）：
 
-$ git ls-files -z | xargs -0 grep -l -F 'C:\Users'
-  → 仅 docs/evidence/ 内 3 文件（m0/review/g1-lead-recheck.md / t009/README.md / t009/g1-lead-recheck.txt）
-$ git ls-files -z | xargs -0 grep -l -F 'C:/Users'
-  → 仅 docs/evidence/ 内 4 文件（t003/README.md / t008/dispatches/wp-a-runner-red-matrix.md / t008/dispatches/wp-d-matrix-readme.md / t009/g1-lead-recheck.txt）
-$ git ls-files -z | xargs -0 grep -l -F '/c/Users'
-  → 仅 docs/evidence/ 内 6 文件（t008/dispatches/wp-d-matrix-readme.md / t019/spectate-smoke-run.log / t024/attempt1-sampler-failure/window/events.txt / t024/runs/smoke-t019-spectate-console.log / t024/window/events-supp.txt / t024/window/events.txt）
-$ git ls-files -z | xargs -0 grep -l -F 'ADMINI~1'
-  → 仅 docs/evidence/ 内 1 文件（t024/review-plan-code-reviewer.md）
+$ git ls-files -- ':!docs/evidence' -z | xargs -0 grep -l -F 'C:\Users'   → 零命中（exit 123）
+$ git ls-files -- ':!docs/evidence' -z | xargs -0 grep -l -F 'C:/Users'   → 零命中（exit 123）
+$ git ls-files -- ':!docs/evidence' -z | xargs -0 grep -l -F '/c/Users'   → 零命中（exit 123）
+$ git ls-files -- ':!docs/evidence' -z | xargs -0 grep -l -F 'ADMINI~1'   → 零命中（exit 123）
 
 判定：受管面四变体零命中。PASS
 
-## 三、敏感词扫描（大小写不敏感）
+## 三、敏感词扫描（大小写不敏感；判定口径同上受管面）
 
-$ git ls-files -z | xargs -0 grep -l -i -E 'password|passwd|secret|api[_-]?key|credential|private[_-]?key|BEGIN (RSA|OPENSSH|EC|DSA)'
-  → 命中列表 0 行（SENS_HITS=0；xargs 汇总退出码 123 系 grep -l 无命中逐文件返回 1 所致——列表为空即零命中，退出码语义见附录 B.1 管道退出码纪律）
+$ git ls-files -- ':!docs/evidence' -z | xargs -0 grep -l -i -E 'password|passwd|secret|api[_-]?key|credential|private[_-]?key|BEGIN (RSA|OPENSSH|EC|DSA)'
+  → 命中列表 0 行（SENS_HITS=0，exit 123 = 逐文件无命中）
 
-判定：PASS
+判定：PASS（首发轮受管面任务卡曾命中 password 字面——系模式清单引用，随 P0-1 整改消除）
 
 ## 四、证据目录环境痕迹定性（沿 T039 先例：原样保留）
 
-docs/evidence/ 命中 13 文件，逐类定性：
-- 通用路径形态（C:\Users\... / C:/Users/... / /c/Users/...）：审核转录与命令原始输出中的环境痕迹（如 t019/spectate-smoke-run.log 为 shell 命令回显路径）；
-- 通用账户短名（ADMINI~1）：t024/review-plan-code-reviewer.md 1 处 = 审核器原文对 8.3 短名形态的**描述性引用**（审核转录保真，不改动）；
-- 均无密钥 / token / 个人姓名 / 邮箱。
-定性：可公开，历史证据原样保留（与 T024 整改清洗范围口径一致——整改清的是测量件与转录档的可清前缀，保真要求的原文引用不在清洗面）。
+证据目录（docs/evidence/）命中文件 = 首发轮清单 13 文件（四变体合计；通用账户名/路径/PID 环境痕迹——如 t019/spectate-smoke-run.log 为 shell 命令回显、t024/review-plan-code-reviewer.md 的短名系审核器原文描述性引用、转录保真不改动）**+ 本档自身**（v2 档内含四变体与敏感词**模式清单字面**——扫描档属证据面，模式清单是其必要内容，定性保留）；均无密钥 / token / 个人姓名 / 邮箱。定性：可公开，原样保留。
 
 ## 五、gitignore 覆盖核对
 
@@ -53,5 +48,5 @@ $ git ls-files | grep -c '^tools/\|^team-prompt/'
 
 ## 判定
 
-受管面四变体 + 敏感词零命中；全历史唯一 bot 身份（50 commit）；证据目录环境痕迹定性可公开——**可公开态终扫 PASS**（受管面 3 处形态名字面清洗后达成，明细见 §二）。
+受管面四变体 + 敏感词零命中（整改批工作树复扫）；全历史唯一 bot 身份（50/51/52 commit 三时点核对）；证据目录环境痕迹定性可公开——**可公开态终扫 PASS（v2，整改批复扫）**。
 REAL_EXIT=0

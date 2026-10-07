@@ -7,11 +7,11 @@
 
 | 档 | 内容 | 判定 |
 |---|---|---|
-| open-source-scan.txt | 可公开态终扫（四变体 + 敏感词 + 全历史 bot 身份 + gitignore 覆盖，沿 T039 体例） | PASS（受管面 3 处形态名字面清洗后零命中） |
+| open-source-scan.txt | 可公开态终扫 v2（四变体 + 敏感词 + 全历史 bot 身份 + gitignore 覆盖，沿 T039 体例；判定口径 = 受管面、含扫描基准） | PASS（首发 3 处形态名清洗 + 终审 P0-1 整改（任务卡模式字面自命中）后复扫零命中） |
 
 ## 回流收尾（工作流仓侧，跨仓引用不复制正文）
 
-五项入库落点与留痕锚见工作流仓 assets-methodology/patterns.md（PAT-M 新增条目）与 bevy-dev/patterns/（PAT-B 新增条目）——判定与 claim-lint 双绿留档以工作流仓台账 T028 行为权威。
+五项入库落点与留痕锚见工作流仓 assets-methodology/patterns.md（PAT-M-010~013）与 bevy-dev/patterns/（PAT-B-021）——判定与 claim-lint 双绿留档以工作流仓台账 T028 行为权威（19ba994；PAT-M-010 同日随终审 P0 整改修订——防自命中条款）。
 
 ## License / README / 发布状态
 
