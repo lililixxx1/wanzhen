@@ -16,4 +16,4 @@
 ## License / README / 发布状态
 
 - LICENSE-MIT / LICENSE-APACHE：沿工作流仓已审权威文本（T039 终审核逐字比对一致先例）改版权行 `wanzhen contributors`；双许可说明并入根 README（沿 T039 建议 N5 不单设说明文件）。
-- 发布动作（gh 公开仓创建 + 全历史 push）：**未执行**——待 owner 终审拍板（决策记录 §5-1）。
+- 发布动作：**已执行（2026-10-07，owner 终审拍板「现在发布 / 仓名 wanzhen」）**——全历史推送 e27e4fd..858b929 + 可见性 PRIVATE→PUBLIC；公开仓 = https://github.com/lililixxx1/wanzhen（原 PRIVATE 备份仓转公开，非新建仓——如实记）。
